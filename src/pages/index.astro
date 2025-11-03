@@ -4,14 +4,54 @@ import Social from "../components/Social.astro";
 import Welcome from "../components/Welcome.astro";
 import Layout from "../layouts/Layout.astro";
 
-const linkedin = "https://linkedin.com/in/justin-lo14";
-const github = "https://github.com/mintychochip";
+interface SocialProps {
+  image: string;
+  link: string;
+  handle: string;
+}
+
+const linkedin: SocialProps = {
+  image: "./public/LI-In-Bug.png",
+  link: "https://linkedin.com/in/justin-lo14",
+  handle: "justin-lo-14",
+};
+const github: SocialProps = {
+  image: "./public/GitHub_Invertocat_Dark.svg",
+  link: "https://github.com/mintychochip",
+  handle: "mintychochip",
+};
 // Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
 // Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
 <Layout>
   <Welcome />
-  <Social image="./public/GitHub_Invertocat_Dark.svg" link={github}>mintychochip</Social>
-  <Social image="./public/LI-In-Bug.png" link={linkedin}>mintychochip</Social>
+  <div class="space-y-4">
+    <div>
+      <h1 class="text-5xl font-bold">Justin Lo</h1>
+      <p>mintychochip</p>
+      <p class="text-sm">Software Engineer</p>
+    </div>
+    <Content title="Social">
+      <Social image={github.image} link={github.link}>{github.handle}</Social>
+      <Social image={linkedin.image} link={linkedin.link}
+        >{linkedin.handle}</Social
+      >
+    </Content>
+    <Content title="Certifications and Skills">
+      <img class ="h-32 w-auto" src="./public/image (3).png">
+      <ul class="list-disc list-inside">
+        <li>AWS Certified Solutions Architect – Associate</li>
+        <li>AWS Certified Developer – Associate</li>
+        <li>AWS Certified Cloud Practitioner</li>
+      </ul>
+      The technologies I work with include:
+      <ul class="list-disc list-inside space-y-1">
+        <li>Languages: Python, JavaScript, TypeScript, C++, Java, SQL</li>
+        <li>Frameworks & Libraries: Vue, Node.js, Deno, Astro</li>
+        <li>Tools & Platforms: Git, Docker, AWS, VS Code</li>
+        <li>Interests: Cloud Technology, Machine Learning</li>
+      </ul>
+    </Content>
+  </div>
 </Layout>
