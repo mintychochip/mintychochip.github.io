@@ -3,7 +3,6 @@ import Content from "../components/Content.astro";
 import Social from "../components/Social.astro";
 import Welcome from "../components/Welcome.astro";
 import Layout from "../layouts/Layout.astro";
-import Frog from "../components/Frog.vue";
 
 const linkedin = "https://linkedin.com/in/justin-lo14";
 const github = "https://github.com/mintychochip";
@@ -13,7 +12,6 @@ const github = "https://github.com/mintychochip";
 
 <Layout>
   <Welcome />
-  <Frog client:load/>
   <Social image="./public/GitHub_Invertocat_Dark.svg" link={github}>mintychochip</Social>
   <Social image="./public/LI-In-Bug.png" link={linkedin}>mintychochip</Social>
 </Layout>
