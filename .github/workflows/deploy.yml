@@ -41,6 +41,7 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           path: ./dist
+          overwrite: true
           # ADD THIS LINE to allow the action to overwrite an existing artifact
 
   deploy:
