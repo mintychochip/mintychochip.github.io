@@ -38,7 +38,7 @@ jobs:
 
       # 2. ADD: This is the crucial step to package the built 'dist' folder
       - name: Upload artifact 📦
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ./dist
           # ADD THIS LINE to allow the action to overwrite an existing artifact
