@@ -97,7 +97,7 @@ onMounted(() => {
     let mixer;
     let frog = null;
     loader.load(
-        './public/kermit_the_frog_dancing_4.glb',
+        '/kermit_the_frog_dancing_4.glb',
         (gltf) => {
             const root = gltf.scene;
             root.traverse((obj) => {
