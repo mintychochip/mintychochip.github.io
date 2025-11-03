@@ -8,7 +8,7 @@ import vue from '@astrojs/vue';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://mintychochip.github.io',
-  base: '/mintychochip.github.io',
+  base: '/',
 
   vite: {
     plugins: [tailwindcss()],
