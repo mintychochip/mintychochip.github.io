@@ -43,8 +43,6 @@ jobs:
           # The directory to upload. This should match Astro's output directory (default is 'dist')
           path: ./dist 
 
-  ---
-
   deploy:
     needs: build
     runs-on: ubuntu-latest
