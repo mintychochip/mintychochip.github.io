@@ -1,8 +1,8 @@
 ---
 import Content from "../components/Content.astro";
 import Social from "../components/Social.astro";
-import Welcome from "../components/Welcome.astro";
 import Layout from "../layouts/Layout.astro";
+import Frog from "../components/Frog.vue";
 
 interface SocialProps {
   image: string;
@@ -25,7 +25,7 @@ const github: SocialProps = {
 ---
 
 <Layout>
-  <Welcome />
+  <Frog client:load/>
   <div class="space-y-4">
     <div>
       <h1 class="text-5xl font-bold">Justin Lo</h1>
@@ -39,7 +39,6 @@ const github: SocialProps = {
       >
     </Content>
     <Content title="Certifications and Skills">
-      <img class ="h-32 w-auto" src="./public/image (3).png">
       <ul class="list-disc list-inside">
         <li>AWS Certified Solutions Architect – Associate</li>
         <li>AWS Certified Developer – Associate</li>
