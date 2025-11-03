@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   # Trigger the workflow every time you push to the `master` branch
   push:
-    branches: [ master ]
+    branches: [master]
   # Allows you to run this workflow manually from the Actions tab on GitHub.
   workflow_dispatch:
 
@@ -32,16 +32,17 @@ jobs:
         # and outputs the built files to the default 'dist' directory.
         # You can uncomment 'with' block if you need custom paths/versions.
         # with:
-        #   path: . 
-        #   node-version: 20 
-        #   package-manager: pnpm@latest 
+        #   path: .
+        #   node-version: 20
+        #   package-manager: pnpm@latest
 
       # 2. ADD: This is the crucial step to package the built 'dist' folder
       - name: Upload artifact 📦
         uses: actions/upload-pages-artifact@v3
         with:
-          # The directory to upload. This should match Astro's output directory (default is 'dist')
-          path: ./dist 
+          path: ./dist
+          # ADD THIS LINE to allow the action to overwrite an existing artifact
+          overwrite: true
 
   deploy:
     needs: build
