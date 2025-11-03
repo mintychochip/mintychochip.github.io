@@ -42,7 +42,6 @@ jobs:
         with:
           path: ./dist
           # ADD THIS LINE to allow the action to overwrite an existing artifact
-          overwrite: true
 
   deploy:
     needs: build
