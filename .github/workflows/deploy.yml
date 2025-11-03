@@ -1,8 +1,7 @@
 name: Deploy to GitHub Pages
 
 on:
-  # Trigger the workflow every time you push to the `main` branch
-  # Using a different branch name? Replace `main` with your branch’s name
+  # Trigger the workflow every time you push to the `master` branch
   push:
     branches: [ master ]
   # Allows you to run this workflow manually from the Actions tab on GitHub.
@@ -18,16 +17,33 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout your repository using git
+      - name: Checkout your repository using git 🛎️
         uses: actions/checkout@v4
-      - name: Install, build, and upload your site
+
+      # 1. ADD: The setup step for pnpm/npm/yarn to get the package-manager from the lockfile
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20 # Keep this version consistent with what the Astro action uses
+
+      - name: Install and Build with Astro ⚙️
         uses: withastro/action@v3
+        # The 'withastro/action@v3' internally runs install and build,
+        # and outputs the built files to the default 'dist' directory.
+        # You can uncomment 'with' block if you need custom paths/versions.
         # with:
-          # path: . # The root location of your Astro project inside the repository. (optional)
-          # node-version: 20 # The specific version of Node that should be used to build your site. Defaults to 20. (optional)
-          # package-manager: pnpm@latest # The Node package manager that should be used to install dependencies and build your site. Automatically detected based on your lockfile. (optional)
-        # env:
-          # PUBLIC_POKEAPI: 'https://pokeapi.co/api/v2' # Use single quotation marks for the variable value. (optional)
+        #   path: . 
+        #   node-version: 20 
+        #   package-manager: pnpm@latest 
+
+      # 2. ADD: This is the crucial step to package the built 'dist' folder
+      - name: Upload artifact 📦
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # The directory to upload. This should match Astro's output directory (default is 'dist')
+          path: ./dist 
+
+  ---
 
   deploy:
     needs: build
@@ -36,6 +52,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages 🚀
         id: deployment
         uses: actions/deploy-pages@v4
