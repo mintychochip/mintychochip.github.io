@@ -3,6 +3,7 @@ import Content from "../components/Content.astro";
 import Social from "../components/Social.astro";
 import Layout from "../layouts/Layout.astro";
 import Frog from "../components/Frog.vue";
+import Badges from "../components/Badges.vue";
 
 interface SocialProps {
   image: string;
@@ -20,8 +21,8 @@ const github: SocialProps = {
   link: "https://github.com/mintychochip",
   handle: "mintychochip",
 };
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+
+const CREDLY_ID: string = "justin-lo.dd591245";
 ---
 
 <Layout>
@@ -38,13 +39,10 @@ const github: SocialProps = {
         >{linkedin.handle}</Social
       >
     </Content>
-    <Content title="Certifications and Skills">
-      <ul class="list-disc list-inside">
-        <li>AWS Certified Solutions Architect – Associate</li>
-        <li>AWS Certified Developer – Associate</li>
-        <li>AWS Certified Cloud Practitioner</li>
-      </ul>
-      The technologies I work with include:
+    <Content title="Certifications">
+      <Badges credlyId={CREDLY_ID} client:load/>
+    </Content>
+    <Content title="Skills">
       <ul class="list-disc list-inside space-y-1">
         <li>Languages: Python, JavaScript, TypeScript, C++, Java, SQL</li>
         <li>Frameworks & Libraries: Vue, Node.js, Deno, Astro</li>
