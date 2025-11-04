@@ -3,7 +3,7 @@ import Content from "../components/Content.astro";
 import Social from "../components/Social.astro";
 import Layout from "../layouts/Layout.astro";
 import Frog from "../components/Frog.vue";
-import Badges from "../components/Badges.vue";
+import Badges from "../components/CredlyBadges.vue";
 
 interface SocialProps {
   image: string;
@@ -25,7 +25,7 @@ const github: SocialProps = {
 const CREDLY_ID: string = "justin-lo.dd591245";
 ---
 
-<Layout>
+<Layout background="">
   <Frog client:load/>
   <div class="space-y-4">
     <div>
