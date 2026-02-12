@@ -1,11 +1,11 @@
 <template>
-  <div class="flex justify-center">
-    <div class="grid grid-cols-3 gap-4 py-10">
-      <img v-for="(url, index) in imageURLList" 
-           :key="index" 
-           :src="url" 
-           alt="Badge" 
-           class="w-48 h-auto inline-block rounded-xl
+  <div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <img v-for="(url, index) in imageURLList"
+           :key="index"
+           :src="url"
+           alt="Badge"
+           class="w-full h-auto inline-block rounded-xl
                   hover:scale-105 hover:shadow-lg transition-transform duration-200" />
     </div>
   </div>
@@ -44,7 +44,7 @@ async function getCredlyBadges() {
   } catch (err) {
     console.log("error loading badges:", err);
   } finally {
-    loading.value = true;
+    loading.value = false;
   }
 }
 

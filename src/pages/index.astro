@@ -1,54 +1,265 @@
 ---
-import Content from "../components/Content.astro";
-import Social from "../components/Social.astro";
 import Layout from "../layouts/Layout.astro";
-import Frog from "../components/Frog.vue";
 import Badges from "../components/CredlyBadges.vue";
-
-interface SocialProps {
-  image: string;
-  link: string;
-  handle: string;
-}
-
-const linkedin: SocialProps = {
-  image: "/LI-In-Bug.png",
-  link: "https://linkedin.com/in/justin-lo14",
-  handle: "justin-lo-14",
-};
-const github: SocialProps = {
-  image: "/GitHub_Invertocat_Dark.svg",
-  link: "https://github.com/mintychochip",
-  handle: "mintychochip",
-};
+import ProjectGrid from "../components/ProjectGrid.vue";
+import SectionHeading from "../components/SectionHeading.astro";
 
 const CREDLY_ID: string = "justin-lo.dd591245";
+
+interface Project {
+  title: string;
+  description: string;
+  tags: string[];
+  repo?: string;
+  url?: string;
+  preview?: string;
+}
+
+const projects: Project[] = [
+  {
+    title: "Portfolio Site",
+    description: "Personal portfolio built with Astro and Tailwind CSS featuring a warm, editorial design.",
+    tags: ["Astro", "Tailwind CSS", "TypeScript"],
+    repo: "https://github.com/mintychochip/mintychochip.github.io",
+    url: "https://mintychochip.github.io",
+    preview: "https://media.giphy.com/media/qgQUggAC3Pfv687qPC/giphy.gif",
+  },
+  {
+    title: "Cloud Dashboard",
+    description: "Real-time cloud infrastructure monitoring dashboard with alerting and cost tracking.",
+    tags: ["Python", "AWS", "React"],
+    repo: "https://github.com/mintychochip",
+    preview: "https://media.giphy.com/media/ZVik7pBtu9dNS/giphy.gif",
+  },
+  {
+    title: "Container Orchestrator",
+    description: "Lightweight container management tool for local development with hot-reload support.",
+    tags: ["Java", "Docker", "Kubernetes"],
+    repo: "https://github.com/mintychochip",
+    preview: "https://media.giphy.com/media/du3J3cXyzhj75IOgvA/giphy.gif",
+  },
+  {
+    title: "Task Tracker",
+    description: "Kanban-style project management app with drag-and-drop and real-time collaboration.",
+    tags: ["TypeScript", "Vue", "Node.js"],
+    repo: "https://github.com/mintychochip",
+    preview: "https://media.giphy.com/media/L1R1tvI9svkIWwpVYr/giphy.gif",
+  },
+  {
+    title: "ML Pipeline Runner",
+    description: "End-to-end machine learning pipeline framework for training, evaluation, and deployment.",
+    tags: ["Python", "Machine Learning", "Docker"],
+    repo: "https://github.com/mintychochip",
+    preview: "https://media.giphy.com/media/3oKIPnAiaMCJ8dO8dW/giphy.gif",
+  },
+  {
+    title: "API Gateway",
+    description: "Configurable API gateway with rate limiting, auth middleware, and request logging.",
+    tags: ["TypeScript", "Node.js", "Deno"],
+    repo: "https://github.com/mintychochip",
+    preview: "https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif",
+  },
+  {
+    title: "Chat Application",
+    description: "Real-time messaging app with WebSocket support, file sharing, and end-to-end encryption.",
+    tags: ["TypeScript", "Vue", "WebSocket"],
+    repo: "https://github.com/mintychochip",
+    preview: "https://media.giphy.com/media/LmNwrBhejkK9EFP504/giphy.gif",
+  },
+  {
+    title: "CLI Toolkit",
+    description: "Collection of developer CLI utilities for scaffolding, linting, and deployment automation.",
+    tags: ["Python", "Bash", "Git"],
+    repo: "https://github.com/mintychochip",
+    preview: "https://media.giphy.com/media/26tn33aiTi1jkl6H6/giphy.gif",
+  },
+  {
+    title: "Data Visualizer",
+    description: "Interactive data visualization tool with customizable charts and CSV/JSON import.",
+    tags: ["JavaScript", "D3.js", "SQL"],
+    repo: "https://github.com/mintychochip",
+    preview: "https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif",
+  },
+  {
+    title: "Auth Service",
+    description: "Standalone authentication microservice with OAuth2, JWT, and multi-factor support.",
+    tags: ["Java", "Spring Boot", "AWS"],
+    repo: "https://github.com/mintychochip",
+    preview: "https://media.giphy.com/media/077i6AULCXc0FKTj9s/giphy.gif",
+  },
+];
 ---
 
-<Layout background="">
-  <Frog client:load/>
-  <div class="space-y-4">
-    <div>
-      <h1 class="text-5xl font-bold">Justin Lo</h1>
-      <p>mintychochip</p>
-      <p class="text-sm">Software Engineer</p>
+<Layout>
+  <!-- Mobile Navbar -->
+  <nav class="lg:hidden sticky top-0 z-50 bg-bg-sidebar border-b border-border px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <img src="/avatar.png" alt="Justin Lo" class="avatar-img w-8 h-8 object-contain select-none" />
+      <span class="font-bold text-lg">Justin Lo</span>
     </div>
-    <Content title="Social">
-      <Social image={github.image} link={github.link}>{github.handle}</Social>
-      <Social image={linkedin.image} link={linkedin.link}
-        >{linkedin.handle}</Social
-      >
-    </Content>
-    <Content title="Certifications">
-      <Badges credlyId={CREDLY_ID} client:load/>
-    </Content>
-    <Content title="Skills">
-      <ul class="list-disc list-inside space-y-1">
-        <li>Languages: Python, JavaScript, TypeScript, C++, Java, SQL</li>
-        <li>Frameworks & Libraries: Vue, Node.js, Deno, Astro</li>
-        <li>Tools & Platforms: Git, Docker, AWS, VS Code</li>
-        <li>Interests: Cloud Technology, Machine Learning</li>
-      </ul>
-    </Content>
+    <button id="menu-toggle" class="p-2 rounded-md hover:bg-border transition" aria-label="Toggle menu">
+      <svg id="menu-icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+      <svg id="menu-icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </nav>
+
+  <!-- Mobile Menu Drawer -->
+  <div id="mobile-menu" class="lg:hidden hidden fixed inset-0 top-[57px] z-40">
+    <div class="absolute inset-0 bg-black/30" id="menu-backdrop"></div>
+    <aside class="relative bg-bg-sidebar border-r border-border p-8 w-72 max-w-[80vw] h-full overflow-y-auto">
+      <div class="flex flex-col gap-6">
+        <img src="/avatar.png" alt="Justin Lo" class="avatar-img w-20 h-20 object-contain select-none" />
+        <div>
+          <h1 class="text-2xl font-bold">Justin Lo</h1>
+          <p class="text-text-muted text-sm mt-1">Software Engineer</p>
+          <div class="mt-1">
+            <button class="social-toggle !text-black text-xs font-bold hover:!text-black transition-colors flex items-center gap-1 cursor-pointer">
+              @mintychochip
+              <svg class="w-3 h-3 transition-transform duration-200 social-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div class="social-links grid transition-[grid-template-rows] duration-200 ease-in-out" style="grid-template-rows: 0fr;">
+              <div class="overflow-hidden">
+                <div class="pt-2 space-y-1.5">
+                  <a href="mailto:justinlo14@gmail.com" class="flex items-center gap-2 text-xs text-text-muted hover:text-accent transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    justinlo14@gmail.com
+                  </a>
+                  <a href="tel:+15551234567" class="flex items-center gap-2 text-xs text-text-muted hover:text-accent transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                    (555) 123-4567
+                  </a>
+                  <a href="https://github.com/mintychochip" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-xs text-text-muted hover:text-accent transition-colors">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    GitHub
+                  </a>
+                  <a href="https://linkedin.com/in/justin-lo14" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-xs text-text-muted hover:text-accent transition-colors">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    LinkedIn
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="min-h-screen lg:grid lg:grid-cols-[240px_1fr]">
+    <!-- Desktop Sidebar -->
+    <aside class="hidden lg:flex lg:flex-col lg:justify-between bg-bg-sidebar border-r border-border p-8 sticky top-0 h-screen overflow-y-auto">
+      <div class="flex flex-col items-start gap-6">
+        <img src="/avatar.png" alt="Justin Lo" class="avatar-img w-24 h-24 object-contain select-none" />
+        <div>
+          <h1 class="text-3xl font-bold">Justin Lo</h1>
+          <p class="text-text-muted text-sm mt-1">Software Engineer</p>
+          <div class="mt-1">
+            <button class="social-toggle !text-black text-xs font-bold hover:!text-black transition-colors flex items-center gap-1 cursor-pointer">
+              @mintychochip
+              <svg class="w-3 h-3 transition-transform duration-200 social-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div class="social-links grid transition-[grid-template-rows] duration-200 ease-in-out" style="grid-template-rows: 0fr;">
+              <div class="overflow-hidden">
+                <div class="pt-2 space-y-1.5">
+                  <a href="mailto:justinlo14@gmail.com" class="flex items-center gap-2 text-xs text-text-muted hover:text-accent transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    justinlo14@gmail.com
+                  </a>
+                  <a href="tel:+15551234567" class="flex items-center gap-2 text-xs text-text-muted hover:text-accent transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                    (555) 123-4567
+                  </a>
+                  <a href="https://github.com/mintychochip" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-xs text-text-muted hover:text-accent transition-colors">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    GitHub
+                  </a>
+                  <a href="https://linkedin.com/in/justin-lo14" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-xs text-text-muted hover:text-accent transition-colors">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    LinkedIn
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="text-text-muted text-xs mt-8">&copy; 2024–26 mintychochip</p>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="p-8 lg:p-12 max-w-4xl">
+      <!-- About Me -->
+      <section class="mb-12">
+        <SectionHeading title="About Me" />
+        <p class="text-text text-base leading-relaxed">
+          Hi, I'm Justin, a software engineer who enjoys building clean, practical tools
+          and exploring cloud technology and machine learning. I like working across the stack,
+          from backend services to polished front-end experiences. When I'm not coding, you can
+          find me tinkering with side projects or learning something new.
+        </p>
+      </section>
+
+      <!-- Projects -->
+      <section class="mb-12">
+        <SectionHeading title="Projects" />
+        <ProjectGrid projects={projects} perPage={4} client:load />
+      </section>
+
+      <!-- Certifications -->
+      <section class="mb-12">
+        <SectionHeading title="Certifications" />
+        <Badges credlyId={CREDLY_ID} client:load />
+      </section>
+    </main>
   </div>
 </Layout>
+
+<script>
+  const toggle = document.getElementById('menu-toggle');
+  const menu = document.getElementById('mobile-menu');
+  const backdrop = document.getElementById('menu-backdrop');
+  const iconOpen = document.getElementById('menu-icon-open');
+  const iconClose = document.getElementById('menu-icon-close');
+
+  function closeMenu() {
+    menu?.classList.add('hidden');
+    iconOpen?.classList.remove('hidden');
+    iconClose?.classList.add('hidden');
+  }
+
+  function openMenu() {
+    menu?.classList.remove('hidden');
+    iconOpen?.classList.add('hidden');
+    iconClose?.classList.remove('hidden');
+  }
+
+  toggle?.addEventListener('click', () => {
+    if (menu?.classList.contains('hidden')) {
+      openMenu();
+    } else {
+      closeMenu();
+    }
+  });
+
+  backdrop?.addEventListener('click', closeMenu);
+
+  // Social slide-down toggles
+  document.querySelectorAll('.social-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const links = btn.nextElementSibling as HTMLElement;
+      const chevron = btn.querySelector('.social-chevron') as HTMLElement;
+      const isOpen = links.style.gridTemplateRows === '1fr';
+
+      links.style.gridTemplateRows = isOpen ? '0fr' : '1fr';
+      chevron?.classList.toggle('rotate-180', !isOpen);
+    });
+  });
+</script>
