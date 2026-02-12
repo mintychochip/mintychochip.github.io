@@ -1,26 +1,20 @@
 ---
 import '../styles/global.css';
-
-const {background} = Astro.props;
 ---
 <!doctype html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" type="image/png" href="/avatar.png" />
         <meta name="generator" content={Astro.generator} />
-        <title>Astro Basics</title>
-        
+        <title>Justin Lo</title>
+
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <!-- <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap" rel="stylesheet"> -->
+        <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     </head>
-    <body class="bg-[#faebd7]">
-        <div class="flex flex-col justify-center max-w-3xl mx-auto px-8">  
-            <slot/>
-        </div>
+    <body>
+        <slot/>
     </body>
 </html>
-
-
