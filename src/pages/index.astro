@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import Badges from "../components/CredlyBadges.vue";
 import ProjectGrid from "../components/ProjectGrid.vue";
+import Timeline from "../components/Timeline.vue";
 import SectionHeading from "../components/SectionHeading.astro";
 
 const CREDLY_ID: string = "justin-lo.dd591245";
@@ -86,6 +87,66 @@ const projects: Project[] = [
     tags: ["Java", "Spring Boot", "AWS"],
     repo: "https://github.com/mintychochip",
     preview: "https://media.giphy.com/media/077i6AULCXc0FKTj9s/giphy.gif",
+  },
+];
+
+interface TimelineItem {
+  year: string;
+  date: string;
+  title: string;
+  description: string;
+  image?: string;
+  tags?: string[];
+}
+
+const timelineItems: TimelineItem[] = [
+  {
+    year: "2026",
+    date: "Spring 2026",
+    title: "Senior Year - Capstone Project",
+    description: "Leading a team to build a full-stack web application for the Computer Science department. Applying everything I've learned over the past years to create a real-world solution.",
+    image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&auto=format&fit=crop",
+    tags: ["React", "Node.js", "PostgreSQL", "Teamwork"],
+  },
+  {
+    year: "2025",
+    date: "Fall 2025",
+    title: "Teaching Assistant - Data Structures",
+    description: "Selected as a TA for CS 311 Data Structures. Helping students understand algorithms, mentoring in coding labs, and hosting office hours. One of the most rewarding experiences at CSUB.",
+    image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&auto=format&fit=crop",
+    tags: ["Teaching", "Algorithms", "Mentorship"],
+  },
+  {
+    year: "2024",
+    date: "Summer 2024",
+    title: "First Internship - Local Tech Startup",
+    description: "Interned at a Bakersfield-based startup, working on their customer portal. Gained hands-on experience with modern web frameworks and agile development practices.",
+    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format&fit=crop",
+    tags: ["Internship", "Vue.js", "REST API"],
+  },
+  {
+    year: "2023",
+    date: "Fall 2023",
+    title: "Joined ACM & Coding Club",
+    description: "Became an active member of the ACM chapter and coding club. Participated in hackathons, attended tech talks, and met some of my closest friends who share the same passion for technology.",
+    image: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&auto=format&fit=crop",
+    tags: ["Community", "Hackathons", "Networking"],
+  },
+  {
+    year: "2022",
+    date: "Fall 2022",
+    title: "Declared Computer Science Major",
+    description: "After taking CS 101, I knew this was my path. Declared Computer Science as my major and dove headfirst into programming. The first time I wrote a recursive function that actually worked felt magical.",
+    image: "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?w=800&auto=format&fit=crop",
+    tags: ["Java", "Programming", "Problem Solving"],
+  },
+  {
+    year: "2021",
+    date: "Fall 2021",
+    title: "Started at CSUB",
+    description: "Began my journey at California State University, Bakersfield. Nervous but excited to explore what computer science had to offer. Little did I know how much this place would shape my future.",
+    image: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop",
+    tags: ["Freshman Year", "New Beginnings"],
   },
 ];
 ---
@@ -211,6 +272,12 @@ const projects: Project[] = [
       <section class="mb-12">
         <SectionHeading title="Projects" />
         <ProjectGrid projects={projects} perPage={4} client:load />
+      </section>
+
+      <!-- Timeline -->
+      <section class="mb-12">
+        <SectionHeading title="My CSUB Journey" />
+        <Timeline timelineItems={timelineItems} client:load />
       </section>
 
       <!-- Certifications -->

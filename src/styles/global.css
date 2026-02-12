@@ -11,8 +11,8 @@
   --color-border: #c0c0c0;
   --color-tag-bg: #f0e9df;
 
-  --font-heading: 'DM Serif Display', serif;
-  --font-body: 'Inter', sans-serif;
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Space Grotesk', sans-serif;
 }
 
 @layer base {
