@@ -18,10 +18,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Stage static site
+        run: mkdir -p _site && cp -R ./* _site/ && cp CNAME _site/CNAME
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
 
   deploy:
     needs: build
