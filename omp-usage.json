@@ -1,0 +1,1285 @@
+[
+  {
+    "date": "2026-07-10",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 135541934
+      },
+      {
+        "model": "glm-5.2:dev",
+        "tokens": 24215585
+      },
+      {
+        "model": "gpt-5.5",
+        "tokens": 11805226
+      },
+      {
+        "model": "gemma-4-31b-it:dev",
+        "tokens": 7458300
+      },
+      {
+        "model": "tencent/hy3",
+        "tokens": 385302
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 24001
+      },
+      {
+        "model": "google/gemma-4-31b-it",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-07-11",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 4359241379
+      },
+      {
+        "model": "tencent/hy3:free",
+        "tokens": 499211021
+      },
+      {
+        "model": "tencent/hy3",
+        "tokens": 406325945
+      },
+      {
+        "model": "gemma-4-31b-it:dev",
+        "tokens": 168904735
+      },
+      {
+        "model": "glm-5.2:dev",
+        "tokens": 2853563
+      }
+    ]
+  },
+  {
+    "date": "2026-07-12",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 1864661259
+      },
+      {
+        "model": "LongCat-2.0",
+        "tokens": 1167419853
+      },
+      {
+        "model": "tencent/hy3",
+        "tokens": 530671621
+      },
+      {
+        "model": "minimax-m2.7:dev",
+        "tokens": 312081142
+      },
+      {
+        "model": "tencent/hy3:free",
+        "tokens": 80165238
+      },
+      {
+        "model": "gemma-4-31b-it:dev",
+        "tokens": 28891488
+      },
+      {
+        "model": "step-3.5-flash-2603",
+        "tokens": 11672032
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 10645092
+      },
+      {
+        "model": "glm-5.2:dev",
+        "tokens": 9549249
+      },
+      {
+        "model": "step-3.7-flash",
+        "tokens": 265666
+      },
+      {
+        "model": "grok-4.5",
+        "tokens": 32030
+      },
+      {
+        "model": "stepfun/step-3.7-flash",
+        "tokens": 0
+      },
+      {
+        "model": "deepseek/deepseek-v4-flash:free",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-07-13",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 3623901486
+      },
+      {
+        "model": "tencent/hy3",
+        "tokens": 1180488898
+      },
+      {
+        "model": "LongCat-2.0",
+        "tokens": 690277028
+      },
+      {
+        "model": "minimax-m2.7:dev",
+        "tokens": 345835430
+      },
+      {
+        "model": "tencent/hy3:free",
+        "tokens": 59744870
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 990078
+      }
+    ]
+  },
+  {
+    "date": "2026-07-14",
+    "models": [
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 1439592641
+      },
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 796240416
+      },
+      {
+        "model": "minimax-m2.7:dev",
+        "tokens": 779889489
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 507262626
+      },
+      {
+        "model": "tencent/hy3",
+        "tokens": 329498736
+      },
+      {
+        "model": "tencent/hy3:free",
+        "tokens": 302342764
+      },
+      {
+        "model": "grok-4.5",
+        "tokens": 144197445
+      },
+      {
+        "model": "grok-composer-2.5-fast",
+        "tokens": 16758876
+      },
+      {
+        "model": "LongCat-2.0",
+        "tokens": 1996034
+      }
+    ]
+  },
+  {
+    "date": "2026-07-15",
+    "models": [
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 1191016552
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 628619314
+      },
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 622095284
+      },
+      {
+        "model": "tencent/hy3",
+        "tokens": 73738005
+      },
+      {
+        "model": "tencent/hy3:free",
+        "tokens": 28109081
+      },
+      {
+        "model": "grok-4.5",
+        "tokens": 16864790
+      },
+      {
+        "model": "LongCat-2.0",
+        "tokens": 9619942
+      }
+    ]
+  },
+  {
+    "date": "2026-07-16",
+    "models": [
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 2384347857
+      },
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 675998432
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 262982347
+      },
+      {
+        "model": "step-3.5-flash-2603",
+        "tokens": 228958569
+      },
+      {
+        "model": "tencent/hy3",
+        "tokens": 181510350
+      },
+      {
+        "model": "LongCat-2.0",
+        "tokens": 77322067
+      },
+      {
+        "model": "tencent/hy3:free",
+        "tokens": 53816131
+      },
+      {
+        "model": "grok-composer-2.5-fast",
+        "tokens": 12522955
+      }
+    ]
+  },
+  {
+    "date": "2026-07-17",
+    "models": [
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 3160470908
+      },
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 1432980384
+      },
+      {
+        "model": "step-3.5-flash-2603",
+        "tokens": 1289398729
+      },
+      {
+        "model": "tencent/hy3",
+        "tokens": 174301162
+      },
+      {
+        "model": "tencent/hy3:free",
+        "tokens": 52182665
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 11837280
+      }
+    ]
+  },
+  {
+    "date": "2026-07-18",
+    "models": [
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 1895456754
+      },
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 1440862080
+      },
+      {
+        "model": "step-3.5-flash-2603",
+        "tokens": 1031714396
+      },
+      {
+        "model": "deepseek/deepseek-v4-pro",
+        "tokens": 265616231
+      },
+      {
+        "model": "tencent/hy3",
+        "tokens": 121085969
+      },
+      {
+        "model": "tencent/hy3:free",
+        "tokens": 49714349
+      },
+      {
+        "model": "cline-pass/glm-5.2",
+        "tokens": 33885206
+      },
+      {
+        "model": "MiniMaxAI/MiniMax-M3",
+        "tokens": 43157
+      },
+      {
+        "model": "deepseek/deepseek-v4-flash:free",
+        "tokens": 0
+      },
+      {
+        "model": "glm-5.2",
+        "tokens": 0
+      },
+      {
+        "model": "deepseek/deepseek-v4-flash",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-07-19",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 2175379753
+      },
+      {
+        "model": "LongCat-2.0",
+        "tokens": 1159137745
+      },
+      {
+        "model": "step-3.5-flash-2603",
+        "tokens": 80621314
+      },
+      {
+        "model": "tencent/hy3",
+        "tokens": 22578633
+      },
+      {
+        "model": "tencent/hy3:free",
+        "tokens": 6253786
+      }
+    ]
+  },
+  {
+    "date": "2026-07-20",
+    "models": [
+      {
+        "model": "LongCat-2.0",
+        "tokens": 3092764593
+      },
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 725293511
+      },
+      {
+        "model": "step-3.5-flash-2603",
+        "tokens": 16251112
+      },
+      {
+        "model": "tencent/hy3:free",
+        "tokens": 1161758
+      }
+    ]
+  },
+  {
+    "date": "2026-07-21",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 867986865
+      },
+      {
+        "model": "cline-pass/qwen3.7-plus",
+        "tokens": 57409365
+      },
+      {
+        "model": "step-3.5-flash-2603",
+        "tokens": 45138346
+      },
+      {
+        "model": "tencent/hy3",
+        "tokens": 27849632
+      },
+      {
+        "model": "glm-5.2",
+        "tokens": 14448218
+      },
+      {
+        "model": "poolside/laguna-s-2.1:free",
+        "tokens": 738385
+      }
+    ]
+  },
+  {
+    "date": "2026-07-22",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 1886619883
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 153443054
+      },
+      {
+        "model": "cline-pass/qwen3.7-plus",
+        "tokens": 86725503
+      },
+      {
+        "model": "step-3.5-flash-2603",
+        "tokens": 77995000
+      },
+      {
+        "model": "qwen3.8-max-preview",
+        "tokens": 64495531
+      },
+      {
+        "model": "deepseek-v4-pro",
+        "tokens": 25857247
+      },
+      {
+        "model": "gemini-3.6-flash-high",
+        "tokens": 7582237
+      },
+      {
+        "model": "poolside/laguna-s-2.1:free",
+        "tokens": 6585909
+      },
+      {
+        "model": "claude-opus-4-6",
+        "tokens": 951923
+      },
+      {
+        "model": "gemini-3.6-flash",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-07-23",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 4204331326
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 444835490
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 305407881
+      },
+      {
+        "model": "grok-4.5",
+        "tokens": 12968955
+      },
+      {
+        "model": "poolside/laguna-s-2.1-free",
+        "tokens": 0
+      },
+      {
+        "model": "gemini-3.6-flash",
+        "tokens": 0
+      },
+      {
+        "model": "poolside/laguna-s-2.1:free",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-07-24",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 4663254627
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 472696617
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 171635523
+      },
+      {
+        "model": "grok-4.5",
+        "tokens": 17892499
+      },
+      {
+        "model": "qwen3.8-max-preview",
+        "tokens": 17887052
+      },
+      {
+        "model": "cline-pass/glm-5.2",
+        "tokens": 16711198
+      },
+      {
+        "model": "poolside/laguna-s-2.1:free",
+        "tokens": 10003168
+      },
+      {
+        "model": "minimax-m2.7:dev",
+        "tokens": 5303598
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 0
+      },
+      {
+        "model": "poolside/laguna-s-2.1-free",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-07-25",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 2152394522
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 919542620
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 455553457
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 2332046
+      },
+      {
+        "model": "poolside/laguna-s-2.1-free",
+        "tokens": 166436
+      },
+      {
+        "model": "inclusionai/ling-3.0-flash:free",
+        "tokens": 28323
+      },
+      {
+        "model": "inclusionai/ling-3.0-flash",
+        "tokens": 0
+      },
+      {
+        "model": "inclusionai/ling-2.6-flash:free",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-07-26",
+    "models": [
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 315783967
+      },
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 248310273
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 182448486
+      },
+      {
+        "model": "deepseek/deepseek-v4-pro",
+        "tokens": 3223208
+      }
+    ]
+  },
+  {
+    "date": "2026-07-27",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 2271761758
+      },
+      {
+        "model": "inclusionai/ling-3.0-flash",
+        "tokens": 702492745
+      },
+      {
+        "model": "cline-pass/deepseek-v4-flash",
+        "tokens": 671932567
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 439202303
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 390879173
+      },
+      {
+        "model": "deepseek/deepseek-v4-flash",
+        "tokens": 67200853
+      },
+      {
+        "model": "mindai/macaron-v1-venti",
+        "tokens": 9379124
+      },
+      {
+        "model": "glm-5.2:dev",
+        "tokens": 105607
+      }
+    ]
+  },
+  {
+    "date": "2026-07-28",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 2563303622
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 880094032
+      },
+      {
+        "model": "qwen3.8-max-preview",
+        "tokens": 63422239
+      },
+      {
+        "model": "deepseek/deepseek-v4-pro",
+        "tokens": 34533502
+      },
+      {
+        "model": "step-3.7-flash",
+        "tokens": 30510444
+      },
+      {
+        "model": "cline-pass/deepseek-v4-flash",
+        "tokens": 21560092
+      },
+      {
+        "model": "cline-pass/mimo-v2.5-pro",
+        "tokens": 3398104
+      },
+      {
+        "model": "glm-5.2:dev",
+        "tokens": 2422554
+      }
+    ]
+  },
+  {
+    "date": "2026-07-29",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 482831700
+      },
+      {
+        "model": "step-3.7-flash",
+        "tokens": 208638391
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 130234852
+      },
+      {
+        "model": "deepseek/deepseek-v4-pro",
+        "tokens": 35770474
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 19813589
+      },
+      {
+        "model": "cline-pass/deepseek-v4-pro",
+        "tokens": 7209997
+      },
+      {
+        "model": "cline-pass/mimo-v2.5-pro",
+        "tokens": 5294432
+      },
+      {
+        "model": "mimo-v2.5-pro",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-07-30",
+    "models": [
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 672125202
+      },
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 537029244
+      },
+      {
+        "model": "step-3.7-flash",
+        "tokens": 23961911
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 784015
+      },
+      {
+        "model": "gpt-5.3-codex",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-07-31",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 892942275
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 839011510
+      },
+      {
+        "model": "step-3.7-flash",
+        "tokens": 324301582
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 43762768
+      },
+      {
+        "model": "gpt-5.3-codex",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-08-01",
+    "models": [
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 1129342451
+      },
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 1084955120
+      },
+      {
+        "model": "step-3.7-flash",
+        "tokens": 184597659
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 28684692
+      },
+      {
+        "model": "gpt-5.3-codex",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-08-02",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 870536623
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 574202599
+      },
+      {
+        "model": "qwen3.8-max-preview",
+        "tokens": 89991471
+      },
+      {
+        "model": "step-3.7-flash",
+        "tokens": 82729168
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 54901206
+      },
+      {
+        "model": "gpt-5.3-codex",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-08-03",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 1749605527
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 369049546
+      },
+      {
+        "model": "deepseek-v4-flash-0731",
+        "tokens": 362891123
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 164475525
+      },
+      {
+        "model": "cline-pass/deepseek-v4-flash",
+        "tokens": 128628152
+      },
+      {
+        "model": "gpt-5.6-terra",
+        "tokens": 99493402
+      },
+      {
+        "model": "step-3.7-flash",
+        "tokens": 8942810
+      },
+      {
+        "model": "poolside/laguna-s-2.1:free",
+        "tokens": 577124
+      },
+      {
+        "model": "gemini-3.6-flash",
+        "tokens": 187492
+      }
+    ]
+  },
+  {
+    "date": "2026-08-04",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 4751484600
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 527747373
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 236102813
+      },
+      {
+        "model": "qwen3.8-max-preview",
+        "tokens": 212697024
+      },
+      {
+        "model": "deepseek-v4-flash-0731",
+        "tokens": 100543522
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 39671401
+      },
+      {
+        "model": "cline-pass/deepseek-v4-flash",
+        "tokens": 212564
+      }
+    ]
+  },
+  {
+    "date": "2026-08-05",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 1740494581
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 1085444477
+      },
+      {
+        "model": "deepseek-v4-flash-0731",
+        "tokens": 347771339
+      },
+      {
+        "model": "cline-pass/deepseek-v4-flash",
+        "tokens": 126212011
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 39648389
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 32548147
+      },
+      {
+        "model": "qwen3.8-max",
+        "tokens": 14441378
+      },
+      {
+        "model": "gemini-3.6-flash",
+        "tokens": 3361209
+      },
+      {
+        "model": "step-3.7-flash",
+        "tokens": 260979
+      }
+    ]
+  },
+  {
+    "date": "2026-08-06",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 1449374598
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 684009892
+      },
+      {
+        "model": "step-3.7-flash",
+        "tokens": 142254068
+      },
+      {
+        "model": "deepseek-v4-flash-0731",
+        "tokens": 102192937
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 11688117
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 2765469
+      }
+    ]
+  },
+  {
+    "date": "2026-08-07",
+    "models": [
+      {
+        "model": "deepseek-v4-flash-0731",
+        "tokens": 384960020
+      },
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 262585385
+      },
+      {
+        "model": "cline-pass/deepseek-v4-flash",
+        "tokens": 173595557
+      },
+      {
+        "model": "qwen3.8-max",
+        "tokens": 60519319
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 37197283
+      },
+      {
+        "model": "step-3.7-flash",
+        "tokens": 5077759
+      },
+      {
+        "model": "deepseek/deepseek-v4-pro",
+        "tokens": 0
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 0
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-08-08",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 3747166883
+      },
+      {
+        "model": "deepseek-v4-flash-0731",
+        "tokens": 548567737
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 288469955
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 208181974
+      },
+      {
+        "model": "cline-pass/deepseek-v4-flash",
+        "tokens": 165292499
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 35994247
+      }
+    ]
+  },
+  {
+    "date": "2026-08-09",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 3934983064
+      },
+      {
+        "model": "cline-pass/deepseek-v4-flash",
+        "tokens": 1647061743
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 224516402
+      },
+      {
+        "model": "deepseek-v4-flash-0731",
+        "tokens": 98078975
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 0
+      },
+      {
+        "model": "qwen3.8-max",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-08-10",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 6221021626
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 479122210
+      },
+      {
+        "model": "deepseek-v4-flash-0731",
+        "tokens": 447521894
+      },
+      {
+        "model": "cline-pass/deepseek-v4-flash",
+        "tokens": 0
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-08-11",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 8128646733
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 1228971126
+      },
+      {
+        "model": "deepseek-v4-flash-0731",
+        "tokens": 115820869
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 22010687
+      },
+      {
+        "model": "cline-pass/deepseek-v4-flash",
+        "tokens": 0
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-08-12",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 4525248241
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 1584180512
+      },
+      {
+        "model": "deepseek-v4-flash-0731",
+        "tokens": 510821497
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 86868031
+      },
+      {
+        "model": "cline-pass/deepseek-v4-flash",
+        "tokens": 0
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-08-13",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 3116504269
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 544646233
+      },
+      {
+        "model": "deepseek-v4-flash-0731",
+        "tokens": 136065125
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 0
+      },
+      {
+        "model": "cline-pass/deepseek-v4-flash",
+        "tokens": 0
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-08-14",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 3983687440
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 360454365
+      },
+      {
+        "model": "swe-1-7",
+        "tokens": 359995976
+      },
+      {
+        "model": "deepseek-v4-flash-0731",
+        "tokens": 225535186
+      },
+      {
+        "model": "swe-1-6-slow",
+        "tokens": 219237
+      },
+      {
+        "model": "glm-5-2-1m",
+        "tokens": 18617
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 0
+      },
+      {
+        "model": "cline-pass/deepseek-v4-flash",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-08-15",
+    "models": [
+      {
+        "model": "swe-1-7",
+        "tokens": 49894668
+      },
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 37172200
+      }
+    ]
+  },
+  {
+    "date": "2026-08-16",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 1872875294
+      },
+      {
+        "model": "swe-1-7",
+        "tokens": 603866542
+      },
+      {
+        "model": "deepseek-v4-flash-0731",
+        "tokens": 365480297
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "tokens": 178742187
+      },
+      {
+        "model": "glm-5-2-1m",
+        "tokens": 29437007
+      },
+      {
+        "model": "claude-fable-5",
+        "tokens": 2162670
+      },
+      {
+        "model": "composer-2.5",
+        "tokens": 3861
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 0
+      },
+      {
+        "model": "cline-pass/deepseek-v4-flash",
+        "tokens": 0
+      }
+    ]
+  },
+  {
+    "date": "2026-08-17",
+    "models": [
+      {
+        "model": "gpt-5.6-luna",
+        "tokens": 1729896072
+      },
+      {
+        "model": "swe-1-7",
+        "tokens": 880449740
+      },
+      {
+        "model": "cline-pass/deepseek-v4-flash",
+        "tokens": 97676866
+      },
+      {
+        "model": "composer-2.5",
+        "tokens": 134836
+      },
+      {
+        "model": "claude-opus-5-high",
+        "tokens": 57339
+      },
+      {
+        "model": "gpt-5.3-codex-spark",
+        "tokens": 0
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "tokens": 0
+      }
+    ]
+  }
+]
