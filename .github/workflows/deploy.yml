@@ -1,14 +1,10 @@
 name: Deploy to GitHub Pages
 
 on:
-  # Trigger the workflow every time you push to the `main` branch
-  # Using a different branch name? Replace `main` with your branch’s name
   push:
-    branches: [ master ]
-  # Allows you to run this workflow manually from the Actions tab on GitHub.
+    branches: [master]
   workflow_dispatch:
 
-# Allow this job to clone the repo and create a page deployment
 permissions:
   contents: read
   pages: write
@@ -18,8 +14,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Stage static site
-        run: mkdir -p _site && cp -R assets index.html omp-usage.json _site/ && cp CNAME _site/CNAME
+        run: |
+          mkdir -p _site
+          cp -R assets _site/
+          cp index.html omp-usage.json CNAME _site/
+
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
