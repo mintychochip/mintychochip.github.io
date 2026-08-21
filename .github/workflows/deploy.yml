@@ -22,7 +22,7 @@ jobs:
           mkdir -p _site
           cp -R assets _site/
           cp index.html omp-usage.json CNAME \
-            favicon.ico favicon-32.png apple-touch-icon.png resume.pdf _site/
+            favicon.svg favicon.ico favicon-32.png apple-touch-icon.png resume.pdf _site/
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
