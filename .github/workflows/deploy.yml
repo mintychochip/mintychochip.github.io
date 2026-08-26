@@ -21,7 +21,9 @@ jobs:
         run: |
           mkdir -p _site
           cp -R assets _site/
+          cp -R v1 _site/
           cp index.html omp-usage.json CNAME \
+            usage-series.json usage-models.json \
             favicon.ico favicon-32.png apple-touch-icon.png resume.pdf _site/
 
       - name: Upload static site
