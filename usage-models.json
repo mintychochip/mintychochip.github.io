@@ -91,7 +91,7 @@
       "model": "openrouter/tencent/hy3:free",
       "provider": "openrouter",
       "name": "tencent/hy3",
-      "role": "free",
+      "variant": "free",
       "input_tokens": 97764637,
       "output_tokens": 17859015,
       "total_tokens": 115623652
@@ -153,7 +153,7 @@
       "model": "electronhub/glm-5.2:dev",
       "provider": "electronhub",
       "name": "glm-5.2",
-      "role": "dev",
+      "variant": "dev",
       "input_tokens": 24338123,
       "output_tokens": 98946,
       "total_tokens": 24437069
@@ -255,19 +255,19 @@
       "estimated_cost_usd": 2.3697816760799997
     },
     {
+      "model": "swe-1-7",
+      "name": "swe-1-7",
+      "input_tokens": 3397945,
+      "output_tokens": 438999,
+      "total_tokens": 3836944
+    },
+    {
       "model": "devin/glm-5-2-1m",
       "provider": "devin",
       "name": "glm-5-2-1m",
       "input_tokens": 3474212,
       "output_tokens": 278901,
       "total_tokens": 3753113
-    },
-    {
-      "model": "swe-1-7",
-      "name": "swe-1-7",
-      "input_tokens": 2963713,
-      "output_tokens": 417188,
-      "total_tokens": 3380901
     },
     {
       "model": "openai-codex/gpt-5.6-terra",
@@ -286,6 +286,15 @@
       "output_tokens": 639966,
       "total_tokens": 2811106,
       "estimated_cost_usd": 43.35546375
+    },
+    {
+      "model": "stealth/ox-alpha",
+      "provider": "stealth",
+      "name": "ox-alpha",
+      "input_tokens": 1635402,
+      "output_tokens": 188544,
+      "total_tokens": 1823946,
+      "estimated_cost_usd": 0.0
     },
     {
       "model": "devin/claude-fable-5",
@@ -314,15 +323,6 @@
       "estimated_cost_usd": 1.42497627
     },
     {
-      "model": "stealth/ox-alpha",
-      "provider": "stealth",
-      "name": "ox-alpha",
-      "input_tokens": 1106142,
-      "output_tokens": 97620,
-      "total_tokens": 1203762,
-      "estimated_cost_usd": 0.0
-    },
-    {
       "model": "google-antigravity/gemini-3.6-flash",
       "provider": "google-antigravity",
       "name": "gemini-3.6-flash",
@@ -335,7 +335,7 @@
       "model": "openrouter/poolside/laguna-s-2.1:free",
       "provider": "openrouter",
       "name": "poolside/laguna-s-2.1",
-      "role": "free",
+      "variant": "free",
       "input_tokens": 708066,
       "output_tokens": 52431,
       "total_tokens": 760497,
@@ -359,6 +359,14 @@
       "total_tokens": 532896
     },
     {
+      "model": "ox-alpha-free",
+      "name": "ox-alpha-free",
+      "input_tokens": 470968,
+      "output_tokens": 54232,
+      "total_tokens": 525200,
+      "estimated_cost_usd": 0.0
+    },
+    {
       "model": "kimi-code/k3",
       "provider": "kimi-code",
       "name": "k3",
@@ -370,10 +378,18 @@
       "model": "openrouter/deepseek/deepseek-v4-flash:free",
       "provider": "openrouter",
       "name": "deepseek/deepseek-v4-flash",
-      "role": "free",
+      "variant": "free",
       "input_tokens": 335740,
       "output_tokens": 5514,
       "total_tokens": 341254
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "name": "gpt-5.6-sol",
+      "input_tokens": 309360,
+      "output_tokens": 22710,
+      "total_tokens": 332070,
+      "estimated_cost_usd": 1.4605460000000001
     },
     {
       "model": "gmi-cloud/MiniMaxAI/MiniMax-M3",
@@ -385,10 +401,18 @@
       "estimated_cost_usd": 0.25220274
     },
     {
+      "model": "deepseek-v4-flash-0731",
+      "name": "deepseek-v4-flash-0731",
+      "input_tokens": 223774,
+      "output_tokens": 52648,
+      "total_tokens": 276422,
+      "estimated_cost_usd": 0.146649524
+    },
+    {
       "model": "cline-pass/poolside/laguna-s-2.1:free",
       "provider": "cline-pass",
       "name": "poolside/laguna-s-2.1",
-      "role": "free",
+      "variant": "free",
       "input_tokens": 210660,
       "output_tokens": 3936,
       "total_tokens": 214596,
@@ -402,6 +426,13 @@
       "output_tokens": 5582,
       "total_tokens": 166436,
       "estimated_cost_usd": 0.0
+    },
+    {
+      "model": "composer-2.5",
+      "name": "composer-2.5",
+      "input_tokens": 0,
+      "output_tokens": 153038,
+      "total_tokens": 153038
     },
     {
       "model": "fx/glm-5.2",
@@ -425,7 +456,7 @@
       "model": "electronhub/gemma-4-31b-it:dev",
       "provider": "electronhub",
       "name": "gemma-4-31b-it",
-      "role": "dev",
+      "variant": "dev",
       "input_tokens": 67580,
       "output_tokens": 23287,
       "total_tokens": 90867
@@ -448,14 +479,6 @@
       "estimated_cost_usd": 0.16823805
     },
     {
-      "model": "deepseek-v4-flash-0731",
-      "name": "deepseek-v4-flash-0731",
-      "input_tokens": 54145,
-      "output_tokens": 826,
-      "total_tokens": 54971,
-      "estimated_cost_usd": 0.009632252000000001
-    },
-    {
       "model": "command-code/MiniMaxAI/MiniMax-M3",
       "provider": "command-code",
       "name": "MiniMaxAI/MiniMax-M3",
@@ -463,13 +486,6 @@
       "output_tokens": 29,
       "total_tokens": 43157,
       "estimated_cost_usd": 0.01425576
-    },
-    {
-      "model": "composer-2.5",
-      "name": "composer-2.5",
-      "input_tokens": 0,
-      "output_tokens": 32839,
-      "total_tokens": 32839
     },
     {
       "model": "novita/google/gemma-4-31b-it",
@@ -517,7 +533,7 @@
       "model": "openrouter/inclusionai/ling-2.6-flash:free",
       "provider": "openrouter",
       "name": "inclusionai/ling-2.6-flash",
-      "role": "free",
+      "variant": "free",
       "input_tokens": 0,
       "output_tokens": 0,
       "total_tokens": 0
@@ -3036,9 +3052,16 @@
         },
         {
           "model": "swe-1-7",
-          "input_tokens": 2963713,
-          "output_tokens": 417188,
-          "total_tokens": 3380901
+          "input_tokens": 3397945,
+          "output_tokens": 438999,
+          "total_tokens": 3836944
+        },
+        {
+          "model": "stealth/ox-alpha",
+          "input_tokens": 1635402,
+          "output_tokens": 188544,
+          "total_tokens": 1823946,
+          "estimated_cost_usd": 0.0
         },
         {
           "model": "glm-5.2",
@@ -3048,24 +3071,31 @@
           "estimated_cost_usd": 1.42497627
         },
         {
-          "model": "stealth/ox-alpha",
-          "input_tokens": 1106142,
-          "output_tokens": 97620,
-          "total_tokens": 1203762,
+          "model": "ox-alpha-free",
+          "input_tokens": 470968,
+          "output_tokens": 54232,
+          "total_tokens": 525200,
           "estimated_cost_usd": 0.0
         },
         {
+          "model": "gpt-5.6-sol",
+          "input_tokens": 309360,
+          "output_tokens": 22710,
+          "total_tokens": 332070,
+          "estimated_cost_usd": 1.4605460000000001
+        },
+        {
           "model": "deepseek-v4-flash-0731",
-          "input_tokens": 54145,
-          "output_tokens": 826,
-          "total_tokens": 54971,
-          "estimated_cost_usd": 0.009632252000000001
+          "input_tokens": 223774,
+          "output_tokens": 52648,
+          "total_tokens": 276422,
+          "estimated_cost_usd": 0.146649524
         },
         {
           "model": "composer-2.5",
           "input_tokens": 0,
-          "output_tokens": 32839,
-          "total_tokens": 32839
+          "output_tokens": 153038,
+          "total_tokens": 153038
         },
         {
           "model": "glm-5.3",

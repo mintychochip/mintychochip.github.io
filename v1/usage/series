@@ -334,10 +334,10 @@
     },
     {
       "date": "2026-08-26",
-      "estimated_cost_usd": 11.027301394,
-      "input_tokens": 22446380,
-      "output_tokens": 3349754,
-      "total_tokens": 25796134
+      "estimated_cost_usd": 12.624864666,
+      "input_tokens": 24359829,
+      "output_tokens": 3711452,
+      "total_tokens": 28071281
     }
   ]
 }
