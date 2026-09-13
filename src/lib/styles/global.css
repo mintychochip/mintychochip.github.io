@@ -24,7 +24,7 @@ html, [data-theme='light'] {
 }
 
 [data-theme='dark'], [data-theme='system'] {
-  --bg: #121212; --text: #ededed; --text-secondary: #a3a3a3; --text-muted: #737373; --border: #2a2a2a; --border-strong: #3a3a3a; --surface: #1a1a1a; --accent: #ededed; --accent-hover: #fff; --code-bg: #242424; --shadow: #00000059; --shadow-strong: #00000073; --error-text: #fca5a5; --error-bg: #2a1515; --error-border: #5c2020; --chart-grid: #2a2a2a;
+  --bg: #121212; --text: #ededed; --text-secondary: #a3a3a3; --text-muted: #737373; --border: #2a2a2a; --border-strong: #3a3a3a; --surface: #1a1a1a; --accent: #ededed; --accent-hover: #fff; --code-bg: #242424; --shadow: #00000059; --shadow-strong: #00000073; --error-text: #fca5a5; --error-bg: #2a1515; --error-border: #5c2020; --chart-grid: #2a2a2a; color-scheme: dark;
 }
 
 *, *::before, *::after {

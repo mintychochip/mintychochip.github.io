@@ -50,4 +50,5 @@ const listeners = new Set<() => void>();
 function broadcast() { listeners.forEach((fn) => fn()); }
 
 export const theme = new ThemeStore();
+syncDom();
 theme.listen();
