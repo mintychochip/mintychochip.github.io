@@ -51,7 +51,7 @@
     }
     const name = m.name ?? m.model;
     const label = m.variant ? `${name} \u00b7 ${m.variant}` : name;
-    return { key: label, label };
+    return { key: name, label };
   }
 
   function valueOf(m: ModelUse): number {

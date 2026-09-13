@@ -42,11 +42,7 @@
     dualAxis ? visibleMetrics.filter((m) => m !== 'estimated_cost_usd') : visibleMetrics,
   );
   const rightMetrics = $derived(
-    dualAxis
-      ? (['estimated_cost_usd'] as Metric[])
-      : hasCost
-        ? (['estimated_cost_usd'] as Metric[])
-        : [],
+    hasCost ? (['estimated_cost_usd'] as Metric[]) : [],
   );
 
   const top = $derived(selectedMetrics.length > 0 ? 64 : 28);
@@ -181,7 +177,7 @@
     const py = ((e.clientY - rect.top) / rect.height) * H;
     const pos = positionTooltip(svg, py, point.x);
     const valueStr = fmtValue(point.metric, point.value);
-    const harness = (data as unknown as { harnesses?: string[] | null }).harnesses?.[0];
+    const harness = data.harnesses?.[0];
     const line2 = harness ? `${valueStr} \u00b7 ${harness}` : valueStr;
     tooltip = {
       ...pos,
@@ -196,7 +192,7 @@
     if (!svg) return;
     const pos = positionTooltip(svg, point.y, point.x);
     const valueStr = fmtValue(point.metric, point.value);
-    const harness = (data as unknown as { harnesses?: string[] | null }).harnesses?.[0];
+    const harness = data.harnesses?.[0];
     const line2 = harness ? `${valueStr} \u00b7 ${harness}` : valueStr;
     tooltip = {
       ...pos,
