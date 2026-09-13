@@ -42,3 +42,15 @@ body {
   outline: 2px solid var(--text);
   outline-offset: 2px;
 }
+
+.page {
+  flex-direction: column;
+  min-height: 100vh;
+  display: flex;
+}
+.main {
+  width: min(94%, var(--max-width));
+  flex: 1;
+  margin: 0 auto;
+  padding: 32px 0 64px;
+}
