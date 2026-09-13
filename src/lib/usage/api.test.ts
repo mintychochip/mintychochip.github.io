@@ -223,6 +223,24 @@ describe('usage api', () => {
     expect(isAbortError(err)).toBe(true);
   });
 
+  it('caches sequentially within TTL (max-age ≥ 0 → one fetch across two calls)', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          schema_version: 1,
+          from: '2026-08-20',
+          to: '2026-08-26',
+          models: [],
+          points: [],
+        }),
+        { status: 200, headers: new Headers({ 'cache-control': 'max-age=30' }) }
+      )
+    );
+    await fetchModels('2026-08-20', '2026-08-26');
+    await fetchModels('2026-08-20', '2026-08-26');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('rangeToDates returns from/to for the range', () => {
     const today = new Date(Date.UTC(2026, 8, 13)); // 2026-09-13
     const { from, to } = rangeToDates('7d', today);
