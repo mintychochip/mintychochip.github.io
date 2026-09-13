@@ -16,13 +16,13 @@
     color: var(--text-muted);
     font-size: var(--text-xs);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: .08em;
     margin: 0 0 12px;
     font-weight: 600;
   }
   .hero-name {
     font-size: var(--text-display);
-    letter-spacing: -0.04em;
+    letter-spacing: -.04em;
     margin: 0 0 20px;
     font-weight: 500;
     line-height: 1.05;

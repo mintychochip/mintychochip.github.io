@@ -77,11 +77,11 @@
   .nav-logo {
     font-weight: 600;
     font-size: var(--text-md);
-    letter-spacing: -0.01em;
+    letter-spacing: -.01em;
     color: var(--text);
     cursor: pointer;
     font-family: var(--font-sans);
-    background: transparent;
+    background: 0 0;
     border: none;
     align-items: center;
     gap: 10px;
@@ -111,7 +111,7 @@
     flex-direction: column;
     gap: 2px;
     padding: 6px;
-    animation: 0.18s cubic-bezier(0.22, 1, 0.36, 1) nav-menu-morph;
+    animation: .18s cubic-bezier(.22, 1, .36, 1) nav-menu-morph;
     display: flex;
     position: absolute;
     top: calc(100% + 8px);
@@ -120,7 +120,7 @@
   @keyframes nav-menu-morph {
     from {
       opacity: 0;
-      transform: scale(0.96) translateY(-4px);
+      transform: scale(.96) translateY(-4px);
     }
     to {
       opacity: 1;
@@ -132,7 +132,7 @@
     color: var(--text-secondary);
     border-radius: 6px;
     padding: 8px 10px;
-    transition: background 0.12s, color 0.12s;
+    transition: background .12s, color .12s;
     text-decoration: none;
   }
   .nav-menu-item:hover {
@@ -150,7 +150,7 @@
   .nav-link {
     color: var(--text-secondary);
     font-size: var(--text-sm);
-    transition: color 0.15s;
+    transition: color .15s;
     text-decoration: none;
   }
   .nav-link:hover {
