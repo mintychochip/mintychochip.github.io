@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ModelsResponse, SeriesResponse, RangeKey, Metric } from './api';
+  import type { ModelsResponse, SeriesResponse, RangeKey } from './api';
   import { fetchModels, fetchSeries, rangeToDates, METRICS, RANGE_DAYS, isAbortError } from './api';
   import { summarizeModels, summarizeSeries, type UsageStats } from './stats';
   import StackedChart from './StackedChart.svelte';
@@ -13,6 +13,7 @@
   let data = $state<ModelsResponse | SeriesResponse | null>(null);
   let error = $state<string | null>(null);
   let loading = $state(false);
+  let fetchGeneration = 0;
   let hiddenKeys = $state(new Set<string>());
 
   const RANGE_KEYS = Object.keys(RANGE_DAYS) as RangeKey[];
@@ -35,6 +36,7 @@
   $effect(() => {
     const currentView = view;
     const currentRange = range;
+    const g = ++fetchGeneration;
     const controller = new AbortController();
 
     data = null;
@@ -49,12 +51,12 @@
           currentView === 'models'
             ? await fetchModels(from, to, { signal: controller.signal })
             : await fetchSeries(from, to, METRICS, { signal: controller.signal });
-        data = resp;
+        if (g === fetchGeneration) data = resp;
       } catch (e) {
         if (isAbortError(e)) return;
-        error = e instanceof Error ? e.message : 'Failed to load usage data';
+        if (g === fetchGeneration) error = e instanceof Error ? e.message : 'Failed to load usage data';
       } finally {
-        loading = false;
+        if (g === fetchGeneration) loading = false;
       }
     })();
 
@@ -70,14 +72,11 @@
     hiddenKeys = next;
   }
 
-  function toggleMetric(metric: Metric) {
-    toggleModel(metric);
-  }
 </script>
 
 <section class="section tokens" id="usage">
   <header class="tokens-header">
-    <h2 class="section-title">Tokens</h2>
+    <h2 class="section-title">Token usage</h2>
 
     <div class="tokens-controls">
       <div class="toggle-group" role="group" aria-label="Chart type">
@@ -151,7 +150,6 @@
           theme={chartTheme}
           {hiddenKeys}
           onToggle={toggleModel}
-          title="Tokens by model"
         />
       {:else}
         <LinesChart
@@ -159,9 +157,10 @@
           theme={chartTheme}
           metrics={METRICS}
           {hiddenKeys}
-          onToggle={toggleMetric}
+          onToggle={toggleModel}
         />
       {/if}
+
     </div>
   {/if}
 </section>
