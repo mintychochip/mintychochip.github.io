@@ -2,6 +2,7 @@
   import Nav from './lib/components/Nav.svelte';
   import Hero from './lib/components/Hero.svelte';
   import About from './lib/components/About.svelte';
+  import UsageSection from './lib/usage/UsageSection.svelte';
   import Footer from './lib/components/Footer.svelte';
   import { site } from './lib/site';
 </script>
@@ -11,6 +12,7 @@
   <main class="main">
     <Hero />
     <About />
+    <UsageSection />
     <Footer content={site.footer} />
   </main>
 </div>
