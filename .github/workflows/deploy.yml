@@ -10,6 +10,10 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,19 +21,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Stage static site
-        run: |
-          mkdir -p _site
-          cp -R assets _site/
-          cp -R v1 _site/
-          cp index.html omp-usage.json CNAME \
-            usage-series.json usage-models.json \
-            favicon.ico favicon-32.png apple-touch-icon.png resume.pdf _site/
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
 
-      - name: Upload static site
+      - name: Install
+        run: npm ci
+
+      - name: Check
+        run: npm run check
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: dist
 
   deploy:
     needs: build
