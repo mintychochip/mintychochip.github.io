@@ -16,6 +16,3 @@ export const site = {
   /** Repos whose card should open a live site instead of GitHub. */
   projectUrls: { ModularJobs: 'https://jobs.mintychochip.dev' } as Record<string, string>,
 };
-
-
-[You have received this identical output 3 times. Re-reading '/home/jlo/dev/mintychochip.github.io/src/lib/site.ts:raw' will not change it — use a narrower selector (path:A-B), or proceed with the edit.]
