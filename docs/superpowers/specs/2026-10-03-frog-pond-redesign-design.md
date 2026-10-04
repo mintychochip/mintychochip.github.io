@@ -57,9 +57,12 @@ with these safeguards:
   pond.
 - `frog.ts`: the frog from the profile picture, redrawn cute: a round body
   turned three-quarters, big eyes on top, blush, a small smile, a pale belly
-  and a 1px dark outline. It is hand-placed pixel art at three sizes (about
-  9, 13 and 19 px tall), picked by pad depth. Each size has a sitting and a
-  stretched (mid-hop) drawing; breathing and crouching frames are the
+  and a 1px dark outline. It sits crouched like a real frog: the near hind
+  leg folded into a rounded haunch at its side, toes poking out in front of
+  the knee, and a front foot planted under the chin. It is hand-placed pixel
+  art at three sizes (about 9, 14 and 19 px tall), picked by pad depth. Each
+  size has a sitting and a stretched (mid-hop, legs hanging) drawing;
+  breathing and crouching frames are the
   sitting one with rows taken out. Pupils are drawn into each eye from where
   the frog is looking, with a shine pixel on the large size; blinks, happy
   closed eyes, startled small pupils, the throat sac and the tongue tip

@@ -2,8 +2,8 @@ import type { Field } from './field';
 import { INK } from './palette';
 
 // The frog from the profile picture: a round body turned three-quarters toward +x, big eyes on top, blush and
-// a small smile, placed pixel by pixel at three sizes. Pupils, blinks, the throat sac and the tongue tip are
-// drawn over the art so they can move.
+// a small smile, crouched with its near hind leg folded into a haunch, placed pixel by pixel at three sizes.
+// Pupils, blinks, the throat sac and the tongue tip are drawn over the art so they can move.
 
 /** o outline, D d g h skin from dark to light, b belly, w eye white, k pupil (redrawn from the look), p blush, m mouth. */
 const LEGEND: Record<string, number> = {
@@ -36,10 +36,10 @@ const SMALL: Art = {
 ..owkooowkoo.
 .ogoogggoogo.
 .ohgpggmmgpgo
-odgggggggbbgo
-oDddddgbbbbgo
-.ooddggooobgo
-...oooo..ooo.`,
+ogggoggbbbbgo
+odddgobbbbbgo
+oDddogoggobgo
+.oooooooooooo`,
   stretch: `
 ...oo...oo...
 ..owwo.owwo..
@@ -68,11 +68,12 @@ const MEDIUM: Art = {
 .ohhgoooogggooooggo
 .ohggpggggmmggggpgo
 .oggggggggggggbbbgo
-odgggggggggbbbbbbgo
-oddggggdggbbbbbbbgo
-.oDddddoobbbbbbbggo
-..oddgggooooooogo..
-...ooooo.....ooo...`,
+ogggoooggggbbbbbbgo
+odgohhhogbbbbbbbbgo
+oDdggggdobbbbbbbbgo
+oDddddddobbbooobbgo
+.oDDdddogogogggogo.
+..ooooooooooooooo..`,
   stretch: `
 .....oooo..oooo....
 ....owwwwo.owwwwo..
@@ -90,7 +91,7 @@ oddggggdggbbbbbbbgo
 .oDdo.........ogo..
 .oggo.........oo...
 .ooo...............`,
-  breath: [7], crouch: [7, 9], wide: 10,
+  breath: [7], crouch: [7, 10], wide: 10,
   pupil: [2, 2], shine: false,
   mouth: [11, 6], blep: [[10, 7], [11, 7]], throat: [15.5, 8, 2.9],
   swim: 6,
@@ -109,14 +110,14 @@ const LARGE: Art = {
 .oghgggpggggmggggmgpggo.
 .ogggggggggggmmmmggggggo
 ogggggggggggggggggbbbggo
-odgggggggggggbbbbbbbbggo
-oddgggggdggbbbbbbbbbbggo
-oddddggdgggbbbbbbbbbbgo.
-.oddddddggbbbbbbbbbbbgo.
-.oDddddddgbbbbbbbbbbggo.
-..oDDdddddoobbbbbbooggo.
-..oddggggggoooooogggggo.
-...oooooooo.....oooooo..`,
+ogggooooggggggbbbbbbbggo
+odgohhhhogggbbbbbbbbbggo
+oddghhgggogbbbbbbbbbbggo
+oDdgggggggobbbbbbbbbbggo
+oDddggggggobbbbooobbbggo
+.oDdddddddoggbogggobbggo
+..oDDddddogogoggoggooggo
+...oooooooooooooooooooo.`,
   stretch: `
 ........ooo.....ooo.....
 .......owwwo...owwwo....
@@ -140,7 +141,7 @@ oddddggdgggbbbbbbbbbbgo.
 ..oddo..........ogo.....
 .ogggo..........oo......
 .ooooo..................`,
-  breath: [10], crouch: [10, 13], wide: 13,
+  breath: [10], crouch: [10, 14], wide: 13,
   pupil: [3, 3], shine: true,
   mouth: [15, 9], blep: [[14, 10], [15, 10], [14, 11]], throat: [19.5, 12.5, 4.2],
   swim: 7,
