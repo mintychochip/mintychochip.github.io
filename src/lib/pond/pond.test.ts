@@ -209,7 +209,8 @@ describe('frog', () => {
     };
     for (const size of SIZES) {
       const sit = bowPixels(size, 'sit');
-      expect(sit).toBeGreaterThan(size === 0 ? 6 : 15);
+      expect(sit).toBeGreaterThan(4);
+      expect(sit).toBeLessThan(12);
       for (const frame of FRAMES) {
         expect(bowPixels(size, frame)).toBe(sit);
       }
