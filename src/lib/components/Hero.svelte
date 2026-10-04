@@ -15,7 +15,7 @@
 
   const pond = (W: number) => ({
     k: clamp(W / 123, 1.3, 2.6),
-    frogs: W < 200 ? 2 : 3,
+    frogs: 2,
     flies: Math.round(clamp(W / 32, 4, 10)),
     horizon: 0.5,
     clear: titleBox(),

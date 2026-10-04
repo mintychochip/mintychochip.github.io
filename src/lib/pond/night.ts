@@ -147,10 +147,21 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
   const fitsFrog = (P: Pad) => 2 * P.rx >= 0.9 * frogBox(sizeFor(k * P.p * SIZE)).w;
 
   const homes = pads.map((_, i) => i).filter((i) => fitsFrog(pads[i])).sort((a, b) => pads[b].rx - pads[a].rx);
-  const frogs: Frog[] = homes.slice(0, o.frogs ?? 1).map((pi, i) => {
+  const count = o.frogs ?? 1;
+  const chosen: number[] = [];
+  if (count === 2 && homes.length >= 3) {
+    const top3 = homes.slice(0, 3);
+    const top = top3.reduce((min, pi) => (pads[pi].y < pads[min].y ? pi : min), top3[0]);
+    const bottom = top3.reduce((max, pi) => (pads[pi].y > pads[max].y ? pi : max), top3[0]);
+    chosen.push(bottom, top);
+  } else {
+    chosen.push(...homes.slice(0, count));
+  }
+  const topPad = chosen.length > 1 ? chosen.reduce((min, pi) => (pads[pi].y < pads[min].y ? pi : min), chosen[0]) : -1;
+  const frogs: Frog[] = chosen.map((pi) => {
     const f: Frog = {
       pad: pi, dir: r() < 0.5 ? 1 : -1, sz: 0.95 + 0.15 * r(), ph: r() * TAU,
-      kind: i === 1 ? 'pink' : 'green',
+      kind: pi === topPad ? 'pink' : 'green',
       state: 'sit', t0: 0, next: 1 + r() * 3, blink: 1 + r() * 4, snapAt: 1 + r() * 2,
       fidget: 2 + r() * 5, startled: -9,
       hop: null, tongue: null, swim: null, look: [0.5, 0],
