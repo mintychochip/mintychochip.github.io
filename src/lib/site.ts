@@ -7,6 +7,7 @@ export const site = {
   resumeUrl: '/resume.pdf',
   resumeFile: 'mintychochip-resume.pdf',
   nav: [
+    { label: 'github', href: '#github' },
     { label: 'usage', href: '#usage' },
     { label: 'projects', href: '#projects' },
     { label: 'resume', href: '#resume' },

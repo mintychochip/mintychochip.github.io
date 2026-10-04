@@ -4,6 +4,7 @@
   import Footer from './lib/components/Footer.svelte';
   import Contact from './lib/contact/Contact.svelte';
   import Projects from './lib/projects/Projects.svelte';
+  import GitHubActivitySection from './lib/github/GitHubActivitySection.svelte';
   import UsageSection from './lib/usage/UsageSection.svelte';
 </script>
 
@@ -15,6 +16,12 @@
     {/snippet}
   </svelte:boundary>
   <main>
+    <svelte:boundary>
+      <GitHubActivitySection />
+      {#snippet failed()}
+        <p class="broken">GitHub activity didn’t load. See <a href="https://github.com/mintychochip">my profile</a>.</p>
+      {/snippet}
+    </svelte:boundary>
     <svelte:boundary>
       <UsageSection />
       {#snippet failed()}
