@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { bars, niceStep } from './bars';
 import { Field, levelsOf, packPalette, quantize } from './field';
+import { CROUCH, LAND, LEAP, SIT, drawFrog, mixPose } from './frog';
 import { nightPond } from './night';
-import { LEVELS, PALETTES, PALETTE_NAMES, assignPalettes, ramp } from './palette';
+import { INK, INK_COLORS, LEVELS, PALETTES, PALETTE_NAMES, assignPalettes, ramp } from './palette';
+import { unit } from './toon';
 
 const render = (seed: string, t: number, W = 120, H = 60) => {
   const F = new Field(W, H);
@@ -61,13 +63,67 @@ describe('quantize', () => {
     expect(out[0]).toBe(pal[0]);
     expect(out[1]).toBe(pal[LEVELS - 1]);
   });
+
+  it('shows sprite colours over the dither until something covers them', () => {
+    const F = new Field(3, 1);
+    F.v.set([0, 0, 0]);
+    F.paint(0, 0, INK.skin);
+    F.paint(1, 0, INK.eye);
+    F.dot(1, 0, 1);
+    const pal = packPalette(PALETTES.night), inks = packPalette(INK_COLORS);
+    const out = new Uint32Array(3);
+    quantize(F, pal, out, inks);
+    expect(out[0]).toBe(inks[INK.skin]);
+    expect(out[1]).toBe(pal[LEVELS - 1]);
+    expect(out[2]).toBe(pal[0]);
+  });
+});
+
+describe('frog', () => {
+  const L = unit([0.55, -0.6, 0.62]);
+  const colours = (s: number, look = {}) => {
+    const F = new Field(60, 40);
+    drawFrog(F, SIT, look, 30, 36, s, L);
+    const seen = new Map<number, number>();
+    for (const c of F.ink) if (c) seen.set(c - 1, (seen.get(c - 1) ?? 0) + 1);
+    return seen;
+  };
+
+  it('is green with an outline, white eyes and pupils at every size', () => {
+    for (const s of [3.4, 2.4, 1.6, 1.1]) {
+      const seen = colours(s);
+      expect(seen.get(INK.skin)).toBeGreaterThan(seen.get(INK.eye) ?? 0);
+      expect(seen.get(INK.eye)).toBeGreaterThan(0);
+      expect(seen.get(INK.line)).toBeGreaterThan(0);
+    }
+  });
+
+  it('shuts its eyes when it blinks', () => {
+    expect(colours(2.4, { lid: 1 }).get(INK.eye) ?? 0).toBe(0);
+  });
+
+  it('blends between any two poses part by part', () => {
+    for (const [a, b] of [[SIT, CROUCH], [CROUCH, LEAP], [LEAP, LAND], [LAND, SIT]]) {
+      const mid = mixPose(a, b, 0.5);
+      expect(mid.belly[0]).toBeCloseTo((a.belly[0] + b.belly[0]) / 2);
+      expect(Object.values(mid).flat().every(Number.isFinite)).toBe(true);
+    }
+  });
 });
 
 describe('night pond', () => {
   it('is deterministic for a seed', () => {
     const a = render('same', 6), b = render('same', 6);
     expect(a.F.v).toEqual(b.F.v);
+    expect(a.F.ink).toEqual(b.F.ink);
     expect(render('other', 6).F.v).not.toEqual(a.F.v);
+  });
+
+  it('draws its frogs in their own colours', () => {
+    const { F } = render('frogs', 2);
+    const inks = new Set(F.ink);
+    expect(inks.has(INK.skin + 1)).toBe(true);
+    expect(inks.has(INK.eye + 1)).toBe(true);
   });
 
   it('keeps frogs in the frame and every value finite over a long run', () => {

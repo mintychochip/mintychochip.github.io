@@ -3,18 +3,29 @@
   import { clamp } from '../pond/field';
   import { site } from '../site';
 
+  let title: HTMLHeadingElement | undefined = $state();
+
+  /** The title's box as fractions of the pond, so no frog sits behind the name. */
+  function titleBox(): [number, number, number, number] | undefined {
+    const art = title?.parentElement;
+    if (!title || !art) return undefined;
+    const a = art.getBoundingClientRect(), t = title.getBoundingClientRect();
+    return [(t.left - a.left) / a.width, (t.top - a.top) / a.height, (t.right - a.left) / a.width, (t.bottom - a.top) / a.height];
+  }
+
   const pond = (W: number) => ({
     k: clamp(W / 123, 1.3, 2.6),
     frogs: W < 200 ? 2 : 3,
     flies: Math.round(clamp(W / 32, 4, 10)),
     horizon: 0.5,
+    clear: titleBox(),
   });
 </script>
 
 <header class="hero">
   <div class="art">
     <PondCanvas seed="mintychochip-dusk" palette="night" options={pond} interactive />
-    <h1>{site.name}</h1>
+    <h1 bind:this={title}>{site.name}</h1>
     <nav aria-label="Sections">
       {#each site.nav as item (item.href)}
         <a href={item.href}>{item.label}</a>

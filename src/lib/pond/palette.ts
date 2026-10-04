@@ -80,6 +80,10 @@ export const PALETTES = Object.fromEntries(
   PALETTE_NAMES.map((name) => [name, ramp(ANCHORS[name], LEVELS)]),
 ) as Record<PaletteName, string[]>;
 
+/** The frog keeps its own colours in every pond; `skin` and `web` are the greens of the profile picture. */
+export const INK = { line: 0, deep: 1, web: 2, skin: 3, light: 4, eyeShade: 5, eye: 6, tongue: 7 } as const;
+export const INK_COLORS = ['#0b1409', '#2b8a37', '#45c148', '#7be07e', '#b8f3a9', '#c4cfc9', '#ffffff', '#ef7a93'];
+
 /**
  * Gives each name its own palette, stable per name where possible: a name keeps its hashed
  * palette unless an earlier name in the list already took it.

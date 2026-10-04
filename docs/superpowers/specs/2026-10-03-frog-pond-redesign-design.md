@@ -46,15 +46,22 @@ with these safeguards:
 ## Pond engine (`src/lib/pond/`)
 
 - `field.ts`: tone field (0..1 per art pixel), seeded RNG, 8×8 Bayer ordered
-  dither into palette levels. A value exactly on a level never dithers.
+  dither into palette levels. A value exactly on a level never dithers. A
+  second layer holds sprite colours, which are drawn as they are, without
+  the dither.
 - `palette.ts`: six palettes (night, moss, dusk, ember, potion, mist), each
   8 levels interpolated through hand-picked anchors in OKLab.
-  `assignPalettes` gives each project on a page its own palette.
-- `sprite.ts`: ellipsoid-part sprites, cel-shaded in three bands with a 1px
-  ink outline, inner seams between limbs and body, and flat marks (mouth,
-  pupil, gleam) on exact levels.
-- `frog.ts`: frog parts and four poses (sit, crouch, leap, land) that blend;
-  breath, throat flutter, vocal sac, blinks and eye direction.
+  `assignPalettes` gives each project on a page its own palette. The frog has
+  its own fixed colours (the greens of the owner's profile picture, white
+  eyes, a pink tongue), so it looks the same in every pond.
+- `toon.ts`: cartoon sprites built from ellipses and tapered capsules, with
+  flat colour shaded in three bands, a 1px black outline, dark contours
+  between overlapping parts on bigger sprites, and line strokes.
+- `frog.ts`: the frog from the profile picture, a chubby three-quarter view
+  with eyes on top, flat unimpressed pupils, a smirk, and hands held up at
+  the chest. It has four poses (sit, crouch, leap, land) that blend, plus
+  breathing, fingertip tapping, a vocal sac, blinks, startled round pupils
+  and eye direction. Fingers and contours drop out at small sizes.
 - `night.ts`: the scene. Sky, moon, two tree lines, reflective water with
   ripples, pads that dip under landings, lotus flowers, reeds and fireflies.
   Frogs hop between pads in arcs, dive, swim with only their eyes above water,

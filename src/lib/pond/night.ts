@@ -1,7 +1,7 @@
 import { Field, TAU, clamp, hash, lerp, mul, rng, set, smooth } from './field';
-import { CROUCH, GROUPS, LAND, LEAP, SIT, dress, mixPose, type FrogLook } from './frog';
-import { LEVELS } from './palette';
-import { sprite, unit, type Light, type Part } from './sprite';
+import { CROUCH, LAND, LEAP, SIT, drawFrog as paintFrog, mixPose, mouthOf, type FrogLook, type Pose } from './frog';
+import { INK } from './palette';
+import { unit, type Light } from './toon';
 
 export interface NightOpts {
   seed?: string;
@@ -15,8 +15,8 @@ export interface NightOpts {
   reeds?: boolean;
   /** Draw the moon and its glint; light still comes from its side. */
   moon?: boolean;
-  /** Palette size; character shading snaps to these steps. */
-  levels?: number;
+  /** A box [left, top, right, bottom], as fractions of the frame, kept clear of pads and the frogs on them. */
+  clear?: readonly [number, number, number, number];
   /** No autonomous actions: frogs sit and look around. */
   still?: boolean;
 }
@@ -57,6 +57,8 @@ type State = 'sit' | 'croak' | 'snap' | 'turn' | 'crouch' | 'air' | 'land' | 'sw
 interface Frog {
   pad: number; dir: 1 | -1; sz: number; ph: number;
   state: State; t0: number; next: number; blink: number; snapAt: number;
+  /** When the next fingertip tapping starts, and when the frog was last startled. */
+  fidget: number; startled: number;
   hop: Hop | null; tongue: Tongue | null;
   swim: { x: number; y: number; to: number; wake: number } | null;
   look: [number, number];
@@ -64,12 +66,15 @@ interface Frog {
 
 const CROUCH_T = 0.17, LAND_T = 0.17, SETTLE_T = 0.17;
 const SNAP_WIND = 0.09, SNAP_OUT = 0.17, SNAP_BACK = 0.17, SNAP_GULP = 0.33;
-const CROAK_T = 1.2, TURN_T = 0.25;
+const CROAK_T = 1.2, TURN_T = 0.25, FIDGET_T = 1.2, STARTLE_T = 0.9;
+/** Frog scale per pad depth; the sitting frog is about 9 units tall. */
+const SIZE = 0.95;
+/** Eye height, and how far below the waterline the frog's feet are while only its eyes show. */
+const EYE_Y = 7.6, SWIM_DEPTH = 6.5;
+const MOUTH = mouthOf(SIT);
 
 export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
   const k = o.k ?? 1;
-  const levels = o.levels ?? LEVELS;
-  const snap = levels - 1;
   const r = rng(hash(String(o.seed ?? 'night')));
   const y0 = Math.round(H * (o.horizon ?? 0.5));
   const depthAt = (y: number) => 0.45 + (0.75 * (y - y0)) / Math.max(1, H - y0);
@@ -121,6 +126,10 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
     x: Math.floor(r() * W), y: Math.floor(r() * y0 * 0.8), ph: r() * TAU, sp: 0.8 + 2 * r(),
   })).filter((s) => s.y < far[s.x] && Math.hypot(s.x - moon.x, s.y - moon.y) > moon.R + halo * 0.6);
 
+  const [cl, ct, cr, cb] = o.clear ?? [0, 0, 0, 0];
+  /** Whether anything from x0..x1, y0..y1 (art pixels) would show inside the clear box. */
+  const inClear = (xa: number, ya: number, xb: number, yb: number) => xb > cl * W && xa < cr * W && yb > ct * H && ya < cb * H;
+
   const pads: Pad[] = [];
   const want = o.pads ?? Math.max(2, Math.round(W / (22 * k)));
   for (let tries = 0; tries < 400 && pads.length < want; tries++) {
@@ -128,6 +137,7 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
     const p = depthAt(y);
     const rx = (5.5 + 4.5 * r()) * k * p, ry = rx * 0.32;
     const x = rx + r() * Math.max(1, W - 2 * rx);
+    if (inClear(x - rx, y - ry - 9 * k * p * SIZE, x + rx, y + ry)) continue;
     if (pads.every((q) => Math.abs(q.x - x) > q.rx + rx + k || Math.abs(q.y - y) > (q.ry + ry) * 1.6)) {
       pads.push({ x, y, rx, ry, p, ph: r() * TAU, notch: r() < 0.5 ? 1 : -1, dip: -9, dipA: 0, lotus: false, frog: null });
     }
@@ -138,13 +148,14 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
     const dip = age >= 0 && age < 1.6 ? P.dipA * Math.exp(-age * 4) * Math.cos(age * 13) : 0;
     return P.y + 0.35 * k * Math.sin(t * 1.1 + P.ph) + dip;
   };
-  const fitsFrog = (P: Pad) => P.rx >= 4.2 * k * P.p;
+  const fitsFrog = (P: Pad) => P.rx >= 6.4 * k * P.p;
 
   const homes = pads.map((_, i) => i).filter((i) => fitsFrog(pads[i])).sort((a, b) => pads[b].rx - pads[a].rx);
   const frogs: Frog[] = homes.slice(0, o.frogs ?? 1).map((pi) => {
     const f: Frog = {
       pad: pi, dir: r() < 0.5 ? 1 : -1, sz: 0.95 + 0.15 * r(), ph: r() * TAU,
       state: 'sit', t0: 0, next: 1 + r() * 3, blink: 1 + r() * 4, snapAt: 1 + r() * 2,
+      fidget: 2 + r() * 5, startled: -9,
       hop: null, tongue: null, swim: null, look: [0.5, 0],
     };
     pads[pi].frog = f;
@@ -196,13 +207,13 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
     }
   };
 
-  const scale = (f: Frog, P: Pad) => k * P.p * 1.05 * f.sz;
-  const seat = (P: Pad, t: number): [number, number] => [P.x, padY(P, t) + P.ry * 0.1];
-  const mouthOf = (x: number, y: number, s: number, dir: number): [number, number] => [x + dir * 4.6 * s, y - 2.9 * s];
+  const scale = (f: Frog, P: Pad) => k * P.p * SIZE * f.sz;
+  const seat = (P: Pad, t: number): [number, number] => [P.x, padY(P, t) - P.ry * 0.15];
+  const mouthAt = (x: number, y: number, s: number, dir: number): [number, number] => [x + dir * MOUTH[0] * s, y + MOUTH[1] * s];
 
   function frogXY(f: Frog, t: number): { x: number; y: number; s: number; ground: number } {
     if (f.swim) {
-      const s = k * depthAt(f.swim.y) * 1.05 * f.sz;
+      const s = k * depthAt(f.swim.y) * SIZE * f.sz;
       return { x: f.swim.x, y: f.swim.y, s, ground: f.swim.y };
     }
     if (f.hop && (f.state === 'air' || f.state === 'land')) {
@@ -251,13 +262,13 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
     for (let tries = 0; tries < 12; tries++) {
       const dx = (12 + 22 * r()) * k * P0.p * (r() < 0.5 ? -1 : 1);
       const x = xa + dx, y = clamp(ya + (r() - 0.3) * 10 * k, y0 + 3 * k, H - 3 * k);
-      if (x < 4 * k || x > W - 4 * k) continue;
+      if (x < 4 * k || x > W - 4 * k || inClear(x - 4 * k, y - 3 * k, x + 4 * k, y + k)) continue;
       if (pads.some((P) => Math.abs(P.x - x) < P.rx + 2 * k && Math.abs(P.y - y) < P.ry + 3 * k)) continue;
       P0.frog = null;
       f.dir = dx > 0 ? 1 : -1;
       const p = depthAt(y);
       f.hop = {
-        x0: xa, y0: ya, s0: scale(f, P0), x1: x, y1: y, s1: k * p * 1.05 * f.sz, t0: t + CROUCH_T,
+        x0: xa, y0: ya, s0: scale(f, P0), x1: x, y1: y, s1: k * p * SIZE * f.sz, t0: t + CROUCH_T,
         dur: clamp(0.36 + (0.11 * Math.abs(dx)) / (10 * k), 0.4, 0.75), h: 8 * k * P0.p + 0.2 * Math.abs(dx), to: -1, dive: true, climb: false,
       };
       f.state = 'crouch';
@@ -271,9 +282,9 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
     const sw = f.swim!;
     const P1 = pads[sw.to];
     const [xb, yb] = seat(P1, t);
-    const s = k * depthAt(sw.y) * 1.05 * f.sz;
+    const s = k * depthAt(sw.y) * SIZE * f.sz;
     f.dir = xb > sw.x ? 1 : -1;
-    f.hop = { x0: sw.x, y0: sw.y + 1.5 * s, s0: s, x1: xb, y1: yb, s1: scale(f, P1), t0: t, dur: 0.34, h: 3 * k * P1.p, to: sw.to, dive: false, climb: true };
+    f.hop = { x0: sw.x, y0: sw.y + 4 * s, s0: s, x1: xb, y1: yb, s1: scale(f, P1), t0: t, dur: 0.38, h: 3.5 * k * P1.p, to: sw.to, dive: false, climb: true };
     f.swim = null;
     f.state = 'air';
     f.t0 = t;
@@ -321,7 +332,7 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
           if (o.still) break;
           const { x, y, s } = frogXY(f, t);
           if (t >= f.snapAt) {
-            const [mx, my] = mouthOf(x, y, s, f.dir);
+            const [mx, my] = mouthAt(x, y, s, f.dir);
             const fl = nearestFly(mx, my, t, 15 * s);
             if (fl) {
               const [fx] = flyPos(fl, t);
@@ -394,6 +405,7 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
         break;
       }
       if (t >= f.blink + 0.17) f.blink = t + 2 + 4 * r();
+      if (t >= f.fidget + FIDGET_T) f.fidget = t + 4 + 7 * r();
     }
     for (const fl of flies) if (fl.out && fl.gone > 0 && t >= fl.gone) { placeFly(fl); fl.out = false; fl.gone = 0; }
     for (let i = ripples.length - 1; i >= 0; i--) if (t - ripples[i].t0 > 2 || t < ripples[i].t0) ripples.splice(i, 1);
@@ -431,15 +443,17 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
   function drawFrog(F: Field, f: Frog, t: number) {
     const { x, y, s } = frogXY(f, t);
     const age = t - f.t0;
-    let pose: Part[] = SIT;
-    const look: FrogLook = { throat: 0, breath: Math.sin(t * 2.2 + f.ph) };
-    let ang = 0, sxq = 1, clipY: number | undefined, dx = x, dy = y;
+    let pose: Pose = SIT;
+    const look: FrogLook = { breath: Math.sin(t * 2.2 + f.ph), wide: t - f.startled < STARTLE_T };
+    let ang = 0, sxq = 1, clipY: number | undefined, dy = y;
     let mirror = f.dir < 0;
 
     switch (f.state) {
-      case 'sit':
-        look.throat = 0.5 + 0.5 * Math.sin(t * 14 + f.ph);
+      case 'sit': {
+        const u = t - f.fidget;
+        if (u >= 0 && u < FIDGET_T) look.tap = 0.5 - 0.5 * Math.cos((TAU * 3 * u) / FIDGET_T);
         break;
+      }
       case 'croak': {
         const a = age % 0.6;
         look.sac = age < 1.1 && a > 0.05 && a < 0.5 ? Math.sin((Math.PI * (a - 0.05)) / 0.45) : 0;
@@ -448,7 +462,7 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
       }
       case 'turn': {
         const u = clamp(age / TURN_T, 0, 1);
-        sxq = Math.max(0.2, Math.abs(Math.cos(Math.PI * u)));
+        sxq = 0.35 + 0.65 * Math.abs(Math.cos(Math.PI * u));
         if (u >= 0.5) mirror = !mirror;
         break;
       }
@@ -456,9 +470,9 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
         if (age < SNAP_WIND) pose = mixPose(SIT, CROUCH, 0.45);
         else if (age >= SNAP_WIND + SNAP_OUT + SNAP_BACK) {
           const g = age - SNAP_WIND - SNAP_OUT - SNAP_BACK;
-          look.lid = g < 0.14 ? 1 : 0.5;
+          if (g < 0.2) look.lid = 1;
           pose = mixPose(SIT, CROUCH, g < 0.14 ? 0.35 : 0.1);
-          look.throat = 1;
+          look.sac = g < 0.2 ? 0.45 * Math.sin((Math.PI * g) / 0.2) : 0;
         }
         break;
       }
@@ -474,7 +488,7 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
         const vx = x1 - h.x0, vy = (h.to >= 0 ? seat(pads[h.to], t)[1] : h.y1) - h.y0 - h.h * 4 * (1 - 2 * u);
         const tilt = h.climb ? 0.3 : 0.6;
         ang = clamp(f.dir * Math.atan2(vy, Math.abs(vx) + 1e-3), -tilt, tilt);
-        if (h.climb && u < 0.35) clipY = h.y0 - 1.5 * s;
+        if (h.climb && u < 0.45) clipY = h.y0 - 4 * h.s0;
         look.look = [0.6, vy < 0 ? -0.6 : 0.6];
         if (h.dive && u > 0.85) clipY = h.y1;
         break;
@@ -485,22 +499,22 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
         break;
       }
       case 'swim': {
-        pose = LEAP;
-        dy = y + 3.1 * s;
+        dy = y + SWIM_DEPTH * s;
         clipY = y;
         break;
       }
     }
 
     if (f.state === 'sit' || f.state === 'croak' || f.state === 'snap' || f.state === 'land' || f.state === 'swim') {
+      const eyeY = dy - EYE_Y * s;
       const target = pointer && now - pointer.t < 1.5 ? [pointer.x, pointer.y] : null;
-      const fl = target ? null : nearestFly(x, y - 4 * s, t, 40 * s);
+      const fl = target ? null : nearestFly(x, eyeY, t, 40 * s);
       const tg = target ?? (fl ? flyPos(fl, t) : null);
       if (f.tongue) {
         const [tx, ty] = flyPos(f.tongue.fly, t);
-        look.look = [Math.sign(tx - x) * f.dir, clamp((ty - (y - 4.8 * s)) / (6 * s), -1, 1)];
+        look.look = [Math.sign(tx - x) * f.dir, clamp((ty - eyeY) / (6 * s), -1, 1)];
       } else if (tg) {
-        const ex = tg[0] - x, ey = tg[1] - (y - 4.8 * s), d = Math.hypot(ex, ey) || 1;
+        const ex = tg[0] - x, ey = tg[1] - eyeY, d = Math.hypot(ex, ey) || 1;
         const want: [number, number] = [(ex / d) * f.dir, ey / d];
         f.look = [lerp(f.look[0], want[0], 0.35), lerp(f.look[1], want[1], 0.35)];
         look.look = f.look;
@@ -510,31 +524,36 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
     }
     if (look.lid === undefined && t >= f.blink && t < f.blink + 0.17) look.lid = 1;
 
-    const { parts, marks } = dress(pose, look);
     if (f.state !== 'air' && f.state !== 'swim') {
-      F.ell(dx - sx * 1.6 * s, dy + 0.1 * s, 4.4 * s, 0.9 * s, 0, mul(0.45));
+      F.ell(x - sx * 0.8 * s, dy + 0.1 * s, 4 * s, 0.7 * s, 0, mul(0.65));
     } else if (f.state === 'air' && f.hop) {
       const h = f.hop, u = clamp((t - h.t0) / h.dur, 0, 1);
       const gy = lerp(h.y0, h.to >= 0 ? seat(pads[h.to], t)[1] : h.y1, u);
-      F.ell(dx, gy + 0.2 * s, 3.4 * s * (1 - 0.4 * Math.sin(Math.PI * u)), 0.7 * s, 0, mul(0.6));
+      F.ell(x, gy + 0.2 * s, 3.8 * s * (1 - 0.4 * Math.sin(Math.PI * u)), 0.8 * s, 0, mul(0.6));
     }
-    sprite(F, parts, marks, dx, dy, s, mirror, L, { levels, ang, sx: sxq, clipY, groups: s >= 1.7 ? GROUPS : undefined });
+    paintFrog(F, pose, look, x, dy, s, L, { ang, sx: sxq, mirror, clipY });
     if (f.state === 'swim') {
-      const half = Math.max(2, 2.8 * s);
-      for (let j = -half; j <= half; j++) F.dot(dx + j, y, F.get(dx + j, y) > 0.3 ? 0.62 : 0.4);
+      const half = Math.max(2, 3.4 * s);
+      for (let j = -half; j <= half; j++) F.dot(x + j, y, F.get(x + j, y) > 0.3 ? 0.62 : 0.4);
     }
 
     if (f.state === 'snap' && f.tongue) {
       const tg = f.tongue;
-      const [mx, my] = mouthOf(dx, dy, s, mirror ? -1 : 1);
+      const [mx0, my0] = mouthOf(pose);
+      const mx = x + (mirror ? -mx0 : mx0) * s, my = dy + my0 * s;
       const [tx, ty] = flyPos(tg.fly, t);
       const u = age < SNAP_WIND ? 0 : age < SNAP_WIND + SNAP_OUT ? (age - SNAP_WIND) / SNAP_OUT : age < SNAP_WIND + SNAP_OUT + SNAP_BACK ? 1 - (age - SNAP_WIND - SNAP_OUT) / SNAP_BACK : 0;
       if (!tg.caught) glow(F, tx, ty, 1);
       if (u > 0) {
         const ex = mx + (tx - mx) * u, ey = my + (ty - my) * u;
-        const tone = Math.round(0.72 * snap) / snap;
-        F.line(mx, my, ex, ey, tone, s > 2 ? 2 : 1);
-        F.ell(ex, ey, Math.max(0.8, 0.55 * s), Math.max(0.8, 0.55 * s), 0, set(tone));
+        const n = Math.ceil(Math.hypot(ex - mx, ey - my)) + 1;
+        for (let j = 0; j <= n; j++) {
+          const px = mx + ((ex - mx) * j) / n, py = my + ((ey - my) * j) / n;
+          F.paint(px, py, INK.tongue);
+          if (s > 2) F.paint(px, py + 1, INK.tongue);
+        }
+        const R = Math.max(1, 0.5 * s);
+        for (let qy = -R; qy <= R; qy++) for (let qx = -R; qx <= R; qx++) if (qx * qx + qy * qy <= R * R) F.paint(ex + qx, ey + qy, INK.tongue);
         if (tg.caught) F.dot(ex, ey, 1);
       }
     }
@@ -543,7 +562,8 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
   function render(t: number, F: Field) {
     now = t;
     update(t);
-    const { v } = F;
+    const { v, ink } = F;
+    ink.fill(0);
     v.set(sky.subarray(0, Math.min(sky.length, v.length)));
     for (const s of stars) {
       const i = s.y * W + s.x;
@@ -598,7 +618,8 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
     const put = (x: number, y: number) => {
       if (x < 0 || x >= W || y < 0 || y >= H) return;
       const i = y * W + x;
-      v[i] = v[i] > 0.3 ? 0.02 : 0.42;
+      v[i] = v[i] > 0.3 || ink[i] ? 0.02 : 0.42;
+      ink[i] = 0;
     };
     for (const rd of reeds) {
       const yTop = Math.floor(H - rd.h);
@@ -620,7 +641,7 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
   }
 
   function glow(F: Field, x: number, y: number, on: number) {
-    F.ell(x, y, 3 * k, 3 * k, 0, (old, q) => old + 0.3 * (1 - Math.sqrt(q)) * on);
+    F.ell(x, y, 3 * k, 3 * k, 0, (old, q) => old + 0.3 * (1 - Math.sqrt(q)) * on, true);
     F.ell(x, y, 0.75, 0.75, 0, set(1));
   }
 
@@ -633,13 +654,14 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
       let best: Frog | null = null, bd = Infinity;
       for (const f of frogs) {
         const p = frogXY(f, now);
-        const d = Math.hypot(p.x - x, p.y - 2.5 * p.s - y);
+        const d = Math.hypot(p.x - x, p.y - 4.2 * p.s - y);
         if (d < bd) { bd = d; best = f; }
       }
       const idle = frogs.filter((f) => f.state === 'sit');
       if (best && best.state === 'sit') {
         const p = frogXY(best, now);
-        if (bd < 7 * p.s) {
+        if (bd < 6.5 * p.s) {
+          best.startled = now;
           const near = freePads(best, p.x, p.y, 60 * k);
           if (near.length) { near.sort((a, b) => a.d - b.d); startHop(best, now, near[0].i); }
           else if (!startDive(best, now)) { best.state = 'croak'; best.t0 = now; }

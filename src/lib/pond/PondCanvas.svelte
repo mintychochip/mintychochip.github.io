@@ -1,11 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { Field, packPalette, quantize } from './field';
-  import { LEVELS, PALETTES, type PaletteName } from './palette';
+  import { INK_COLORS, PALETTES, type PaletteName } from './palette';
   import { nightPond, type NightOpts, type Scene } from './night';
   import { prefersReducedMotion, subscribe } from './ticker';
 
-  type SceneOpts = Omit<NightOpts, 'seed' | 'levels' | 'still'>;
+  type SceneOpts = Omit<NightOpts, 'seed' | 'still'>;
+  const inks = packPalette(INK_COLORS);
 
   interface Props {
     seed: string;
@@ -39,7 +40,7 @@
   function draw(t: number) {
     if (!scene || !field || !ctx || !img || !px) return;
     scene.render(t, field);
-    quantize(field, colors, px);
+    quantize(field, colors, px, inks);
     ctx.putImageData(img, 0, 0);
   }
 
@@ -59,7 +60,7 @@
     px = new Uint32Array(img.data.buffer);
     field = new Field(W, H);
     const opts = typeof options === 'function' ? options(W, H) : options;
-    scene = nightPond(W, H, { ...opts, seed, levels: LEVELS, still });
+    scene = nightPond(W, H, { ...opts, seed, still });
     draw(clock?.time ?? 0);
   }
 

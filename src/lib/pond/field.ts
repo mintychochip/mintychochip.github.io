@@ -46,25 +46,30 @@ export const set = (val: number): Shade => () => val;
 export const mul = (m: number): Shade => (old) => old * m;
 export const add = (d: number): Shade => (old) => old + d;
 
-/** A grid of tone values in 0..1 that `quantize` turns into palette pixels. */
+/** A grid of tone values in 0..1 that `quantize` turns into palette pixels, under a layer of sprite colours. */
 export class Field {
   readonly W: number;
   readonly H: number;
   readonly v: Float32Array;
+  /** Sprite colour per pixel, shown as is instead of the dithered tone: 0 for none, n for sprite colour n - 1. */
+  readonly ink: Uint8Array;
 
   constructor(W: number, H: number) {
     this.W = W;
     this.H = H;
     this.v = new Float32Array(W * H);
+    this.ink = new Uint8Array(W * H);
   }
 
   fill(val: number) {
     this.v.fill(val);
+    this.ink.fill(0);
   }
 
-  ell(cx: number, cy: number, rx: number, ry: number, ang: number, fn: Shade) {
+  /** Shades the pixels inside an ellipse. Unless `over` is set, they also cover any sprite colour there. */
+  ell(cx: number, cy: number, rx: number, ry: number, ang: number, fn: Shade, over = false) {
     if (rx <= 0 || ry <= 0) return;
-    const { W, H, v } = this;
+    const { W, H, v, ink } = this;
     const R = Math.max(rx, ry) + 1;
     const x0 = Math.max(0, Math.floor(cx - R)), x1 = Math.min(W - 1, Math.ceil(cx + R));
     const y0 = Math.max(0, Math.floor(cy - R)), y1 = Math.min(H - 1, Math.ceil(cy + R));
@@ -78,6 +83,7 @@ export class Field {
         if (q <= 1) {
           const i = y * W + x;
           v[i] = fn(v[i], q, u, w);
+          if (!over) ink[i] = 0;
         }
       }
     }
@@ -85,7 +91,16 @@ export class Field {
 
   dot(x: number, y: number, val: number) {
     const X = Math.floor(x), Y = Math.floor(y);
-    if (X >= 0 && Y >= 0 && X < this.W && Y < this.H) this.v[Y * this.W + X] = val;
+    if (X >= 0 && Y >= 0 && X < this.W && Y < this.H) {
+      this.v[Y * this.W + X] = val;
+      this.ink[Y * this.W + X] = 0;
+    }
+  }
+
+  /** Sets a pixel to sprite colour `color`. */
+  paint(x: number, y: number, color: number) {
+    const X = Math.floor(x), Y = Math.floor(y);
+    if (X >= 0 && Y >= 0 && X < this.W && Y < this.H) this.ink[Y * this.W + X] = color + 1;
   }
 
   get(x: number, y: number): number {
@@ -114,14 +129,21 @@ export function packPalette(hexes: readonly string[]): Uint32Array {
   });
 }
 
-/** Ordered (8×8 Bayer) dither from tone values to palette entries. A value that sits exactly on a level never dithers. */
-export function quantize(field: Field, pal: Uint32Array, out: Uint32Array) {
-  const { W, H, v } = field;
+/**
+ * Ordered (8×8 Bayer) dither from tone values to palette entries. A value that sits exactly on a level never
+ * dithers. Pixels with a sprite colour take it from `inks` instead.
+ */
+export function quantize(field: Field, pal: Uint32Array, out: Uint32Array, inks?: Uint32Array) {
+  const { W, H, v, ink } = field;
   const L = pal.length - 1;
   for (let y = 0; y < H; y++) {
     const row = (y & 7) * 8;
     for (let x = 0; x < W; x++) {
       const i = y * W + x;
+      if (inks && ink[i]) {
+        out[i] = inks[ink[i] - 1];
+        continue;
+      }
       const raw = v[i];
       const val = (raw < 0 ? 0 : raw > 1 ? 1 : raw) * L;
       const base = Math.floor(val + 1e-4);
