@@ -1,197 +1,326 @@
 import type { Field } from './field';
 import { INK } from './palette';
-import { toon, type Band, type Light, type Shape, type Stroke } from './toon';
 
-// The frog from the profile picture: chubby, seen three-quarter on, eyes perched on top, hands up in
-// front of its chest. Sprite units, y down; the origin is where it sits on its pad, and it faces +x.
+// The frog from the profile picture: a round body turned three-quarters toward +x, big eyes on top, blush and
+// a small smile, placed pixel by pixel at three sizes. Pupils, blinks, the throat sac and the tongue tip are
+// drawn over the art so they can move.
 
-/** Every pose names the same parts, so any two poses blend part by part. */
-export interface Pose {
-  /** Ellipses: x, y, rx, ry, angle. */
-  belly: number[];
-  head: number[];
-  /** Near eye x, y, then far eye x, y. */
-  eyes: number[];
-  /** Shoulder, elbow, wrist. */
-  nearArm: number[];
-  /** Shoulder, wrist. */
-  farArm: number[];
-  /** Hip, ankle. */
-  nearLeg: number[];
-  farLeg: number[];
-  /** Near x, y, angle, then far x, y, angle. Fingers and toes fan out along the angle. */
-  hands: number[];
-  feet: number[];
+/** o outline, D d g h skin from dark to light, b belly, w eye white, k pupil (redrawn from the look), p blush, m mouth. */
+const LEGEND: Record<string, number> = {
+  o: INK.line, m: INK.line, D: INK.deep, d: INK.shade, g: INK.skin, h: INK.light, b: INK.belly, w: INK.eye, k: INK.eye, p: INK.blush,
+};
+
+interface Art {
+  sit: string;
+  /** In the air: stretched, legs hanging. */
+  stretch: string;
+  /** Rows taken out of the sitting frame to breathe out, and to crouch; the crouch also widens at column `wide`. */
+  breath: number[];
+  crouch: number[];
+  wide: number;
+  pupil: readonly [number, number];
+  /** The pupil's top corner pixel stays white, as a shine. */
+  shine: boolean;
+  /** Sitting-frame pixels: where the tongue leaves the mouth, the tongue tip poking out, the throat sac's centre and radius. */
+  mouth: readonly [number, number];
+  blep: readonly (readonly [number, number])[];
+  throat: readonly [number, number, number];
+  /** Rows that stay above the water while it swims. */
+  swim: number;
 }
 
-export const SIT: Pose = {
-  belly: [0.0, -3.2, 4.0, 3.2, 0],
-  head: [0.6, -6.5, 3.6, 2.0, -0.05],
-  eyes: [2.6, -7.95, -2.4, -8.15],
-  nearArm: [3.5, -4.8, 3.9, -3.0, 2.3, -3.7],
-  farArm: [-3.6, -4.2, -2.6, -4.2],
-  nearLeg: [3.1, -1.5, 3.7, -0.55],
-  farLeg: [-3.0, -0.9, -4.3, -0.85],
-  hands: [1.6, -3.9, Math.PI, -1.95, -4.15, 0],
-  feet: [4.25, -0.45, 0.15, -4.85, -1.15, -2.6],
+const SMALL: Art = {
+  sit: `
+...oo...oo...
+..owwo.owwo..
+..owkooowkoo.
+.ogoogggoogo.
+.ohgpggmmgpgo
+odgggggggbbgo
+oDddddgbbbbgo
+.ooddggooobgo
+...oooo..ooo.`,
+  stretch: `
+...oo...oo...
+..owwo.owwo..
+..owkooowkoo.
+.ogoogggoogo.
+.ohgpggmmgpgo
+.odggggggbbgo
+.oddddgbbbbgo
+..oDddbbbbgo.
+..oDooooooogo
+.odo......oo.
+.oo..........`,
+  breath: [5], crouch: [5], wide: 6,
+  pupil: [1, 1], shine: false,
+  mouth: [8, 4], blep: [[8, 5]], throat: [10.5, 6, 1.9],
+  swim: 4,
 };
 
-/** Gathered to jump: low and wide, hands on the pad. */
-export const CROUCH: Pose = {
-  belly: [0.0, -2.3, 4.5, 2.35, 0],
-  head: [0.9, -5.15, 3.75, 1.85, 0.02],
-  eyes: [3.0, -6.65, -2.0, -6.8],
-  nearArm: [3.5, -3.6, 4.6, -2.1, 4.6, -0.7],
-  farArm: [-3.4, -3.2, -2.9, -0.9],
-  nearLeg: [3.1, -1.2, 3.9, -0.45],
-  farLeg: [-3.2, -0.7, -4.8, -0.7],
-  hands: [5.1, -0.45, 0.2, -2.9, -0.45, 2.9],
-  feet: [4.4, -0.4, 0.1, -5.35, -1.0, -2.65],
+const MEDIUM: Art = {
+  sit: `
+.....oooo..oooo....
+....owwwwo.owwwwo..
+....owkkwooowkkwo..
+...oowkkwogowkkwoo.
+..ogowwwwogowwwwogo
+.ohhgoooogggooooggo
+.ohggpggggmmggggpgo
+.oggggggggggggbbbgo
+odgggggggggbbbbbbgo
+oddggggdggbbbbbbbgo
+.oDddddoobbbbbbbggo
+..oddgggooooooogo..
+...ooooo.....ooo...`,
+  stretch: `
+.....oooo..oooo....
+....owwwwo.owwwwo..
+....owkkwooowkkwo..
+...oowkkwogowkkwoo.
+..ogowwwwogowwwwogo
+.ohhgoooogggooooggo
+.ohggpggggmmggggpgo
+.oggggggggggggbbbgo
+.odggggggggbbbbbbgo
+.oddggggdgbbbbbbgo.
+..oddddgdbbbbbbbgo.
+..oDdddoobbbbbbgo..
+..oDddo.ooooooogo..
+.oDdo.........ogo..
+.oggo.........oo...
+.ooo...............`,
+  breath: [7], crouch: [7, 9], wide: 10,
+  pupil: [2, 2], shine: false,
+  mouth: [11, 6], blep: [[10, 7], [11, 7]], throat: [15.5, 8, 2.9],
+  swim: 6,
 };
 
-/** In the air: stretched out, hands reaching ahead, legs trailing. */
-export const LEAP: Pose = {
-  belly: [-0.9, -3.4, 4.3, 2.2, -0.1],
-  head: [2.2, -4.8, 3.05, 1.8, -0.1],
-  eyes: [3.35, -6.25, 0.5, -6.5],
-  nearArm: [2.4, -2.6, 4.3, -2.1, 5.6, -1.7],
-  farArm: [1.3, -3.0, 5.0, -2.6],
-  nearLeg: [-3.0, -2.6, -6.8, -1.9],
-  farLeg: [-3.5, -3.7, -6.7, -3.6],
-  hands: [6.1, -1.55, 0.25, 5.5, -2.5, 0.15],
-  feet: [-7.3, -1.8, 3.2, -7.2, -3.6, -3.05],
+const LARGE: Art = {
+  sit: `
+........ooo.....ooo.....
+.......owwwo...owwwo....
+......owwkkwo.owwkkwo...
+......owkkkwooowkkkwo...
+......owkkkwogowkkkwo...
+....oogowwwogggowwwogo..
+...ogggoooogggggooogggo.
+..oghhggggggggggggggggo.
+.oghgggpggggmggggmgpggo.
+.ogggggggggggmmmmggggggo
+ogggggggggggggggggbbbggo
+odgggggggggggbbbbbbbbggo
+oddgggggdggbbbbbbbbbbggo
+oddddggdgggbbbbbbbbbbgo.
+.oddddddggbbbbbbbbbbbgo.
+.oDddddddgbbbbbbbbbbggo.
+..oDDdddddoobbbbbbooggo.
+..oddggggggoooooogggggo.
+...oooooooo.....oooooo..`,
+  stretch: `
+........ooo.....ooo.....
+.......owwwo...owwwo....
+......owwkkwo.owwkkwo...
+......owkkkwooowkkkwo...
+......owkkkwogowkkkwo...
+....oogowwwogggowwwogo..
+...ogggoooogggggooogggo.
+..oghhggggggggggggggggo.
+.oghgggpggggmggggmgpggo.
+.ogggggggggggmmmmggggggo
+.oggggggggggggggggbbbggo
+.odgggggggggggbbbbbbbggo
+..odggggggdgbbbbbbbbbgo.
+..oddgggggdgbbbbbbbbbgo.
+..oddddgggdbbbbbbbbbgo..
+...oddddddobbbbbbbbbgo..
+...oDddddoobbbbbbbbgo...
+...oDdddo.ooobbbooggo...
+..oDddo.....ooo.oggo....
+..oddo..........ogo.....
+.ogggo..........oo......
+.ooooo..................`,
+  breath: [10], crouch: [10, 13], wide: 13,
+  pupil: [3, 3], shine: true,
+  mouth: [15, 9], blep: [[14, 10], [15, 10], [14, 11]], throat: [19.5, 12.5, 4.2],
+  swim: 7,
 };
 
-/** Touching down hands first, legs still behind. */
-export const LAND: Pose = {
-  belly: [-0.4, -2.45, 4.4, 2.4, 0.05],
-  head: [1.9, -4.85, 3.25, 1.8, 0.08],
-  eyes: [3.2, -6.3, -0.3, -6.55],
-  nearArm: [2.4, -2.9, 4.0, -1.8, 4.5, -0.7],
-  farArm: [0.6, -3.3, 2.5, -0.85],
-  nearLeg: [-2.7, -1.8, -5.3, -1.0],
-  farLeg: [-3.1, -2.6, -5.5, -2.2],
-  hands: [4.9, -0.45, 0.2, 2.9, -0.45, 0.3],
-  feet: [-5.9, -0.9, 3.2, -6.1, -2.1, -3.1],
-};
+const ARTS = [SMALL, MEDIUM, LARGE];
 
-export function mixPose(a: Pose, b: Pose, u: number): Pose {
-  const out = {} as Pose;
-  for (const key of Object.keys(a) as (keyof Pose)[]) out[key] = a[key].map((v, i) => v + (b[key][i] - v) * u);
-  return out;
+export type Frame = 'sit' | 'breath' | 'crouch' | 'stretch';
+
+interface Eye { x0: number; y0: number; w: number; h: number; mask: Uint8Array }
+
+interface Sprite {
+  w: number;
+  h: number;
+  /** Colour + 1 per pixel, 0 where clear. */
+  px: Uint8Array;
+  eyes: Eye[];
+  mouth: [number, number];
+  blep: [number, number][];
+  throat: [number, number];
 }
 
-/** A point on the head, given in the sitting head's frame, so it follows the head through every pose. */
-function onHead(head: readonly number[], u: number, v: number): [number, number] {
-  const [x, y, rx, ry, a] = head;
-  const U = (u * rx) / SIT.head[2], V = (v * ry) / SIT.head[3];
-  return [x + U * Math.cos(a) - V * Math.sin(a), y + U * Math.sin(a) + V * Math.cos(a)];
+type Point = readonly [number, number];
+
+function sprite(rows: string[], at: { mouth: Point; blep: readonly Point[]; throat: readonly number[] }): Sprite {
+  const h = rows.length, w = rows[0].length;
+  const px = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) {
+    if (rows[y].length !== w) throw new Error(`frog art row ${y} is ${rows[y].length} wide, not ${w}`);
+    for (let x = 0; x < w; x++) {
+      const c = LEGEND[rows[y][x]];
+      if (c !== undefined) px[y * w + x] = c + 1;
+    }
+  }
+  const eyes: Eye[] = [];
+  const seen = new Uint8Array(w * h);
+  const isEye = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h && 'wk'.includes(rows[y][x]);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (!isEye(x, y) || seen[y * w + x]) continue;
+    const cells: [number, number][] = [], stack: [number, number][] = [[x, y]];
+    seen[y * w + x] = 1;
+    while (stack.length) {
+      const [cx, cy] = stack.pop()!;
+      cells.push([cx, cy]);
+      for (const [nx, ny] of [[cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]]) {
+        if (isEye(nx, ny) && !seen[ny * w + nx]) { seen[ny * w + nx] = 1; stack.push([nx, ny]); }
+      }
+    }
+    const x0 = Math.min(...cells.map((c) => c[0])), y0 = Math.min(...cells.map((c) => c[1]));
+    const ew = Math.max(...cells.map((c) => c[0])) - x0 + 1, eh = Math.max(...cells.map((c) => c[1])) - y0 + 1;
+    const mask = new Uint8Array(ew * eh);
+    for (const [cx, cy] of cells) mask[(cy - y0) * ew + cx - x0] = 1;
+    eyes.push({ x0, y0, w: ew, h: eh, mask });
+  }
+  return { w, h, px, eyes, mouth: [...at.mouth], blep: at.blep.map((p) => [...p]), throat: [at.throat[0], at.throat[1]] };
 }
 
-/** The smirk: from under the far eye, dipping across the face, curling up below the near eye. */
-const MOUTH: readonly [number, number][] = [[-2.8, 0.5], [-1.4, 1.0], [0.2, 1.0], [1.4, 0.6], [1.9, 0.2]];
+const lines = (art: string) => art.trim().split('\n');
 
-/** Where the tongue leaves the mouth, in sprite units. */
-export const mouthOf = (pose: Pose) => onHead(pose.head, 1.9, 0.3);
+/** The sitting frame with rows taken out and, optionally, one column doubled; its marked points move along. */
+function squash(rows: string[], a: Art, drop: number[], wide = -1) {
+  const out = rows.filter((_, y) => !drop.includes(y)).map((r) => (wide >= 0 ? r.slice(0, wide) + r[wide] + r.slice(wide) : r));
+  const move = ([x, y]: Point): [number, number] => [x + (wide >= 0 && x >= wide ? 1 : 0), y - drop.filter((d) => d < y).length];
+  return sprite(out, { mouth: move(a.mouth), blep: a.blep.map(move), throat: move([a.throat[0], a.throat[1]]) });
+}
 
-export interface FrogLook {
+interface Size {
+  frames: Record<Frame, Sprite>;
+  art: Art;
+}
+
+const SIZES: Size[] = ARTS.map((a) => {
+  const sit = lines(a.sit);
+  return {
+    art: a,
+    frames: {
+      sit: sprite(sit, a),
+      breath: squash(sit, a, a.breath),
+      crouch: squash(sit, a, a.crouch, a.wide),
+      stretch: sprite(lines(a.stretch), a),
+    },
+  };
+});
+
+/**
+ * Which drawing to use for a frog at scale `s` (art pixels per unit of a frog about 9 units tall):
+ * 0 small, 1 medium, 2 large.
+ */
+export const sizeFor = (s: number) => (s < 1.22 ? 0 : s < 1.78 ? 1 : 2);
+
+/** Width and height of the sitting frog, its eyes' height above its feet, and how much of it shows when swimming. */
+export function frogBox(size: number) {
+  const { frames, art } = SIZES[size], S = frames.sit;
+  const e = S.eyes[0];
+  return { w: S.w, h: S.h, eye: S.h - (e.y0 + e.h / 2), swim: art.swim };
+}
+
+export interface FrogFace {
   /** Where the pupils point, -1..1 on each axis, +x being the way the frog faces. */
   look?: readonly [number, number];
-  /** 1 shuts the eyes. */
-  lid?: number;
+  eyes?: 'open' | 'shut' | 'happy';
+  /** Startled: small pupils. */
+  wide?: boolean;
   /** Throat sac size, 0..1. */
   sac?: number;
-  /** Breathing, -1..1. */
-  breath?: number;
-  /** Fingertips drawn together, 0..1. */
-  tap?: number;
-  /** Round, startled pupils instead of the usual unimpressed dashes. */
-  wide?: boolean;
+  /** Tongue tip poking out. */
+  blep?: boolean;
 }
 
 export interface FrogDraw {
-  ang?: number;
-  sx?: number;
   mirror?: boolean;
+  /** Rows from here down are not drawn (under water). */
   clipY?: number;
 }
 
-/** From this scale up, hands and feet get webbed fingers; below it, mitts with fingertip bumps. */
-const FINE = 3.2;
-/** Below this scale the fingertip bumps go too, as they would only flicker. */
-const TIPS = 2.2;
-/** Below this scale only the eyes keep contour lines. */
-const LINED = 3.2;
+const place = (S: Sprite, x: number, y: number) => [Math.round(x - S.w / 2), Math.round(y) - S.h] as const;
 
-const SKIN: Band = [INK.web, INK.skin, INK.light];
-/** Hands held up in front catch more light than the body behind them. */
-const PAW: Band = [INK.skin, INK.light, INK.light];
-const WEB: Band = [INK.deep, INK.web, INK.web];
-const EYE: Band = [INK.eyeShade, INK.eye, INK.eye];
-const SAC: Band = [INK.skin, INK.light, INK.eye];
-
-const BODY = 0, NEAR_ARM = 1, FAR_ARM = 2, NEAR_LEG = 3, FAR_LEG = 4, NEAR_EYE = 5, FAR_EYE = 6, THROAT = 7;
-
-/** A hand or foot at (x, y) with three fingers fanned out along angle `a`. */
-function paw(out: Shape[], x: number, y: number, a: number, group: number, z: number, len: number, s: number, band = SKIN) {
-  const c = Math.cos(a), sn = Math.sin(a);
-  if (s >= FINE) {
-    out.push({ ell: [x + 0.5 * len * c, y + 0.5 * len * sn, 0.55 * len, 0.62 * len, a], band: WEB, group, z });
-    out.push({ ell: [x - 0.05 * c, y - 0.05 * sn, 0.42, 0.42, 0], band: SKIN, group, z: z + 0.05 });
-    for (const d of [-0.62, 0, 0.62]) {
-      out.push({ cap: [x, y, x + len * Math.cos(a + d), y + len * Math.sin(a + d), 0.18, 0.32], band: SKIN, group, z: z + 0.1 });
-    }
-    return;
-  }
-  out.push({ ell: [x + 0.3 * len * c, y + 0.3 * len * sn, 0.7 * len, 0.55 * len, a], band, group, z });
-  if (s < TIPS) return;
-  out.push({ ell: [x + 0.75 * len * c, y + 0.75 * len * sn, 0.35, 0.35, 0], band: WEB, group, z: z + 0.05 });
-  for (const d of [-0.68, 0, 0.68]) {
-    out.push({ ell: [x + len * Math.cos(a + d), y + len * Math.sin(a + d), 0.34, 0.34, 0], band, group, z: z + 0.1 });
-  }
+/** Where the tongue leaves the mouth, for a frog drawn with its feet at (x, y). */
+export function mouthAt(size: number, frame: Frame, x: number, y: number, mirror = false): [number, number] {
+  const S = SIZES[size].frames[frame];
+  const [left, top] = place(S, x, y);
+  const mx = mirror ? S.w - 1 - S.mouth[0] : S.mouth[0];
+  return [left + mx + 0.5, top + S.mouth[1] + 0.5];
 }
 
-/** Draws the frog with its feet at (cx, cy), `s` art pixels per sprite unit. */
-export function drawFrog(F: Field, pose: Pose, o: FrogLook, cx: number, cy: number, s: number, L: Light, d: FrogDraw = {}) {
-  const br = o.breath ?? 0, tap = o.tap ?? 0, sac = o.sac ?? 0;
-  const shut = (o.lid ?? 0) >= 0.75;
-  const [bx, by, brx, bry, ba] = pose.belly;
-  const [nex, ney, fex, fey] = pose.eyes;
-  const na = pose.nearArm, fa = pose.farArm, h = pose.hands, ft = pose.feet;
-  const eye = shut ? SKIN : EYE;
+const inEye = (e: Eye, x: number, y: number) => x >= e.x0 && y >= e.y0 && x < e.x0 + e.w && y < e.y0 + e.h && e.mask[(y - e.y0) * e.w + x - e.x0] === 1;
 
-  const shapes: Shape[] = [];
-  shapes.push({ cap: [...pose.farLeg, 0.75, 0.45], band: SKIN, group: FAR_LEG });
-  paw(shapes, ft[3], ft[4], ft[5], FAR_LEG, 0.1, 1.1, s);
-  shapes.push({ ell: [fex, fey, 0.88, 0.88, 0], band: eye, group: FAR_EYE, z: 0.2, keep: true });
-  shapes.push({ ell: [bx, by - 0.08 * br, brx * (1 + 0.015 * br), bry * (1 + 0.035 * br), ba], band: SKIN, group: BODY });
-  shapes.push({ ell: pose.head, band: SKIN, group: BODY, z: 0.4 });
-  shapes.push({ cap: [fa[0], fa[1], fa[2] + 0.4 * tap, fa[3], 1.0, 0.55], band: SKIN, group: FAR_ARM, z: 0.6 });
-  paw(shapes, h[3] + 0.45 * tap, h[4], h[5], FAR_ARM, 0.8, 1.05, s, PAW);
-  shapes.push({ cap: [...pose.nearLeg, 0.9, 0.5], band: SKIN, group: NEAR_LEG, z: 0.6 });
-  paw(shapes, ft[0], ft[1], ft[2], NEAR_LEG, 0.8, 1.15, s);
-  shapes.push({ cap: [na[0], na[1], na[2], na[3], 0.75, 0.6], band: SKIN, group: NEAR_ARM, z: 0.9 });
-  shapes.push({ cap: [na[2], na[3], na[4] - 0.5 * tap, na[5], 0.6, 0.5], band: SKIN, group: NEAR_ARM, z: 1.0 });
-  paw(shapes, h[0] - 0.55 * tap, h[1], h[2], NEAR_ARM, 1.1, 1.1, s, PAW);
-  shapes.push({ ell: [nex, ney, 1.55, 1.25, 0], band: eye, group: NEAR_EYE, z: 1.2, outer: true, keep: true });
-  if (sac > 0.08) {
-    const [qx, qy] = onHead(pose.head, 0.9, 1.55);
-    shapes.push({ ell: [qx, qy + 0.3 * sac, 1.9 * sac, 1.45 * sac, 0], band: SAC, group: THROAT, z: 1.5, keep: true });
+/** Draws the frog with its feet at (x, y): its bottom row sits just above y. */
+export function drawFrog(F: Field, size: number, frame: Frame, face: FrogFace, x: number, y: number, o: FrogDraw = {}) {
+  const { frames, art } = SIZES[size];
+  const S = frames[frame];
+  const [left, top] = place(S, x, y);
+  const clip = o.clipY ?? Infinity;
+  const put = (i: number, j: number, c: number) => {
+    const Y = top + j;
+    if (Y < clip) F.paint(left + (o.mirror ? S.w - 1 - i : i), Y, c);
+  };
+
+  for (let j = 0; j < S.h; j++) for (let i = 0; i < S.w; i++) {
+    const c = S.px[j * S.w + i];
+    if (c) put(i, j, c - 1);
   }
 
-  const strokes: Stroke[] = [{ pts: MOUTH.flatMap(([u, v]) => onHead(pose.head, u, v)), color: INK.line, on: BODY }];
-  const [lx, ly] = o.look ?? [0.5, 0];
-  if (shut) {
-    strokes.push({ pts: [nex - 1.1, ney + 0.15, nex + 1.1, ney + 0.15], color: INK.line, on: NEAR_EYE });
-    strokes.push({ pts: [fex - 0.8, fey + 0.15, fex + 0.7, fey + 0.15], color: INK.line, on: FAR_EYE });
-  } else if (o.wide) {
-    strokes.push({ pts: [nex + 0.4 * lx, ney + 0.3 * ly], color: INK.line, bold: s >= 1.8, on: NEAR_EYE });
-    strokes.push({ pts: [fex - 0.3 + 0.3 * lx, fey - 0.1 + 0.25 * ly], color: INK.line, on: FAR_EYE });
-  } else {
-    const px = nex + 0.38 * lx, py = ney + 0.3 * ly;
-    strokes.push({ pts: [px - 0.55, py, px + 0.55, py], color: INK.line, on: NEAR_EYE });
-    const qx = fex - 0.35 + 0.3 * lx, qy = fey - 0.1 + 0.25 * ly;
-    strokes.push({ pts: [qx - 0.32, qy, qx + 0.32, qy], color: INK.line, on: FAR_EYE });
+  const eyes = face.eyes ?? 'open';
+  const [lx, ly] = face.look ?? [0, 0];
+  const [pw, ph] = face.wide ? [Math.max(1, art.pupil[0] - 1), Math.max(1, art.pupil[1] - 1)] : art.pupil;
+  for (const e of S.eyes) {
+    if (eyes !== 'open') {
+      const mid = e.y0 + (e.h >> 1);
+      for (let j = e.y0; j < e.y0 + e.h; j++) for (let i = e.x0; i < e.x0 + e.w; i++) if (inEye(e, i, j)) put(i, j, INK.skin);
+      for (let i = e.x0; i < e.x0 + e.w; i++) {
+        const j = eyes === 'happy' && i > e.x0 && i < e.x0 + e.w - 1 ? mid - 1 : mid;
+        if (inEye(e, i, j)) put(i, j, INK.line);
+      }
+      continue;
+    }
+    const cx = e.x0 + (e.w - pw) / 2, cy = e.y0 + (e.h - ph) / 2;
+    let best = Infinity, bx = 0, by = 0;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const px = Math.floor(cx + dx + 0.5), py = Math.floor(cy + dy + 0.5);
+      let fits = true;
+      for (let j = 0; j < ph && fits; j++) for (let i = 0; i < pw; i++) if (!inEye(e, px + i, py + j)) { fits = false; break; }
+      const score = (dx - lx) ** 2 + (dy - ly) ** 2;
+      if (fits && score < best - 1e-9) { best = score; bx = px; by = py; }
+    }
+    if (best === Infinity) continue;
+    for (let j = 0; j < ph; j++) for (let i = 0; i < pw; i++) put(bx + i, by + j, INK.line);
+    if (art.shine && !face.wide) put(bx, by, INK.eye);
   }
-  toon(F, shapes, strokes, cx, cy, s, L, { line: INK.line, seam: INK.deep, ...d, contours: s >= LINED });
+
+  if (face.blep) for (const [i, j] of S.blep) put(i, j, INK.tongue);
+
+  const r = art.throat[2] * (face.sac ?? 0);
+  if (r >= 1.2) {
+    const [tx, ty] = S.throat;
+    const inSac = (i: number, j: number) => Math.hypot(i + 0.5 - tx, j + 0.5 - ty) <= r;
+    for (let j = Math.floor(ty - r); j <= Math.ceil(ty + r); j++) for (let i = Math.floor(tx - r); i <= Math.ceil(tx + r); i++) {
+      if (!inSac(i, j)) continue;
+      const edge = !inSac(i + 1, j) || !inSac(i - 1, j) || !inSac(i, j + 1) || !inSac(i, j - 1);
+      put(i, j, edge ? INK.line : j > ty + r * 0.35 ? INK.belly : INK.eye);
+    }
+  }
 }

@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { bars, niceStep } from './bars';
 import { Field, levelsOf, packPalette, quantize } from './field';
-import { CROUCH, LAND, LEAP, SIT, drawFrog, mixPose } from './frog';
+import { drawFrog, frogBox, sizeFor, type Frame, type FrogFace } from './frog';
 import { nightPond } from './night';
 import { INK, INK_COLORS, LEVELS, PALETTES, PALETTE_NAMES, assignPalettes, ramp } from './palette';
-import { unit } from './toon';
 
 const render = (seed: string, t: number, W = 120, H = 60) => {
   const F = new Field(W, H);
@@ -80,33 +79,69 @@ describe('quantize', () => {
 });
 
 describe('frog', () => {
-  const L = unit([0.55, -0.6, 0.62]);
-  const colours = (s: number, look = {}) => {
-    const F = new Field(60, 40);
-    drawFrog(F, SIT, look, 30, 36, s, L);
+  const SIZES = [0, 1, 2];
+  const FRAMES: Frame[] = ['sit', 'breath', 'crouch', 'stretch'];
+  const draw = (size: number, frame: Frame = 'sit', face: FrogFace = {}, mirror = false) => {
+    const F = new Field(40, 30);
+    drawFrog(F, size, frame, face, 20, 28, { mirror });
+    return F;
+  };
+  const colours = (F: Field) => {
     const seen = new Map<number, number>();
     for (const c of F.ink) if (c) seen.set(c - 1, (seen.get(c - 1) ?? 0) + 1);
     return seen;
   };
 
-  it('is green with an outline, white eyes and pupils at every size', () => {
-    for (const s of [3.4, 2.4, 1.6, 1.1]) {
-      const seen = colours(s);
+  it('is green with an outline, white eyes and pupils in every size and frame', () => {
+    for (const size of SIZES) for (const frame of FRAMES) {
+      const seen = colours(draw(size, frame));
       expect(seen.get(INK.skin)).toBeGreaterThan(seen.get(INK.eye) ?? 0);
       expect(seen.get(INK.eye)).toBeGreaterThan(0);
       expect(seen.get(INK.line)).toBeGreaterThan(0);
+      expect(seen.get(INK.blush)).toBeGreaterThan(0);
     }
   });
 
-  it('shuts its eyes when it blinks', () => {
-    expect(colours(2.4, { lid: 1 }).get(INK.eye) ?? 0).toBe(0);
+  it('shuts its eyes when it blinks and when it is happy', () => {
+    for (const size of SIZES) {
+      expect(colours(draw(size, 'sit', { eyes: 'shut' })).get(INK.eye) ?? 0).toBe(0);
+      expect(colours(draw(size, 'sit', { eyes: 'happy' })).get(INK.eye) ?? 0).toBe(0);
+    }
   });
 
-  it('blends between any two poses part by part', () => {
-    for (const [a, b] of [[SIT, CROUCH], [CROUCH, LEAP], [LEAP, LAND], [LAND, SIT]]) {
-      const mid = mixPose(a, b, 0.5);
-      expect(mid.belly[0]).toBeCloseTo((a.belly[0] + b.belly[0]) / 2);
-      expect(Object.values(mid).flat().every(Number.isFinite)).toBe(true);
+  it('looks where it is told to', () => {
+    for (const size of SIZES) {
+      expect(draw(size, 'sit', { look: [-1, 0] }).ink).not.toEqual(draw(size, 'sit', { look: [1, 0] }).ink);
+    }
+    expect(draw(2, 'sit', { look: [0, -1] }).ink).not.toEqual(draw(2, 'sit', { look: [0, 1] }).ink);
+  });
+
+  it('draws the same frog facing the other way when mirrored', () => {
+    for (const size of SIZES) {
+      const a = draw(size, 'sit', { look: [1, 0], sac: 1 }), b = draw(size, 'sit', { look: [1, 0], sac: 1 }, true);
+      const flipped = new Uint8Array(a.ink.length);
+      const { w } = frogBox(size), left = Math.round(20 - w / 2);
+      for (let y = 0; y < a.H; y++) for (let x = 0; x < a.W; x++) {
+        const fx = 2 * left + w - 1 - x;
+        if (fx >= 0 && fx < a.W) flipped[y * a.W + fx] = a.ink[y * a.W + x];
+      }
+      expect(b.ink).toEqual(flipped);
+    }
+  });
+
+  it('puffs up its throat and pokes its tongue out', () => {
+    for (const size of SIZES) {
+      expect(draw(size, 'sit', { sac: 1 }).ink).not.toEqual(draw(size).ink);
+      expect(colours(draw(size, 'sit', { blep: true })).get(INK.tongue)).toBeGreaterThan(0);
+    }
+  });
+
+  it('gets bigger drawings at bigger scales', () => {
+    expect([0.8, 1.5, 2.5].map(sizeFor)).toEqual([0, 1, 2]);
+    const boxes = SIZES.map(frogBox);
+    for (let i = 1; i < boxes.length; i++) {
+      expect(boxes[i].w).toBeGreaterThan(boxes[i - 1].w);
+      expect(boxes[i].h).toBeGreaterThan(boxes[i - 1].h);
     }
   });
 });

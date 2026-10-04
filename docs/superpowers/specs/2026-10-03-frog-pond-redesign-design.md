@@ -52,16 +52,18 @@ with these safeguards:
 - `palette.ts`: six palettes (night, moss, dusk, ember, potion, mist), each
   8 levels interpolated through hand-picked anchors in OKLab.
   `assignPalettes` gives each project on a page its own palette. The frog has
-  its own fixed colours (the greens of the owner's profile picture, white
-  eyes, a pink tongue), so it looks the same in every pond.
-- `toon.ts`: cartoon sprites built from ellipses and tapered capsules, with
-  flat colour shaded in three bands, a 1px black outline, dark contours
-  between overlapping parts on bigger sprites, and line strokes.
-- `frog.ts`: the frog from the profile picture, a chubby three-quarter view
-  with eyes on top, flat unimpressed pupils, a smirk, and hands held up at
-  the chest. It has four poses (sit, crouch, leap, land) that blend, plus
-  breathing, fingertip tapping, a vocal sac, blinks, startled round pupils
-  and eye direction. Fingers and contours drop out at small sizes.
+  its own fixed colours (the greens of the owner's profile picture, a pale
+  belly, white eyes, pink blush and tongue), so it looks the same in every
+  pond.
+- `frog.ts`: the frog from the profile picture, redrawn cute: a round body
+  turned three-quarters, big eyes on top, blush, a small smile, a pale belly
+  and a 1px dark outline. It is hand-placed pixel art at three sizes (about
+  9, 13 and 19 px tall), picked by pad depth. Each size has a sitting and a
+  stretched (mid-hop) drawing; breathing and crouching frames are the
+  sitting one with rows taken out. Pupils are drawn into each eye from where
+  the frog is looking, with a shine pixel on the large size; blinks, happy
+  closed eyes, startled small pupils, the throat sac and the tongue tip
+  poking out ("blep") are drawn over the art.
 - `night.ts`: the scene. Sky, moon, two tree lines, reflective water with
   ripples, pads that dip under landings, lotus flowers, reeds and fireflies.
   Frogs hop between pads in arcs, dive, swim with only their eyes above water,

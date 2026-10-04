@@ -34,10 +34,6 @@ export function rng(seed: number): () => number {
 
 export const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v);
 export const lerp = (a: number, b: number, u: number) => a + (b - a) * u;
-export const smooth = (u: number) => {
-  const c = clamp(u, 0, 1);
-  return c * c * (3 - 2 * c);
-};
 
 /** Shading callback for `Field.ell`: q is the squared ellipse radius (0 centre, 1 rim), u/w the local axes. */
 export type Shade = (old: number, q: number, u: number, w: number) => number;
