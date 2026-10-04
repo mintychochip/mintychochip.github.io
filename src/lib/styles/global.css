@@ -1,56 +1,102 @@
 @font-face {
-  font-family: 'Geist Sans';
-  src: url('/fonts/geist-sans-latin-400-normal.woff2') format('woff2');
-  font-weight: 400; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Geist Sans';
-  src: url('/fonts/geist-sans-latin-500-normal.woff2') format('woff2');
-  font-weight: 500; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Geist Sans';
-  src: url('/fonts/geist-sans-latin-600-normal.woff2') format('woff2');
-  font-weight: 600; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Geist Mono';
-  src: url('/fonts/geist-mono-latin-400-normal.woff2') format('woff2');
-  font-weight: 400; font-style: normal; font-display: swap;
+  font-family: 'Pixelify Sans';
+  src: url('/fonts/PixelifySans.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
 }
 
-html, [data-theme='light'] {
-  --bg: #f7f7f5; --text: #1a1a1a; --text-secondary: #6b6b6b; --text-muted: #a3a3a3; --border: #e5e5e0; --border-strong: #d9d8d4; --surface: #fff; --accent: #1a1a1a; --accent-hover: #000; --code-bg: #ededea; --shadow: #0f172a1a; --shadow-strong: #0f172a1f; --error-text: #7a1f1f; --error-bg: #fff2f2; --error-border: #f0c0c0; --chart-grid: #e8e8e4; --radius: 12px; --max-width: 720px; --font-sans: "Geist Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; --text-xs: .8125rem; --text-sm: .875rem; --text-md: 1rem; --text-lg: 1.125rem; --text-xl: 1.5rem; --text-display: clamp(2.5rem, 7vw, 4rem); color-scheme: light;
+:root {
+  --bg: #0b0f19;
+  --fg: #ece6cc;
+  --muted: #8f98a8;
+  --dim: #687184;
+  --accent: #8bbf73;
+  --field: #151c2b;
+  --field-focus: #1d2639;
+  --error: #e8977c;
+  --width: 960px;
+  --font: 'Pixelify Sans', ui-sans-serif, system-ui, sans-serif;
+  color-scheme: dark;
 }
 
-[data-theme='dark'], [data-theme='system'] {
-  --bg: #121212; --text: #ededed; --text-secondary: #a3a3a3; --text-muted: #737373; --border: #2a2a2a; --border-strong: #3a3a3a; --surface: #1a1a1a; --accent: #ededed; --accent-hover: #fff; --code-bg: #242424; --shadow: #00000059; --shadow-strong: #00000073; --error-text: #fca5a5; --error-bg: #2a1515; --error-border: #5c2020; --chart-grid: #2a2a2a; color-scheme: dark;
-}
-
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {
   margin: 0;
-  background-color: var(--bg);
-  color: var(--text);
-  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 20px/1.45 var(--font);
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
 }
 
 :focus-visible {
-  outline: 2px solid var(--text);
-  outline-offset: 2px;
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
 }
 
-.page {
-  flex-direction: column;
-  min-height: 100vh;
-  display: flex;
+h1,
+h2,
+h3 {
+  font-weight: 700;
 }
-.main {
-  width: min(94%, var(--max-width));
-  flex: 1;
-  margin: 0 auto;
-  padding: 32px 0 64px;
+
+/* Corners notched by one art pixel (3 CSS px), for buttons and fields. */
+.px {
+  --n: 3px;
+  clip-path: polygon(
+    0 var(--n), var(--n) var(--n), var(--n) 0, calc(100% - var(--n)) 0, calc(100% - var(--n)) var(--n), 100% var(--n),
+    100% calc(100% - var(--n)), calc(100% - var(--n)) calc(100% - var(--n)), calc(100% - var(--n)) 100%, var(--n) 100%,
+    var(--n) calc(100% - var(--n)), 0 calc(100% - var(--n))
+  );
+}
+
+.btn {
+  display: inline-block;
+  padding: 9px 18px;
+  border: 0;
+  background: var(--fg);
+  color: var(--bg);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn:hover,
+.btn:focus-visible {
+  background: var(--accent);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
 }
