@@ -268,22 +268,44 @@ function mapBodyInk(c: number, kind: FrogKind) {
   return PINK_BODY[c];
 }
 
-/** Bow pixels in art space, offset from the top-left of the left eye blob. */
+/**
+ * Bow pixels relative to the point between the eyes: dx from rounded center-x,
+ * dy from the top row of the eye blobs (negative = on the forehead).
+ */
 const BOW: Record<number, readonly (readonly [number, number, number])[]> = {
-  0: [[0, -2, INK.bow], [1, -2, INK.bow], [0, -1, INK.bowKnot], [1, -1, INK.bowKnot]],
-  1: [[-1, -2, INK.bow], [0, -2, INK.bow], [1, -2, INK.bow], [2, -2, INK.bow], [0, -1, INK.bowKnot], [1, -1, INK.bowKnot], [0, -3, INK.bow], [1, -3, INK.bow]],
-  2: [[-1, -3, INK.bow], [0, -3, INK.bow], [1, -3, INK.bow], [2, -3, INK.bow], [3, -3, INK.bow], [-1, -2, INK.bow], [2, -2, INK.bow], [3, -2, INK.bow], [0, -2, INK.bowKnot], [1, -2, INK.bowKnot], [2, -2, INK.bowKnot]],
+  0: [
+    [-1, -2, INK.bow], [1, -2, INK.bow],
+    [0, -1, INK.bowKnot],
+  ],
+  1: [
+    [-3, -2, INK.bow], [-2, -2, INK.bow], [2, -2, INK.bow], [3, -2, INK.bow],
+    [-1, -1, INK.bowKnot], [0, -1, INK.bowKnot], [1, -1, INK.bowKnot],
+  ],
+  2: [
+    [-4, -3, INK.bow], [-3, -3, INK.bow], [-2, -2, INK.bow],
+    [2, -2, INK.bow], [3, -3, INK.bow], [4, -3, INK.bow],
+    [-1, -2, INK.bowKnot], [0, -2, INK.bowKnot], [1, -2, INK.bowKnot],
+  ],
 };
 
-function drawBow(S: Sprite, size: number, mirror: boolean, put: (i: number, j: number, c: number) => void) {
-  const e = S.eyes[0];
-  if (!e) return;
-  const parts = BOW[size];
-  if (!parts) return;
-  for (const [dx, dy, c] of parts) {
-    const i = mirror ? S.w - 1 - (e.x0 + dx) : e.x0 + dx;
-    put(i, e.y0 + dy, c);
+function bowCenter(S: Sprite): [number, number] | null {
+  if (!S.eyes.length) return null;
+  let left = S.eyes[0], right = S.eyes[0];
+  for (const e of S.eyes) {
+    if (e.x0 < left.x0) left = e;
+    if (e.x0 + e.w > right.x0 + right.w) right = e;
   }
+  const cx = (left.x0 + left.w / 2 + right.x0 + right.w / 2) / 2;
+  const top = Math.min(...S.eyes.map((e) => e.y0));
+  return [Math.round(cx), top];
+}
+
+function drawBow(S: Sprite, size: number, put: (i: number, j: number, c: number) => void) {
+  const at = bowCenter(S);
+  const parts = BOW[size];
+  if (!at || !parts) return;
+  const [cx, top] = at;
+  for (const [dx, dy, c] of parts) put(cx + dx, top + dy, c);
 }
 
 const place = (S: Sprite, x: number, y: number) => [Math.round(x - S.w / 2), Math.round(y) - S.h] as const;
@@ -315,7 +337,7 @@ export function drawFrog(F: Field, size: number, frame: Frame, face: FrogFace, x
     if (c) put(i, j, mapBodyInk(c - 1, kind));
   }
 
-  if (kind === 'pink') drawBow(S, size, !!o.mirror, put);
+  if (kind === 'pink') drawBow(S, size, put);
 
   const eyes = face.eyes ?? 'open';
   const [lx, ly] = face.look ?? [0, 0];
