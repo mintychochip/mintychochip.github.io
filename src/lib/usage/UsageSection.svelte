@@ -1,297 +1,124 @@
 <script lang="ts">
-  import type { ModelsResponse, SeriesResponse, RangeKey } from './api';
-  import { fetchModels, fetchSeries, rangeToDates, METRICS, RANGE_DAYS, isAbortError } from './api';
-  import { summarizeModels, summarizeSeries, type UsageStats } from './stats';
-  import StackedChart from './StackedChart.svelte';
-  import LinesChart from './LinesChart.svelte';
-  import StatCards from './StatCards.svelte';
-  import { theme } from '../theme.svelte';
+  import { onMount } from 'svelte';
+  import { fetchModels, isAbortError, rangeToDates } from './api';
+  import { dateRangeLabel, formatCompactTokens, formatDate } from './stats';
+  import { chartData, formatUsdCompact, rangeDays, rangesFor, toDaily, type Daily, type RangeId } from './series';
+  import UsageChart from './UsageChart.svelte';
 
-  let view = $state<'models' | 'metrics'>('models');
-  let stackBy = $state<'model' | 'provider' | 'variant'>('model');
-  let range = $state<RangeKey>('1y');
-  let data = $state<ModelsResponse | SeriesResponse | null>(null);
+  let daily = $state.raw<Daily | null>(null);
   let error = $state<string | null>(null);
-  let loading = $state(false);
-  let fetchGeneration = 0;
-  let hiddenKeys = $state(new Set<string>());
+  let range = $state<RangeId>('30d');
 
-  const RANGE_KEYS = Object.keys(RANGE_DAYS) as RangeKey[];
-  const chartTheme = $derived(theme.effective);
+  const ranges = $derived(daily ? rangesFor(daily.dates.length) : []);
+  const days = $derived(daily ? rangeDays(range, daily.dates.length) : 0);
+  const chart = $derived(daily ? chartData(daily, days) : null);
 
-  let stats = $derived.by<UsageStats | null>(() => {
-    if (!data) return null;
-    if (view === 'models') return summarizeModels(data as ModelsResponse);
-    return summarizeSeries(data as SeriesResponse, METRICS);
-  });
-
-  // Clear per-view legend toggles when the chart type changes.
-  $effect(() => {
-    view;
-    hiddenKeys = new Set<string>();
-  });
-
-  // Fetch data when the view or date range changes. stackBy and hiddenKeys
-  // are handled client-side by the chart components.
-  $effect(() => {
-    const currentView = view;
-    const currentRange = range;
-    const g = ++fetchGeneration;
-    const controller = new AbortController();
-
-    data = null;
-    error = null;
-    loading = true;
-
-    const { from, to } = rangeToDates(currentRange);
-
-    (async () => {
-      try {
-        const resp =
-          currentView === 'models'
-            ? await fetchModels(from, to, { signal: controller.signal })
-            : await fetchSeries(from, to, METRICS, { signal: controller.signal });
-        if (g === fetchGeneration) data = resp;
-      } catch (e) {
-        if (isAbortError(e)) return;
-        if (g === fetchGeneration) error = e instanceof Error ? e.message : 'Failed to load usage data';
-      } finally {
-        if (g === fetchGeneration) loading = false;
-      }
-    })();
-
-    return () => {
-      controller.abort();
+  const summary = $derived.by(() => {
+    if (!daily || !days) return null;
+    const totals = daily.totals.slice(-days);
+    const total = totals.reduce((a, b) => a + b, 0);
+    const best = totals.indexOf(Math.max(...totals));
+    const all = daily.totals.reduce((a, b) => a + b, 0);
+    return {
+      span: dateRangeLabel([daily.dates[daily.dates.length - days], daily.dates[daily.dates.length - 1]]),
+      total: formatCompactTokens(total),
+      perDay: formatCompactTokens(Math.round(total / days)),
+      peakDay: formatDate(daily.dates[daily.dates.length - days + best]),
+      peak: formatCompactTokens(totals[best]),
+      since: formatDate(daily.dates[0]),
+      all: formatCompactTokens(all),
+      cost: daily.cost === null ? null : formatUsdCompact(daily.cost),
     };
   });
 
-  function toggleModel(key: string) {
-    const next = new Set(hiddenKeys);
-    if (next.has(key)) next.delete(key);
-    else next.add(key);
-    hiddenKeys = next;
-  }
-
+  onMount(() => {
+    const ctl = new AbortController();
+    const { from, to } = rangeToDates('1y');
+    fetchModels(from, to, { signal: ctl.signal })
+      .then((resp) => {
+        const d = toDaily(resp);
+        if (!d.dates.length) throw new Error('no usage recorded yet');
+        if (!rangesFor(d.dates.length).includes(range)) range = 'all';
+        daily = d;
+      })
+      .catch((e) => {
+        if (!isAbortError(e)) error = e instanceof Error ? e.message : String(e);
+      });
+    return () => ctl.abort();
+  });
 </script>
 
-<section class="section tokens" id="usage">
-  <header class="tokens-header">
-    <h2 class="section-title">Token usage</h2>
-
-    <div class="tokens-controls">
-      <div class="toggle-group" role="group" aria-label="Chart type">
-        <button
-          type="button"
-          class="toggle"
-          class:is-active={view === 'models'}
-          aria-pressed={view === 'models'}
-          onclick={() => (view = 'models')}
-        >
-          Models
-        </button>
-        <button
-          type="button"
-          class="toggle"
-          class:is-active={view === 'metrics'}
-          aria-pressed={view === 'metrics'}
-          onclick={() => (view = 'metrics')}
-        >
-          Metrics
-        </button>
-      </div>
-
-      {#if view === 'models'}
-        <label class="toggle-select">
-          <span class="visually-hidden">Stack by</span>
-          <select bind:value={stackBy}>
-            <option value="model">Stack by model</option>
-            <option value="provider">Stack by provider</option>
-            <option value="variant">Stack by variant</option>
-          </select>
-        </label>
-      {/if}
-
-      <div class="range-selector" role="group" aria-label="Range">
-        {#each RANGE_KEYS as key (key)}
-          <button
-            type="button"
-            class="range-btn"
-            class:range-btn-active={range === key}
-            aria-pressed={range === key}
-            onclick={() => (range = key)}
-          >
-            {#if range === key}
-              <span class="range-btn-indicator" aria-hidden="true"></span>
-            {/if}
-            <span class="range-btn-label">{key}</span>
-          </button>
+<section id="usage" aria-labelledby="usage-title">
+  <div class="head">
+    <h2 id="usage-title">Token usage</h2>
+    {#if ranges.length > 1}
+      <div class="ranges" role="group" aria-label="Range">
+        {#each ranges as r (r)}
+          <button type="button" aria-pressed={range === r} onclick={() => (range = r)}>{r}</button>
         {/each}
       </div>
-    </div>
-  </header>
+    {/if}
+  </div>
 
-  {#if loading && !data}
-    <p class="tokens-loading">Loading usage data…</p>
-  {/if}
   {#if error}
-    <p class="error" role="status">{error}</p>
-  {/if}
-
-  {#if stats}
-    <StatCards {stats} />
-  {/if}
-
-  {#if data}
-    <div class="chart-wrap">
-      {#if view === 'models'}
-        <StackedChart
-          data={data as ModelsResponse}
-          groupBy={stackBy}
-          theme={chartTheme}
-          {hiddenKeys}
-          onToggle={toggleModel}
-        />
-      {:else}
-        <LinesChart
-          data={data as SeriesResponse}
-          theme={chartTheme}
-          metrics={METRICS}
-          {hiddenKeys}
-          onToggle={toggleModel}
-        />
+    <p class="status">Couldn't load usage data ({error}).</p>
+  {:else if !chart || !summary}
+    <p class="status">Loading usage data…</p>
+  {:else}
+    <p class="sum">
+      {summary.span}: <b>{summary.total}</b> tokens, about <b>{summary.perDay}</b> a day. Busiest day was
+      {summary.peakDay}, at <b>{summary.peak}</b>.
+      {#if range !== 'all'}
+        Since {summary.since}: {summary.all} tokens{#if summary.cost}, an estimated {summary.cost}{/if}.
+      {:else if summary.cost}
+        An estimated {summary.cost} in API pricing.
       {/if}
-
-    </div>
+    </p>
+    <UsageChart data={chart} />
   {/if}
 </section>
 
 <style>
-  .section {
-    padding: 36px 0;
-  }
-  .section-title {
-    font-size: var(--text-xs);
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin: 0;
-    font-weight: 600;
-  }
-  .tokens-header {
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 20px;
+  .head {
     display: flex;
-  }
-  .tokens-loading {
-    color: var(--text-muted);
-    font-size: var(--text-sm);
-    margin: 16px 0 0;
-  }
-  .tokens-controls {
     flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    display: inline-flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 24px;
   }
-  .toggle-group {
-    border: 1px solid var(--border);
-    background: var(--surface);
-    border-radius: 8px;
-    gap: 4px;
-    padding: 3px;
-    display: inline-flex;
+  h2 {
+    margin: 0;
+    font-size: 30px;
+    line-height: 1.2;
   }
-  .toggle {
-    color: var(--text-secondary);
-    font-size: var(--text-xs);
-    font-family: var(--font-mono);
+  .ranges {
+    display: flex;
+    gap: 18px;
+  }
+  .ranges button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
     cursor: pointer;
-    background: 0 0;
-    border: none;
-    border-radius: 5px;
-    padding: 5px 10px;
-    transition: color 0.12s, background 0.12s;
+    text-decoration: none;
   }
-  .toggle:hover {
-    color: var(--text);
+  .ranges button:hover {
+    color: var(--fg);
   }
-  .toggle.is-active {
-    background: var(--text);
-    color: var(--surface);
+  .ranges button[aria-pressed='true'] {
+    color: var(--fg);
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 6px;
   }
-  .toggle-select select {
-    appearance: none;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text-secondary);
-    font-size: var(--text-xs);
-    font-family: var(--font-mono);
-    cursor: pointer;
-    border-radius: 8px;
-    padding: 7px 10px;
+  .sum,
+  .status {
+    max-width: 44em;
+    margin: 12px 0 0;
+    color: var(--muted);
   }
-  .toggle-select select:hover {
-    color: var(--text);
-  }
-  .range-selector {
-    border: 1px solid var(--border);
-    background: var(--surface);
-    border-radius: 8px;
-    gap: 4px;
-    padding: 3px;
-    display: inline-flex;
-  }
-  .range-btn {
-    color: var(--text-secondary);
-    font-size: var(--text-xs);
-    font-family: var(--font-mono);
-    cursor: pointer;
-    background: 0 0;
-    border: none;
-    border-radius: 5px;
-    padding: 5px 10px;
-    transition: color 0.12s;
-    position: relative;
-  }
-  .range-btn:hover {
-    color: var(--text);
-  }
-  .range-btn-label {
-    z-index: 1;
-    position: relative;
-  }
-  .range-btn-indicator {
-    background: var(--text);
-    border-radius: 5px;
-    position: absolute;
-    inset: 0;
-  }
-  .range-btn-active,
-  .range-btn-active:hover {
-    color: var(--surface);
-  }
-  .chart-wrap {
-    margin: 24px 0 0;
-    position: relative;
-  }
-  .error {
-    color: var(--error-text);
-    background: var(--error-bg);
-    border: 1px solid var(--error-border);
-    font-size: var(--text-sm);
-    border-radius: 8px;
-    margin: 20px 0 0;
-    padding: 14px 18px;
-  }
-  .visually-hidden {
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    width: 1px;
-    height: 1px;
-    position: absolute;
-    overflow: hidden;
+  .sum b {
+    color: var(--fg);
   }
 </style>
