@@ -21,7 +21,7 @@
     return {
       html:
         `Last year on GitHub: <b>${totalLastYear.toLocaleString()}</b> contributions. ${streak}${peak} ` +
-        `The graph below is the same rhythm as my profile, drawn in the site's pond greens.`,
+        `The graph below matches my profile's rhythm, drawn in the same night palette as the hero pond.`,
     };
   });
 

@@ -25,6 +25,17 @@ export function levelToShade(level: number): number {
   return LEVEL_MAP[i] / 7;
 }
 
+/** Swatch colours for GitHub contribution levels 0–4, matching `quantize` at each tone (no dither). */
+export function heatmapLegendColors(palette: readonly string[]): string[] {
+  const L = palette.length - 1;
+  return [0, 1, 2, 3, 4].map((gh) => {
+    const tone = levelToShade(gh);
+    const val = tone * L;
+    const idx = Math.min(L, Math.floor(val + 1e-4));
+    return palette[idx];
+  });
+}
+
 function parseDay(raw: unknown): ContribDay | null {
   if (typeof raw !== 'object' || raw === null) return null;
   const r = raw as Record<string, unknown>;
@@ -127,7 +138,7 @@ export interface HeatmapLayout {
   cols: number;
 }
 
-/** Pixel grid for the contribution heatmap (moss levels on a dark field). */
+/** Pixel grid for the contribution heatmap (night palette levels on a dark field). */
 export function heatmapField(columns: number[][]): HeatmapLayout {
   const cell = 3;
   const gap = 1;

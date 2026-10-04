@@ -2,11 +2,13 @@
   import { onMount } from 'svelte';
   import { packPalette, quantize } from '../pond/field';
   import { PALETTES } from '../pond/palette';
-  import { columnDates, formatShortDate, heatmapField, type ActivitySummary } from './activity';
+  import { columnDates, formatShortDate, heatmapField, heatmapLegendColors, type ActivitySummary } from './activity';
 
   let { summary }: { summary: ActivitySummary } = $props();
 
-  const colors = packPalette(PALETTES.night);
+  const palette = PALETTES.night;
+  const colors = packPalette(palette);
+  const legendColors = heatmapLegendColors(palette);
 
   let plot: HTMLDivElement;
   let canvas: HTMLCanvasElement;
@@ -119,8 +121,11 @@
       <span class="hint">Hover a square for that day.</span>
     {/if}
     <span class="scale" aria-hidden="true">
-      <i class="l0"></i> less
-      <i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> more
+      <i style:background={legendColors[0]}></i> less
+      {#each legendColors.slice(1) as hex (hex)}
+        <i style:background={hex}></i>
+      {/each}
+      more
     </span>
   </figcaption>
 </figure>
@@ -181,20 +186,5 @@
     width: 12px;
     height: 12px;
     image-rendering: pixelated;
-  }
-  .l0 {
-    background: #16264a;
-  }
-  .l1 {
-    background: #1f4a5e;
-  }
-  .l2 {
-    background: #2f7a66;
-  }
-  .l3 {
-    background: #5a9a62;
-  }
-  .l4 {
-    background: #8bbf73;
   }
 </style>

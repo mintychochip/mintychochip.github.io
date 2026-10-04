@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { parseContributions, streaks, summarize, toWeekColumns } from './activity';
+import { heatmapLegendColors, parseContributions, streaks, summarize, toWeekColumns } from './activity';
+import { PALETTES } from '../pond/palette';
 
 const days = [
   { date: '2026-01-01', count: 2, level: 1 },
@@ -11,6 +12,14 @@ const days = [
   { date: '2026-01-07', count: 0, level: 0 },
   { date: '2026-01-08', count: 3, level: 2 },
 ];
+
+describe('heatmapLegendColors', () => {
+  it('uses the same palette indices as levelToShade', () => {
+    const night = PALETTES.night;
+    const colors = heatmapLegendColors(night);
+    expect(colors).toEqual([night[1], night[3], night[4], night[5], night[6]]);
+  });
+});
 
 describe('streaks', () => {
   it('counts current and longest runs', () => {
