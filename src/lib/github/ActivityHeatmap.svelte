@@ -4,12 +4,13 @@
   import { PALETTES } from '../pond/palette';
   import { columnDates, formatShortDate, heatmapField, heatmapLegendColors, type ActivitySummary } from './activity';
 
-  let { summary }: { summary: ActivitySummary } = $props();
+  let { summary, onhover }: { summary: ActivitySummary; onhover?: () => void } = $props();
 
   const palette = PALETTES.night;
   const colors = packPalette(palette);
   const legendColors = heatmapLegendColors(palette);
 
+  let frame: HTMLDivElement | undefined = $state();
   let plot: HTMLDivElement;
   let canvas: HTMLCanvasElement;
   let size = $state({ w: 0, h: 0, S: 3 });
@@ -53,6 +54,11 @@
     const img = ctx.createImageData(W, H);
     quantize(L.F, colors, new Uint32Array(img.data.buffer));
     ctx.putImageData(img, 0, 0);
+
+    // Show recent weeks first when scrolled on mobile
+    if (frame && frame.scrollWidth > frame.clientWidth) {
+      frame.scrollLeft = frame.scrollWidth - frame.clientWidth;
+    }
   });
 
   function cellAt(clientX: number, clientY: number): { col: number; row: number } | null {
@@ -70,6 +76,13 @@
       }
     }
     return null;
+  }
+
+  function setHi(next: { col: number; row: number } | null) {
+    if (next && (!hi || hi.col !== next.col || hi.row !== next.row)) {
+      onhover?.();
+    }
+    hi = next;
   }
 
   const xLabels = $derived.by(() => {
@@ -93,7 +106,7 @@
 </script>
 
 <figure class="chart">
-  <div class="frame">
+  <div class="frame" bind:this={frame}>
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
     <div
       class="plot"
@@ -101,8 +114,9 @@
       role="img"
       aria-label={description}
       tabindex="0"
-      onpointermove={(e) => (hi = cellAt(e.clientX, e.clientY))}
-      onpointerleave={(e) => e.pointerType === 'mouse' && (hi = null)}
+      onpointermove={(e) => setHi(cellAt(e.clientX, e.clientY))}
+      onpointerdown={(e) => setHi(cellAt(e.clientX, e.clientY))}
+      onpointerleave={(e) => e.pointerType === 'mouse' && setHi(null)}
     >
       <canvas bind:this={canvas}></canvas>
       {#each xLabels as l (l.i)}
@@ -118,7 +132,7 @@
     {#if hover}
       <span class="when"><b>{hover.count}</b> on {hover.date}</span>
     {:else}
-      <span class="hint">Hover a square for that day.</span>
+      <span class="hint">Tap or hover a square for that day.</span>
     {/if}
     <span class="scale" aria-hidden="true">
       <i style:background={legendColors[0]}></i> less
@@ -136,12 +150,18 @@
   }
   .frame {
     overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--dim) transparent;
   }
   .plot {
     position: relative;
-    min-height: 120px;
+    width: max-content;
+    min-width: max-content;
+    padding-bottom: 26px;
     display: flex;
-    align-items: flex-end;
+    flex-direction: column;
   }
   canvas {
     image-rendering: pixelated;
@@ -149,11 +169,12 @@
   }
   .x {
     position: absolute;
-    bottom: -22px;
+    bottom: 2px;
     transform: translateX(-50%);
     font-size: 14px;
     color: var(--dim);
     white-space: nowrap;
+    pointer-events: none;
   }
   .x.first {
     transform: translateX(0);
@@ -166,7 +187,7 @@
     flex-wrap: wrap;
     align-items: baseline;
     gap: 8px 20px;
-    margin-top: 28px;
+    margin-top: 20px;
     color: var(--muted);
     font-size: 15px;
   }
@@ -186,5 +207,15 @@
     width: 12px;
     height: 12px;
     image-rendering: pixelated;
+  }
+  @media (max-width: 480px) {
+    .legend {
+      gap: 6px 14px;
+      font-size: 14px;
+      margin-top: 14px;
+    }
+    .scale {
+      margin-left: 0;
+    }
   }
 </style>
