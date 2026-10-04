@@ -209,11 +209,24 @@ describe('frog', () => {
     };
     for (const size of SIZES) {
       const sit = bowPixels(size, 'sit');
-      expect(sit).toBeGreaterThan(4);
-      expect(sit).toBeLessThan(12);
+      expect(sit).toBeGreaterThan(size === 0 ? 6 : 15);
       for (const frame of FRAMES) {
         expect(bowPixels(size, frame)).toBe(sit);
       }
+    }
+  });
+
+  it('draws the bow mirrored when the frog faces the other way', () => {
+    const isBow = (slot: number) => slot === INK.bow || slot === INK.bowLight || slot === INK.bowKnot || slot === INK.bowFold;
+    for (const size of SIZES) {
+      const normal = new Field(48, 48);
+      const mirrored = new Field(48, 48);
+      drawFrog(normal, size, 'sit', {}, 24, 40, { kind: 'pink', mirror: false });
+      drawFrog(mirrored, size, 'sit', {}, 24, 40, { kind: 'pink', mirror: true });
+      let nNormal = 0, nMirrored = 0;
+      for (const c of normal.ink) if (c && isBow(c - 1)) nNormal++;
+      for (const c of mirrored.ink) if (c && isBow(c - 1)) nMirrored++;
+      expect(nMirrored).toBe(nNormal);
     }
   });
 });

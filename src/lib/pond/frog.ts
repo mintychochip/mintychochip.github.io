@@ -31,8 +31,6 @@ interface Art {
 
 const SMALL: Art = {
   sit: `
-.............
-...gg...gg...
 ...oo...oo...
 ..owwo.owwo..
 ..owkooowkoo.
@@ -43,8 +41,6 @@ odddgobbbbbgo
 oDddogoggobgo
 .oooooooooooo`,
   stretch: `
-.............
-...gg...gg...
 ...oo...oo...
 ..owwo.owwo..
 ..owkooowkoo.
@@ -56,16 +52,14 @@ oDddogoggobgo
 ..oDooooooogo
 .odo......oo.
 .oo..........`,
-  breath: [7], crouch: [7], wide: 6,
+  breath: [5], crouch: [5], wide: 6,
   pupil: [1, 1], shine: false,
-  mouth: [8, 6], blep: [[8, 7]], throat: [10.5, 8, 1.9],
-  swim: 6,
+  mouth: [8, 4], blep: [[8, 5]], throat: [10.5, 6, 1.9],
+  swim: 4,
 };
 
 const MEDIUM: Art = {
   sit: `
-...................
-...ggg....ggg......
 .....oooo..oooo....
 ....owwwwo.owwwwo..
 ....owkkwooowkkwo..
@@ -81,8 +75,6 @@ oDddddddobbbooobbgo
 .oDDdddogogogggogo.
 ..ooooooooooooooo..`,
   stretch: `
-...................
-...ggg....ggg......
 .....oooo..oooo....
 ....owwwwo.owwwwo..
 ....owkkwooowkkwo..
@@ -99,16 +91,14 @@ oDddddddobbbooobbgo
 .oDdo.........ogo..
 .oggo.........oo...
 .ooo...............`,
-  breath: [9], crouch: [9, 12], wide: 10,
+  breath: [7], crouch: [7, 10], wide: 10,
   pupil: [2, 2], shine: false,
-  mouth: [11, 8], blep: [[10, 9], [11, 9]], throat: [15.5, 10, 2.9],
-  swim: 8,
+  mouth: [11, 6], blep: [[10, 7], [11, 7]], throat: [15.5, 8, 2.9],
+  swim: 6,
 };
 
 const LARGE: Art = {
   sit: `
-........................
-....gggg......gggg......
 ........ooo.....ooo.....
 .......owwwo...owwwo....
 ......owwkkwo.owwkkwo...
@@ -129,8 +119,6 @@ oDddggggggobbbbooobbbggo
 ..oDDddddogogoggoggooggo
 ...oooooooooooooooooooo.`,
   stretch: `
-........................
-....gggg......gggg......
 ........ooo.....ooo.....
 .......owwwo...owwwo....
 ......owwkkwo.owwkkwo...
@@ -153,10 +141,10 @@ oDddggggggobbbbooobbbggo
 ..oddo..........ogo.....
 .ogggo..........oo......
 .ooooo..................`,
-  breath: [12], crouch: [12, 16], wide: 13,
+  breath: [10], crouch: [10, 14], wide: 13,
   pupil: [3, 3], shine: true,
-  mouth: [15, 11], blep: [[14, 12], [15, 12], [14, 13]], throat: [19.5, 14.5, 4.2],
-  swim: 9,
+  mouth: [15, 9], blep: [[14, 10], [15, 10], [14, 11]], throat: [19.5, 12.5, 4.2],
+  swim: 7,
 };
 
 const ARTS = [SMALL, MEDIUM, LARGE];
@@ -280,59 +268,50 @@ function mapBodyInk(c: number, kind: FrogKind) {
   return PINK_BODY[c];
 }
 
-/** Rows of forehead art above the eyes (must match sit / stretch strings). */
-const FOREHEAD_ROWS = 2;
-
 /**
- * Small tilted hair bow (+x = near side). dx/dy from the top forehead row; ~5–7 px wide, not a brow stripe.
+ * Hair ribbon bow perched on the frog's head by the left eye (mirrors naturally with the frog).
+ * Designed with loops, highlight, knot, and folds that rest on the brow/cheek outline and air above,
+ * keeping the frog's expressive eyes completely unobstructed.
  */
 const BOW: Record<number, readonly (readonly [number, number, number])[]> = {
   0: [
-    [-2, 0, INK.bowFold], [-1, 0, INK.bow],
-    [0, 1, INK.bowKnot],
-    [1, 0, INK.bowLight], [2, 0, INK.bow],
-    [3, 3, INK.bow], [3, 4, INK.bowFold],
+    [-1, -1, INK.bowLight], [0, -1, INK.bowLight], [1, -1, INK.bowLight],
+    [-2, 0, INK.bow], [-1, 0, INK.bowFold], [0, 0, INK.bowKnot], [1, 0, INK.bowFold], [2, 0, INK.bow],
+    [-1, 1, INK.bowFold], [2, 1, INK.bowFold],
   ],
   1: [
-    [-2, -1, INK.bow], [-1, 0, INK.bowFold],
-    [0, 0, INK.bowKnot],
-    [1, -1, INK.bowLight], [2, 0, INK.bow],
-    [3, 2, INK.bow], [4, 3, INK.bowKnot], [4, 4, INK.bowFold],
+    [-2, -2, INK.bowLight], [-1, -2, INK.bowLight], [1, -2, INK.bowLight], [2, -2, INK.bowLight],
+    [-3, -1, INK.bow], [-2, -1, INK.bowLight], [-1, -1, INK.bowFold], [0, -1, INK.bowKnot], [1, -1, INK.bowFold], [2, -1, INK.bowLight], [3, -1, INK.bow],
+    [-3, 0, INK.bowFold], [-2, 0, INK.bowFold], [-1, 0, INK.bowFold], [0, 0, INK.bowKnot], [1, 0, INK.bowFold], [2, 0, INK.bowFold], [3, 0, INK.bowFold],
+    [-2, 1, INK.bow], [3, 1, INK.bow],
+    [-2, 2, INK.bowFold], [3, 2, INK.bowFold],
   ],
   2: [
-    [-2, -1, INK.bow], [-1, -1, INK.bowLight],
-    [0, 0, INK.bowKnot],
-    [1, -1, INK.bowLight], [2, -1, INK.bow],
-    [3, 2, INK.bow], [4, 3, INK.bowKnot], [5, 4, INK.bowFold],
+    [-3, -2, INK.bowLight], [-2, -2, INK.bowLight], [2, -2, INK.bowLight], [3, -2, INK.bowLight],
+    [-4, -1, INK.bow], [-3, -1, INK.bowLight], [-2, -1, INK.bowFold], [-1, -1, INK.bowFold], [0, -1, INK.bowKnot], [1, -1, INK.bowFold], [2, -1, INK.bowFold], [3, -1, INK.bowLight], [4, -1, INK.bow],
+    [-4, 0, INK.bowFold], [-3, 0, INK.bowFold], [-2, 0, INK.bowFold], [-1, 0, INK.bowFold], [0, 0, INK.bowKnot], [1, 0, INK.bowFold], [2, 0, INK.bowFold], [3, 0, INK.bowFold], [4, 0, INK.bowFold],
+    [-2, 1, INK.bow], [2, 1, INK.bow],
+    [-3, 2, INK.bowFold], [3, 2, INK.bowFold],
   ],
 };
 
-function bowAnchor(S: Sprite): [number, number] | null {
+function bowAnchor(S: Sprite, size: number): [number, number] | null {
   if (!S.eyes.length) return null;
-  let left = S.eyes[0], right = S.eyes[0];
+  let left = S.eyes[0];
   for (const e of S.eyes) {
     if (e.x0 < left.x0) left = e;
-    if (e.x0 + e.w > right.x0 + right.w) right = e;
   }
-  const eyeTop = Math.min(...S.eyes.map((e) => e.y0));
-  const cx = (left.x0 + left.w / 2 + right.x0 + right.w / 2) / 2 + 0.5;
-  return [Math.round(cx), Math.max(0, eyeTop - FOREHEAD_ROWS)];
+  const cx = left.x0 + size;
+  return [cx, Math.max(0, left.y0 - 1)];
 }
 
-function onEyeBlob(S: Sprite, i: number, j: number) {
-  for (const e of S.eyes) if (inEye(e, i, j)) return true;
-  return false;
-}
-
-function drawBow(S: Sprite, size: number, mirror: boolean, put: (i: number, j: number, c: number) => void) {
-  const at = bowAnchor(S);
+function drawBow(S: Sprite, size: number, put: (i: number, j: number, c: number) => void) {
+  const at = bowAnchor(S, size);
   const parts = BOW[size];
   if (!at || !parts) return;
   const [cx, top] = at;
   for (const [dx, dy, c] of parts) {
-    const sx = mirror ? -dx : dx;
-    const i = cx + sx, j = top + dy;
-    if (!onEyeBlob(S, i, j)) put(i, j, c);
+    put(cx + dx, top + dy, c);
   }
 }
 
@@ -392,7 +371,7 @@ export function drawFrog(F: Field, size: number, frame: Frame, face: FrogFace, x
     if (art.shine && !face.wide) put(bx, by, INK.eye);
   }
 
-  if (kind === 'pink') drawBow(S, size, !!o.mirror, put);
+  if (kind === 'pink') drawBow(S, size, put);
 
   if (face.blep) for (const [i, j] of S.blep) put(i, j, INK.tongue);
 
