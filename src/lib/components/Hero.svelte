@@ -26,11 +26,6 @@
   <div class="art">
     <PondCanvas seed="mintychochip-dusk" palette="night" options={pond} interactive />
     <h1 bind:this={title}>{site.name}</h1>
-    <nav aria-label="Sections">
-      {#each site.nav as item (item.href)}
-        <a href={item.href}>{item.label}</a>
-      {/each}
-    </nav>
   </div>
   <div class="intro">
     <p>{site.intro}</p>
@@ -51,24 +46,14 @@
     left: 27px;
     bottom: 21px;
     margin: 0;
-    font-size: 50px;
+    font-size: clamp(34px, 5.5vw, 50px);
     line-height: 1;
     text-shadow: 3px 3px 0 var(--bg);
     pointer-events: none;
   }
-  nav {
-    position: absolute;
-    top: 18px;
-    right: 24px;
-    display: flex;
-    gap: 24px;
-    text-shadow: 2px 2px 0 var(--bg);
-  }
-  nav a,
   .links a {
     text-decoration: none;
   }
-  nav a:hover,
   .links a:hover {
     color: var(--accent);
   }
@@ -88,6 +73,7 @@
     gap: 24px;
   }
   .links a {
+    padding: 2px 0;
     text-decoration: underline;
     text-decoration-thickness: 2px;
     text-underline-offset: 5px;
@@ -97,15 +83,29 @@
       height: 240px;
     }
     h1 {
-      left: 15px;
-      bottom: 15px;
-      font-size: 38px;
+      left: 14px;
+      bottom: 14px;
+      font-size: clamp(26px, 8vw, 38px);
     }
-    nav {
-      top: 12px;
-      right: 15px;
+    .intro {
+      margin-top: 16px;
+      gap: 8px 16px;
+    }
+    .links {
+      gap: 18px;
+    }
+  }
+  @media (max-width: 380px) {
+    .art {
+      height: 210px;
+    }
+    h1 {
+      left: 10px;
+      bottom: 10px;
+      font-size: clamp(22px, 7.5vw, 30px);
+    }
+    .links {
       gap: 14px;
-      font-size: 17px;
     }
   }
 </style>

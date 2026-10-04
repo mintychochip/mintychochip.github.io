@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FALLBACK, metaLine, sortProjects, toProject } from './github';
+import { DESCRIPTION_MAX_WORDS, FALLBACK, metaLine, sortProjects, toProject, truncateWords } from './github';
 
 const raw = (over: Record<string, unknown> = {}) => ({
   name: 'kitsune',
@@ -10,6 +10,18 @@ const raw = (over: Record<string, unknown> = {}) => ({
   pushed_at: '2026-08-29T10:00:00Z',
   fork: false,
   ...over,
+});
+
+describe('truncateWords', () => {
+  it('leaves short text unchanged', () => {
+    expect(truncateWords('one two three')).toBe('one two three');
+  });
+
+  it('truncates with an ellipsis', () => {
+    const words = Array.from({ length: DESCRIPTION_MAX_WORDS + 5 }, (_, i) => `w${i}`).join(' ');
+    expect(truncateWords(words).endsWith('…')).toBe(true);
+    expect(truncateWords(words).split(/\s+/).length).toBe(DESCRIPTION_MAX_WORDS);
+  });
 });
 
 describe('toProject', () => {

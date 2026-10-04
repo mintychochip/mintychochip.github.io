@@ -128,6 +128,6 @@
     image-rendering: crisp-edges;
   }
   .live {
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
   }
 </style>

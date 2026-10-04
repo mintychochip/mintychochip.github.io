@@ -15,7 +15,17 @@ export interface Project {
 }
 
 export const PER_PAGE = 6;
+/** Max words shown on project cards; longer GitHub descriptions get an ellipsis. */
+export const DESCRIPTION_MAX_WORDS = 20;
 const MAX_PAGES = 10;
+
+export function truncateWords(text: string, maxWords = DESCRIPTION_MAX_WORDS): string {
+  const trimmed = text.trim();
+  if (!trimmed) return '';
+  const words = trimmed.split(/\s+/);
+  if (words.length <= maxWords) return trimmed;
+  return `${words.slice(0, maxWords).join(' ')}…`;
+}
 
 function project(name: string, description: string, fields: Partial<Project> & { pushed: string }): Project {
   const live = site.projectUrls[name] ?? null;
@@ -80,17 +90,24 @@ export async function fetchProjects(user = site.githubUser, signal?: AbortSignal
   return sortProjects(out);
 }
 
-export function metaLine(p: Project, now = new Date()): string {
+export function metaParts(p: Project, now = new Date()): { language: string | null; otherParts: string[] } {
   const d = new Date(p.pushed);
-  const parts: string[] = [];
-  if (p.language) parts.push(p.language);
-  if (p.stars) parts.push(`${p.stars} ${p.stars === 1 ? 'star' : 'stars'}`);
+  const otherParts: string[] = [];
+  if (p.stars) otherParts.push(`${p.stars} ${p.stars === 1 ? 'star' : 'stars'}`);
   if (!Number.isNaN(d.getTime())) {
     const sameYear = d.getUTCFullYear() === now.getUTCFullYear();
-    parts.push(
+    otherParts.push(
       `updated ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: sameYear ? undefined : 'numeric', timeZone: 'UTC' })}`,
     );
   }
-  if (p.live) parts.push(p.live);
+  if (p.live) otherParts.push(p.live);
+  return { language: p.language, otherParts };
+}
+
+export function metaLine(p: Project, now = new Date()): string {
+  const { language, otherParts } = metaParts(p, now);
+  const parts: string[] = [];
+  if (language) parts.push(language);
+  parts.push(...otherParts);
   return parts.join(' · ');
 }

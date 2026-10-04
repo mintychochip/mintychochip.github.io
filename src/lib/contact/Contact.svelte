@@ -84,7 +84,7 @@
 <style>
   h2 {
     margin: 0;
-    font-size: 30px;
+    font-size: clamp(24px, 5vw, 30px);
     line-height: 1.2;
   }
   .lede {
@@ -121,13 +121,13 @@
   input,
   textarea {
     width: 100%;
-    padding: 9px 12px;
+    padding: 10px 12px;
     border: 0;
     background: var(--field);
-    font-size: 18px;
+    font-size: 17px;
   }
   textarea {
-    min-height: 96px;
+    min-height: 100px;
     resize: vertical;
   }
   input:focus,
@@ -144,7 +144,7 @@
   }
   em {
     font-style: normal;
-    font-size: 16px;
+    font-size: 15px;
     color: var(--error);
   }
   .actions {
@@ -155,12 +155,13 @@
   }
   .note {
     margin: 0;
-    font-size: 16px;
+    font-size: 15px;
     color: var(--muted);
   }
-  @media (max-width: 560px) {
+  @media (max-width: 600px) {
     form {
       grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
     }
   }
 </style>

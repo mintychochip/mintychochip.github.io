@@ -31,8 +31,10 @@
   }
   .row {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
-    gap: 16px;
+    align-items: baseline;
+    gap: 8px 16px;
     margin-top: 14px;
     font-size: 16px;
     color: var(--dim);
@@ -43,8 +45,20 @@
   }
   a {
     text-decoration: none;
+    padding: 2px 0;
   }
   a:hover {
     color: var(--accent);
+  }
+  @media (max-width: 640px) {
+    footer {
+      margin-top: 48px;
+    }
+    .art {
+      height: 64px;
+    }
+    .row {
+      font-size: 15px;
+    }
   }
 </style>

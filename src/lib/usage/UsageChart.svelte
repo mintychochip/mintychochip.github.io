@@ -16,6 +16,7 @@
   let plot: HTMLDivElement;
   let canvas: HTMLCanvasElement;
   let size = $state({ w: 0, h: 0, S: 3 });
+  let activeS = $state(3);
   let hi = $state<number | null>(null);
   let layout = $state.raw<BarsLayout | null>(null);
 
@@ -26,9 +27,13 @@
   const order = $derived(data.series.map((_, j) => j).slice(1).concat(0));
 
   $effect(() => {
-    const { w, h, S } = size;
+    const { w, h, S: defaultS } = size;
     if (!w || !h || !canvas) return;
-    const W = Math.ceil(w / S), H = Math.ceil(h / S), n = data.rows.length;
+    const n = data.rows.length;
+    const minArtPixels = n > 1 ? n * 2 - 1 : 1;
+    const S = w < minArtPixels * defaultS ? Math.max(1, w / minArtPixels) : defaultS;
+    activeS = S;
+    const W = Math.max(minArtPixels, Math.ceil(w / S)), H = Math.ceil(h / S);
     const gap = n <= 10 ? 8 : (W - (n - 1) * 2) / n >= 3 ? 2 : 1;
     const L = bars(W, H, data.rows, {
       series: LEVEL, bg: [0, 0.2], bgPow: 2.4, grid: 1, axis: 2, gap, headroom: 4,
@@ -53,7 +58,7 @@
 
   function barAt(clientX: number): number | null {
     if (!layout) return null;
-    const x = (clientX - canvas.getBoundingClientRect().left) / size.S;
+    const x = (clientX - canvas.getBoundingClientRect().left) / activeS;
     const n = data.rows.length, pitch = n > 1 ? layout.bx(1) - layout.bx(0) : layout.bw;
     const i = Math.floor((x - layout.bx(0) + (pitch - layout.bw) / 2) / pitch);
     return i >= 0 && i < n ? i : null;
@@ -112,16 +117,16 @@
       <canvas bind:this={canvas}></canvas>
       {#if layout}
         {#each layout.ticks as t (t.value)}
-          <span class="y" style:top="{(t.y + 0.5) * size.S}px">{tick(t.value)}</span>
+          <span class="y" style:top="{(t.y + 0.5) * activeS}px">{tick(t.value)}</span>
         {/each}
         {#each xLabels as l (l.i)}
-          <span class="x {l.edge}" style:left="{(layout.bx(l.i) + layout.bw / 2) * size.S}px">{l.text}</span>
+          <span class="x {l.edge}" style:left="{(layout.bx(l.i) + layout.bw / 2) * activeS}px">{l.text}</span>
         {/each}
         {#if peak >= 0 && hi === null}
           <span
             class="note"
-            style:left="{(layout.bx(peak) + layout.bw / 2) * size.S}px"
-            style:top="{layout.sy(data.totals[peak]) * size.S}px">peak</span
+            style:left="{(layout.bx(peak) + layout.bw / 2) * activeS}px"
+            style:top="{layout.sy(data.totals[peak]) * activeS}px">peak</span
           >
         {/if}
       {/if}
@@ -219,9 +224,52 @@
     color: var(--fg);
   }
   @media (max-width: 560px) {
-    .frame,
+    .frame {
+      padding: 0 0 28px 38px;
+    }
+    .plot {
+      height: 180px;
+    }
+    .y,
+    .x,
+    .note {
+      font-size: 13px;
+    }
+    .y {
+      right: calc(100% + 6px);
+    }
+    .x {
+      top: calc(100% + 8px);
+    }
     .legend {
-      padding-left: 46px;
+      padding-left: 0;
+      gap: 6px 14px;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+  }
+  @media (max-width: 380px) {
+    .frame {
+      padding: 0 0 26px 32px;
+    }
+    .plot {
+      height: 160px;
+    }
+    .y,
+    .x,
+    .note {
+      font-size: 12px;
+    }
+    .y {
+      right: calc(100% + 4px);
+    }
+    .legend {
+      gap: 4px 10px;
+      font-size: 13px;
+    }
+    .key i {
+      width: 10px;
+      height: 10px;
     }
   }
 </style>

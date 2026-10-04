@@ -323,4 +323,11 @@ describe('bars', () => {
     expect(L.F.v.every((v) => v >= 0 && v <= 1)).toBe(true);
     expect(top).toBe(7);
   });
+
+  it('safely handles narrow widths with many bars without out-of-bounds corruption', () => {
+    const rows = Array.from({ length: 90 }, () => [1, 2]);
+    const L = bars(30, 20, rows, { series: [3, 6], gap: 1 });
+    expect(L.F.v.every((v) => v >= 0 && v <= 1)).toBe(true);
+    expect(Number.isFinite(L.bx(0))).toBe(true);
+  });
 });

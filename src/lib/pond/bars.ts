@@ -64,16 +64,20 @@ export function bars(W: number, H: number, rows: readonly (readonly number[])[],
   if (o.grid !== undefined) for (const tk of ticks) for (let x = 0; x < W; x += 2) F.v[tk.y * W + x] = lv(o.grid);
   const n = rows.length, gap = o.gap ?? 2;
   const bw = Math.max(1, Math.min(o.maxBar ?? Infinity, Math.floor((W - (n - 1) * gap) / Math.max(1, n))));
-  const xs = Math.floor((W - (n * bw + (n - 1) * gap)) / 2);
+  const xs = Math.max(0, Math.floor((W - (n * bw + (n - 1) * gap)) / 2));
   const bx = (i: number) => xs + i * (bw + gap);
   rows.forEach((row, i) => {
-    const x0 = bx(i), lift = o.highlight === undefined || i === o.highlight ? 0 : -1;
+    const origX = bx(i), lift = o.highlight === undefined || i === o.highlight ? 0 : -1;
+    if (origX < 0 || origX >= W) return;
+    const x0 = origX;
+    const x1 = Math.min(W, x0 + bw);
+    if (x0 >= x1) return;
     let acc = 0;
     row.forEach((m, j) => {
       const ya = sy(acc + m), yb = sy(acc);
       acc += m;
       const val = lv((o.series[j] ?? top) + lift);
-      for (let y = Math.max(0, ya); y < yb; y++) F.v.fill(val, y * W + x0, y * W + x0 + bw);
+      for (let y = Math.max(0, ya); y < yb; y++) F.v.fill(val, y * W + x0, y * W + x1);
     });
   });
   if (o.axis !== undefined) F.v.fill(lv(o.axis), (H - 1) * W, H * W);

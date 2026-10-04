@@ -1,5 +1,6 @@
 import { mount } from 'svelte';
 import './lib/styles/global.css';
+import './lib/styles/cursor.css';
 import App from './App.svelte';
 
 const root = document.getElementById('root');

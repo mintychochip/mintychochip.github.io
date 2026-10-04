@@ -88,19 +88,23 @@
   }
   h2 {
     margin: 0;
-    font-size: 30px;
+    font-size: clamp(24px, 5vw, 30px);
     line-height: 1.2;
   }
   .ranges {
     display: flex;
-    gap: 18px;
+    flex-wrap: wrap;
+    gap: 8px 18px;
   }
   .ranges button {
-    padding: 0;
+    padding: 4px 2px;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
     border: 0;
     background: none;
     color: var(--muted);
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     text-decoration: none;
   }
   .ranges button:hover {
@@ -120,5 +124,13 @@
   }
   .sum b {
     color: var(--fg);
+  }
+  @media (max-width: 480px) {
+    .head {
+      gap: 10px 16px;
+    }
+    .ranges {
+      gap: 4px 14px;
+    }
   }
 </style>

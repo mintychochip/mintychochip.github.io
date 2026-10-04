@@ -9,9 +9,11 @@ export const site = {
   nav: [
     { label: 'github', href: '#github' },
     { label: 'usage', href: '#usage' },
+    { label: 'blog', href: '#blog' },
     { label: 'projects', href: '#projects' },
     { label: 'resume', href: '#resume' },
     { label: 'contact', href: '#contact' },
+    { label: 'wordle', href: '#wordle' },
   ],
   /** Repos whose card should open a live site instead of GitHub. */
   projectUrls: { ModularJobs: 'https://jobs.mintychochip.dev' } as Record<string, string>,

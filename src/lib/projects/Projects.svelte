@@ -62,12 +62,13 @@
   }
   h2 {
     margin: 0;
-    font-size: 30px;
+    font-size: clamp(24px, 5vw, 30px);
     line-height: 1.2;
   }
   .head a {
     color: var(--muted);
     text-decoration: none;
+    padding: 4px 0;
   }
   .head a:hover {
     color: var(--accent);
@@ -81,15 +82,21 @@
   .pager {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px 18px;
-    margin-top: 36px;
+    align-items: center;
+    gap: 4px 10px;
+    margin-top: 32px;
   }
   .pager button {
-    padding: 0;
+    padding: 6px 8px;
+    min-width: 36px;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: 0;
     background: none;
     color: var(--muted);
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
   }
   .pager button:hover:not(:disabled) {
     color: var(--fg);
@@ -97,7 +104,7 @@
   .pager button:disabled {
     color: var(--dim);
     opacity: 0.5;
-    cursor: default;
+    cursor: var(--cursor-default);
   }
   .pager [aria-current='page'] {
     color: var(--fg);
@@ -108,11 +115,17 @@
   @media (max-width: 860px) {
     .grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 32px 20px;
     }
   }
   @media (max-width: 560px) {
     .grid {
       grid-template-columns: minmax(0, 1fr);
+      gap: 28px;
+    }
+    .pager {
+      margin-top: 24px;
+      gap: 4px 6px;
     }
   }
 </style>
