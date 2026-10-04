@@ -175,6 +175,24 @@ describe('frog', () => {
     expect(seen.get(INK.bow)).toBeGreaterThan(0);
     expect(seen.get(INK.skin) ?? 0).toBe(0);
   });
+
+  it('keeps the full bow on every frame (squash/stretch must not clip it)', () => {
+    const bowInks = new Set([INK.bow, INK.bowLight, INK.bowKnot, INK.bowFold]);
+    const bowPixels = (size: number, frame: Frame) => {
+      const F = new Field(48, 48);
+      drawFrog(F, size, frame, {}, 24, 40, { kind: 'pink' });
+      let n = 0;
+      for (const c of F.ink) if (c && bowInks.has(c - 1)) n++;
+      return n;
+    };
+    for (const size of SIZES) {
+      const sit = bowPixels(size, 'sit');
+      expect(sit).toBeGreaterThan(size === 0 ? 6 : 15);
+      for (const frame of FRAMES) {
+        expect(bowPixels(size, frame)).toBe(sit);
+      }
+    }
+  });
 });
 
 describe('night pond', () => {
