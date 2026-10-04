@@ -1,4 +1,4 @@
-import { Field, TAU, clamp, hash, lerp, mul, rng, set } from './field';
+import { Field, TAU, clamp, hash, lerp, mul, rng, sceneTone, set } from './field';
 import { drawFrog as paintFrog, frogBox, mouthAt as frogMouth, sizeFor, type Frame, type FrogFace, type FrogKind } from './frog';
 import { INK } from './palette';
 
@@ -114,8 +114,8 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
         val += 0.24 * Math.pow(1 - (d - moon.R) / halo, 2.2);
       }
       if (y >= far[x]) val = 0.22 + 0.08 * Math.exp(-Math.abs(x - moon.x) / (W * 0.35));
-      if (y >= top[x]) val = 0.03;
-      sky[y * W + x] = val;
+      if (y >= top[x]) val = 0.09;
+      sky[y * W + x] = sceneTone(val, 0.78, 0.04, 0.98);
     }
   }
   const stars = Array.from({ length: Math.round((W * y0) / 70) }, () => ({
@@ -588,7 +588,7 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
         if (mdx < gw && Math.sin(y * 1.25 + t * 2.1 + Math.sin(x * 0.45 + t * 0.9) * 1.3) > 0.3) {
           val += 0.72 * Math.pow(1 - mdx / gw, 1.2) * (1 - 0.5 * depth);
         }
-        v[y * W + x] = val;
+        v[y * W + x] = sceneTone(val, 0.8, 0.06, 0.96);
       }
     }
     for (const rp of ripples) {
@@ -598,7 +598,10 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
       const ya = Math.max(y0, Math.floor(rp.y - m * 0.33)), yb = Math.min(H - 1, Math.ceil(rp.y + m * 0.33));
       for (let y = ya; y <= yb; y++) for (let x = xa; x <= xb; x++) {
         const d = Math.hypot(x - rp.x, (y - rp.y) / 0.33) - R;
-        if (d > -3 * k && d < 3 * k) v[y * W + x] += amp * Math.exp(-(d * d) / (2 * k * k));
+        if (d > -3 * k && d < 3 * k) {
+          const i = y * W + x;
+          v[i] = sceneTone(v[i] + amp * Math.exp(-(d * d) / (2 * k * k)), 0.8, 0.06, 0.98);
+        }
       }
     }
 

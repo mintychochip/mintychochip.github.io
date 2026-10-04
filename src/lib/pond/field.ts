@@ -35,6 +35,15 @@ export function rng(seed: number): () => number {
 export const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v);
 export const lerp = (a: number, b: number, u: number) => a + (b - a) * u;
 
+/**
+ * Stretches scene tones so ordered dither uses more palette levels instead of
+ * parking everything in the two darkest bins (gamma < 1 lifts shadows).
+ */
+export function sceneTone(v: number, gamma = 0.82, lo = 0.05, hi = 0.97): number {
+  const t = clamp((v - lo) / (hi - lo), 0, 1);
+  return clamp(lo + (hi - lo) * t ** gamma, 0, 1);
+}
+
 /** Shading callback for `Field.ell`: q is the squared ellipse radius (0 centre, 1 rim), u/w the local axes. */
 export type Shade = (old: number, q: number, u: number, w: number) => number;
 

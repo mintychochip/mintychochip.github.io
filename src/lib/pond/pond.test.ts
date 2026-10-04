@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { bars, niceStep } from './bars';
-import { Field, levelsOf, packPalette, quantize } from './field';
+import { Field, levelsOf, packPalette, quantize, sceneTone } from './field';
 import { drawFrog, frogBox, sizeFor, type Frame, type FrogFace } from './frog';
 import { nightPond } from './night';
 import { INK, INK_COLORS, LEVELS, PALETTES, PALETTE_NAMES, assignPalettes, ramp } from './palette';
@@ -34,6 +34,14 @@ describe('palettes', () => {
     const a = assignPalettes(names);
     expect(new Set(a).size).toBe(names.length);
     expect(assignPalettes(names)).toEqual(a);
+  });
+});
+
+describe('sceneTone', () => {
+  it('lifts crushed shadows into mid levels', () => {
+    expect(sceneTone(0.1)).toBeGreaterThan(0.1);
+    expect(sceneTone(0.9)).toBeGreaterThan(0.85);
+    expect(sceneTone(1)).toBeLessThanOrEqual(0.97);
   });
 });
 
@@ -177,26 +185,26 @@ describe('frog', () => {
   });
 
   it('does not paint the bow over eye whites', () => {
-    const bowInks = new Set([INK.bow, INK.bowLight, INK.bowKnot, INK.bowFold]);
+    const isBow = (slot: number) => slot === INK.bow || slot === INK.bowLight || slot === INK.bowKnot || slot === INK.bowFold;
     for (const size of SIZES) {
       const pink = new Field(48, 48);
       const green = new Field(48, 48);
       drawFrog(pink, size, 'sit', {}, 24, 40, { kind: 'pink' });
       drawFrog(green, size, 'sit', {}, 24, 40, { kind: 'green' });
       for (let i = 0; i < pink.ink.length; i++) {
-        if (!pink.ink[i] || !bowInks.has(pink.ink[i] - 1)) continue;
+        if (!pink.ink[i] || !isBow(pink.ink[i] - 1)) continue;
         expect(green.ink[i]).not.toBe(INK.eye + 1);
       }
     }
   });
 
   it('keeps the full bow on every frame (squash/stretch must not clip it)', () => {
-    const bowInks = new Set([INK.bow, INK.bowLight, INK.bowKnot, INK.bowFold]);
+    const isBow = (slot: number) => slot === INK.bow || slot === INK.bowLight || slot === INK.bowKnot || slot === INK.bowFold;
     const bowPixels = (size: number, frame: Frame) => {
       const F = new Field(48, 48);
       drawFrog(F, size, frame, {}, 24, 40, { kind: 'pink' });
       let n = 0;
-      for (const c of F.ink) if (c && bowInks.has(c - 1)) n++;
+      for (const c of F.ink) if (c && isBow(c - 1)) n++;
       return n;
     };
     for (const size of SIZES) {
@@ -210,6 +218,14 @@ describe('frog', () => {
 });
 
 describe('night pond', () => {
+  it('uses several palette levels across sky and water', () => {
+    const { F } = render('levels', 8);
+    const used = new Set(levelsOf(F, LEVELS));
+    expect(used.size).toBeGreaterThanOrEqual(5);
+    expect(used.has(0)).toBe(true);
+    expect(used.has(LEVELS - 1)).toBe(true);
+  });
+
   it('is deterministic for a seed', () => {
     const a = render('same', 6), b = render('same', 6);
     expect(a.F.v).toEqual(b.F.v);
