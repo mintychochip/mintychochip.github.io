@@ -166,6 +166,15 @@ describe('frog', () => {
       expect(inkCount(draw(1, frame, {}))).toBeGreaterThan(20);
     }
   });
+
+  it('paints a pink body and bow for the girlfriend variant', () => {
+    const F = new Field(40, 30);
+    drawFrog(F, 1, 'sit', {}, 20, 28, { kind: 'pink' });
+    const seen = colours(F);
+    expect(seen.get(INK.pinkSkin)).toBeGreaterThan(0);
+    expect(seen.get(INK.bow)).toBeGreaterThan(0);
+    expect(seen.get(INK.skin) ?? 0).toBe(0);
+  });
 });
 
 describe('night pond', () => {
@@ -181,6 +190,8 @@ describe('night pond', () => {
     const inks = new Set(F.ink);
     expect(inks.has(INK.skin + 1)).toBe(true);
     expect(inks.has(INK.eye + 1)).toBe(true);
+    expect(inks.has(INK.pinkSkin + 1)).toBe(true);
+    expect(inks.has(INK.bow + 1)).toBe(true);
   });
 
   it('keeps frogs in the frame and every value finite over a long run', () => {

@@ -251,10 +251,39 @@ export interface FrogFace {
   blep?: boolean;
 }
 
+export type FrogKind = 'green' | 'pink';
+
 export interface FrogDraw {
   mirror?: boolean;
   /** Rows from here down are not drawn (under water). */
   clipY?: number;
+  kind?: FrogKind;
+}
+
+/** Body pixels in the sprite use green ink slots 0–5; map them for the pink girlfriend. */
+const PINK_BODY = [INK.pinkLine, INK.pinkDeep, INK.pinkShade, INK.pinkSkin, INK.pinkLight, INK.pinkBelly] as const;
+
+function mapBodyInk(c: number, kind: FrogKind) {
+  if (kind === 'green' || c > INK.belly) return c;
+  return PINK_BODY[c];
+}
+
+/** Bow pixels in art space, offset from the top-left of the left eye blob. */
+const BOW: Record<number, readonly (readonly [number, number, number])[]> = {
+  0: [[0, -2, INK.bow], [1, -2, INK.bow], [0, -1, INK.bowKnot], [1, -1, INK.bowKnot]],
+  1: [[-1, -2, INK.bow], [0, -2, INK.bow], [1, -2, INK.bow], [2, -2, INK.bow], [0, -1, INK.bowKnot], [1, -1, INK.bowKnot], [0, -3, INK.bow], [1, -3, INK.bow]],
+  2: [[-1, -3, INK.bow], [0, -3, INK.bow], [1, -3, INK.bow], [2, -3, INK.bow], [3, -3, INK.bow], [-1, -2, INK.bow], [2, -2, INK.bow], [3, -2, INK.bow], [0, -2, INK.bowKnot], [1, -2, INK.bowKnot], [2, -2, INK.bowKnot]],
+};
+
+function drawBow(S: Sprite, size: number, mirror: boolean, put: (i: number, j: number, c: number) => void) {
+  const e = S.eyes[0];
+  if (!e) return;
+  const parts = BOW[size];
+  if (!parts) return;
+  for (const [dx, dy, c] of parts) {
+    const i = mirror ? S.w - 1 - (e.x0 + dx) : e.x0 + dx;
+    put(i, e.y0 + dy, c);
+  }
 }
 
 const place = (S: Sprite, x: number, y: number) => [Math.round(x - S.w / 2), Math.round(y) - S.h] as const;
@@ -273,6 +302,7 @@ const inEye = (e: Eye, x: number, y: number) => x >= e.x0 && y >= e.y0 && x < e.
 export function drawFrog(F: Field, size: number, frame: Frame, face: FrogFace, x: number, y: number, o: FrogDraw = {}) {
   const { frames, art } = SIZES[size];
   const S = frames[frame];
+  const kind = o.kind ?? 'green';
   const [left, top] = place(S, x, y);
   const clip = o.clipY ?? Infinity;
   const put = (i: number, j: number, c: number) => {
@@ -282,8 +312,10 @@ export function drawFrog(F: Field, size: number, frame: Frame, face: FrogFace, x
 
   for (let j = 0; j < S.h; j++) for (let i = 0; i < S.w; i++) {
     const c = S.px[j * S.w + i];
-    if (c) put(i, j, c - 1);
+    if (c) put(i, j, mapBodyInk(c - 1, kind));
   }
+
+  if (kind === 'pink') drawBow(S, size, !!o.mirror, put);
 
   const eyes = face.eyes ?? 'open';
   const [lx, ly] = face.look ?? [0, 0];
@@ -291,7 +323,7 @@ export function drawFrog(F: Field, size: number, frame: Frame, face: FrogFace, x
   for (const e of S.eyes) {
     if (eyes !== 'open') {
       const mid = e.y0 + (e.h >> 1);
-      for (let j = e.y0; j < e.y0 + e.h; j++) for (let i = e.x0; i < e.x0 + e.w; i++) if (inEye(e, i, j)) put(i, j, INK.skin);
+      for (let j = e.y0; j < e.y0 + e.h; j++) for (let i = e.x0; i < e.x0 + e.w; i++) if (inEye(e, i, j)) put(i, j, kind === 'pink' ? INK.pinkSkin : INK.skin);
       for (let i = e.x0; i < e.x0 + e.w; i++) {
         const j = eyes === 'happy' && i > e.x0 && i < e.x0 + e.w - 1 ? mid - 1 : mid;
         if (inEye(e, i, j)) put(i, j, INK.line);

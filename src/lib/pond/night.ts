@@ -1,5 +1,5 @@
 import { Field, TAU, clamp, hash, lerp, mul, rng, set } from './field';
-import { drawFrog as paintFrog, frogBox, mouthAt as frogMouth, sizeFor, type Frame, type FrogFace } from './frog';
+import { drawFrog as paintFrog, frogBox, mouthAt as frogMouth, sizeFor, type Frame, type FrogFace, type FrogKind } from './frog';
 import { INK } from './palette';
 
 export interface NightOpts {
@@ -55,6 +55,7 @@ type State = 'sit' | 'croak' | 'snap' | 'turn' | 'crouch' | 'air' | 'land' | 'sw
 
 interface Frog {
   pad: number; dir: 1 | -1; sz: number; ph: number;
+  kind: FrogKind;
   state: State; t0: number; next: number; blink: number; snapAt: number;
   /** When the next fingertip tapping starts, and when the frog was last startled. */
   fidget: number; startled: number;
@@ -146,9 +147,10 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
   const fitsFrog = (P: Pad) => 2 * P.rx >= 0.9 * frogBox(sizeFor(k * P.p * SIZE)).w;
 
   const homes = pads.map((_, i) => i).filter((i) => fitsFrog(pads[i])).sort((a, b) => pads[b].rx - pads[a].rx);
-  const frogs: Frog[] = homes.slice(0, o.frogs ?? 1).map((pi) => {
+  const frogs: Frog[] = homes.slice(0, o.frogs ?? 1).map((pi, i) => {
     const f: Frog = {
       pad: pi, dir: r() < 0.5 ? 1 : -1, sz: 0.95 + 0.15 * r(), ph: r() * TAU,
+      kind: i === 1 ? 'pink' : 'green',
       state: 'sit', t0: 0, next: 1 + r() * 3, blink: 1 + r() * 4, snapAt: 1 + r() * 2,
       fidget: 2 + r() * 5, startled: -9,
       hop: null, tongue: null, swim: null, look: [0.5, 0],
@@ -531,7 +533,7 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
       const gy = lerp(h.y0, h.to >= 0 ? seat(pads[h.to], t)[1] : h.y1, u);
       F.ell(x, gy - 0.5, box.w * 0.4 * (1 - 0.4 * Math.sin(Math.PI * u)), shadowH, 0, mul(0.6), true);
     }
-    paintFrog(F, size, frame, face, x, dy - lift, { mirror, clipY });
+    paintFrog(F, size, frame, face, x, dy - lift, { mirror, clipY, kind: f.kind });
     if (f.state === 'swim') {
       const half = Math.max(2, Math.round(box.w * 0.35)), wy = Math.round(y);
       for (let j = -half; j <= half; j++) F.dot(x + j, wy, F.get(x + j, wy) > 0.3 ? 0.62 : 0.4);
