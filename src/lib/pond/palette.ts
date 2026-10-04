@@ -84,11 +84,12 @@ export const PALETTES = Object.fromEntries(
 export const INK = {
   line: 0, deep: 1, shade: 2, skin: 3, light: 4, belly: 5, eye: 6, blush: 7, tongue: 8,
   /** Pink girlfriend: body tones and bow (drawn on top of the head). */
-  pinkLine: 9, pinkDeep: 10, pinkShade: 11, pinkSkin: 12, pinkLight: 13, pinkBelly: 14, bow: 15, bowKnot: 16,
+  pinkLine: 9, pinkDeep: 10, pinkShade: 11, pinkSkin: 12, pinkLight: 13, pinkBelly: 14,
+  bow: 15, bowLight: 16, bowKnot: 17, bowFold: 18,
 } as const;
 export const INK_COLORS = [
   '#0b1409', '#2b8a37', '#45c148', '#7be07e', '#b8f3a9', '#dff6c4', '#ffffff', '#ff9fb4', '#ef7a93',
-  '#2a0f1a', '#9e3d6b', '#d65a8f', '#f48cb8', '#ffc4da', '#ffe8f3', '#ff3d8a', '#c41e6a',
+  '#2a0f1a', '#9e3d6b', '#d65a8f', '#f48cb8', '#ffc4da', '#ffe8f3', '#ff4d94', '#ffc0dc', '#8f1248', '#d42a72',
 ];
 
 /**
