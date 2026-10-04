@@ -174,3 +174,11 @@ export function columnDates(days: ContribDay[]): string[] {
   for (let i = 0; i < days.length; i += 7) out.push(days[i].date);
   return out;
 }
+
+import fallbackJson from './fallback.json';
+
+export const FALLBACK_ACTIVITY: ActivitySummary = summarize(
+  fallbackJson.days as ContribDay[],
+  fallbackJson.totalLastYear,
+);
+

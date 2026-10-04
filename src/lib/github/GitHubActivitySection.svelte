@@ -2,15 +2,14 @@
   import { onMount } from 'svelte';
   import ActivityHeatmap from './ActivityHeatmap.svelte';
   import PondCanvas from '../pond/PondCanvas.svelte';
-  import { fetchContributions, formatShortDate, type ActivitySummary } from './activity';
+  import { fetchContributions, formatShortDate, FALLBACK_ACTIVITY, type ActivitySummary } from './activity';
   import { site } from '../site';
 
-  let summary = $state<ActivitySummary | null>(null);
+  let summary = $state<ActivitySummary>(FALLBACK_ACTIVITY);
   let error = $state<string | null>(null);
   let pond = $state<ReturnType<typeof PondCanvas>>();
 
   const prose = $derived.by(() => {
-    if (!summary) return null;
     const { totalLastYear, currentStreak, longestStreak, best } = summary;
     const streak =
       currentStreak > 0
@@ -43,38 +42,38 @@
 <section id="github" aria-labelledby="github-title">
   <div class="head">
     <h2 id="github-title">GitHub activity</h2>
-    <a href={site.github}>profile</a>
+    <a href={site.github}>profile ↗</a>
   </div>
 
-  <div class="art">
-    <PondCanvas
-      bind:this={pond}
-      seed="github-activity-pond"
-      palette="night"
-      interactive
-      options={(W) => ({
-        k: 1.15,
-        frogs: 2,
-        flies: 4,
-        pads: Math.max(3, Math.round(W / 44)),
-        horizon: 0.35,
-        moon: false,
-        reeds: true,
-      })}
-    />
+  <p class="sum">{@html prose.html}</p>
+
+  <div class="stage">
+    <div class="pond-wrap">
+      <PondCanvas
+        bind:this={pond}
+        seed="github-activity-pond"
+        palette="night"
+        interactive
+        options={(W) => ({
+          k: 1.25,
+          frogs: 2,
+          flies: 5,
+          pads: Math.max(3, Math.round(W / 40)),
+          horizon: 0.4,
+          moon: true,
+          reeds: true,
+        })}
+      />
+    </div>
+
+    <div class="grid-wrap">
+      <ActivityHeatmap {summary} onhover={() => pond?.react()} />
+    </div>
   </div>
 
-  {#if error}
-    <p class="status">Couldn't load contribution data ({error}). You can view my activity directly on <a href={site.github}>GitHub</a>.</p>
-  {:else if !summary || !prose}
-    <p class="status">Loading GitHub activity…</p>
-  {:else}
-    <p class="sum">{@html prose.html}</p>
-    <ActivityHeatmap {summary} onhover={() => pond?.react()} />
-    <p class="foot">
-      <a href={site.github}>Open my GitHub profile</a> for the official contribution graph and streak badges.
-    </p>
-  {/if}
+  <p class="foot">
+    <a href={site.github}>Open my GitHub profile</a> for the official contribution graph and streak badges.
+  </p>
 </section>
 
 <style>
@@ -97,13 +96,7 @@
   .head a:hover {
     color: var(--accent);
   }
-  .art {
-    height: 120px;
-    margin-top: 18px;
-  }
-  .sum,
-  .status,
-  .foot {
+  .sum {
     max-width: 44em;
     margin: 12px 0 0;
     color: var(--muted);
@@ -111,9 +104,26 @@
   .sum :global(b) {
     color: var(--fg);
   }
+  .stage {
+    margin-top: 24px;
+    background: #0d1117;
+    border: 1px solid #1a2a22;
+    overflow: hidden;
+  }
+  .pond-wrap {
+    height: 150px;
+    position: relative;
+    border-bottom: 1px solid #18261f;
+  }
+  .grid-wrap {
+    padding: 16px 20px 20px;
+    background: #0b0f19;
+  }
   .foot {
-    margin-top: 20px;
+    max-width: 44em;
+    margin: 20px 0 0;
     font-size: 15px;
+    color: var(--muted);
   }
   .foot a {
     color: var(--fg);
@@ -125,6 +135,14 @@
   }
   .foot a:hover {
     color: var(--accent);
+  }
+  @media (max-width: 640px) {
+    .pond-wrap {
+      height: 120px;
+    }
+    .grid-wrap {
+      padding: 12px 14px 16px;
+    }
   }
   @media (max-width: 480px) {
     .foot {
