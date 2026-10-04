@@ -277,21 +277,22 @@ const BOW: Record<number, readonly (readonly [number, number, number])[]> = {
     [-3, 0, INK.bow], [-2, 0, INK.bowFold],
     [2, 0, INK.bowLight], [3, 0, INK.bow],
     [0, 0, INK.bowKnot],
-    [2, 1, INK.bow], [3, 1, INK.bowKnot], [3, 2, INK.bowFold],
+    /** Tails hang on the near cheek, past the eye blob. */
+    [4, 2, INK.bow], [5, 2, INK.bowKnot], [5, 3, INK.bowFold],
   ],
   1: [
     [-5, 0, INK.bow], [-4, 0, INK.bowLight], [-3, 0, INK.bow], [-2, 1, INK.bowFold],
     [3, 0, INK.bowLight], [4, 0, INK.bow], [5, 0, INK.bow], [6, 0, INK.bow],
-    [4, 1, INK.bow], [5, 1, INK.bow], [6, 1, INK.bowFold],
-    [-1, 0, INK.bowKnot], [0, 0, INK.bowKnot], [1, 1, INK.bowKnot],
-    [4, 2, INK.bow], [5, 2, INK.bowKnot], [5, 3, INK.bow], [6, 3, INK.bowFold],
+    [5, 1, INK.bow], [6, 1, INK.bow], [7, 1, INK.bowFold],
+    [-1, 0, INK.bowKnot], [0, 0, INK.bowKnot],
+    [6, 2, INK.bow], [7, 2, INK.bowKnot], [7, 3, INK.bow], [8, 3, INK.bowFold],
   ],
   2: [
     [-6, 0, INK.bow], [-5, 0, INK.bowLight], [-4, 0, INK.bow], [-3, 0, INK.bow], [-2, 1, INK.bowFold],
     [3, 0, INK.bowLight], [4, 0, INK.bow], [5, 0, INK.bow], [6, 0, INK.bow], [7, 0, INK.bow],
-    [4, 1, INK.bow], [5, 1, INK.bow], [6, 1, INK.bow], [7, 1, INK.bowFold],
-    [-1, 0, INK.bowKnot], [0, 0, INK.bowKnot], [1, 0, INK.bowKnot], [1, 1, INK.bowKnot],
-    [5, 2, INK.bow], [6, 2, INK.bowKnot], [6, 3, INK.bow], [7, 3, INK.bowKnot], [7, 4, INK.bowFold],
+    [5, 1, INK.bow], [6, 1, INK.bow], [7, 1, INK.bow], [8, 1, INK.bowFold],
+    [-1, 0, INK.bowKnot], [0, 0, INK.bowKnot], [1, 0, INK.bowKnot],
+    [7, 2, INK.bow], [8, 2, INK.bowKnot], [8, 3, INK.bow], [9, 3, INK.bowKnot], [9, 4, INK.bowFold],
   ],
 };
 
@@ -307,6 +308,11 @@ function bowAnchor(S: Sprite): [number, number] | null {
   return [Math.round(cx), Math.max(0, eyeTop - 1)];
 }
 
+function onEyeBlob(S: Sprite, i: number, j: number) {
+  for (const e of S.eyes) if (inEye(e, i, j)) return true;
+  return false;
+}
+
 function drawBow(S: Sprite, size: number, mirror: boolean, put: (i: number, j: number, c: number) => void) {
   const at = bowAnchor(S);
   const parts = BOW[size];
@@ -314,7 +320,8 @@ function drawBow(S: Sprite, size: number, mirror: boolean, put: (i: number, j: n
   const [cx, top] = at;
   for (const [dx, dy, c] of parts) {
     const sx = mirror ? -dx : dx;
-    put(cx + sx, top + dy, c);
+    const i = cx + sx, j = top + dy;
+    if (!onEyeBlob(S, i, j)) put(i, j, c);
   }
 }
 

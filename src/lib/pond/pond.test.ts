@@ -176,6 +176,20 @@ describe('frog', () => {
     expect(seen.get(INK.skin) ?? 0).toBe(0);
   });
 
+  it('does not paint the bow over eye whites', () => {
+    const bowInks = new Set([INK.bow, INK.bowLight, INK.bowKnot, INK.bowFold]);
+    for (const size of SIZES) {
+      const pink = new Field(48, 48);
+      const green = new Field(48, 48);
+      drawFrog(pink, size, 'sit', {}, 24, 40, { kind: 'pink' });
+      drawFrog(green, size, 'sit', {}, 24, 40, { kind: 'green' });
+      for (let i = 0; i < pink.ink.length; i++) {
+        if (!pink.ink[i] || !bowInks.has(pink.ink[i] - 1)) continue;
+        expect(green.ink[i]).not.toBe(INK.eye + 1);
+      }
+    }
+  });
+
   it('keeps the full bow on every frame (squash/stretch must not clip it)', () => {
     const bowInks = new Set([INK.bow, INK.bowLight, INK.bowKnot, INK.bowFold]);
     const bowPixels = (size: number, frame: Frame) => {
