@@ -144,6 +144,28 @@ describe('frog', () => {
       expect(boxes[i].h).toBeGreaterThan(boxes[i - 1].h);
     }
   });
+
+  const inkCount = (F: Field) => F.ink.reduce((n, c) => n + (c ? 1 : 0), 0);
+
+  it('breath and crouch drop rows from the sitting art', () => {
+    for (const size of SIZES) {
+      const sit = draw(size, 'sit');
+      const breath = draw(size, 'breath');
+      const crouch = draw(size, 'crouch');
+      expect(inkCount(breath)).toBeLessThan(inkCount(sit));
+      expect(inkCount(crouch)).toBeLessThan(inkCount(sit));
+      expect(breath.ink).not.toEqual(sit.ink);
+      expect(crouch.ink).not.toEqual(sit.ink);
+      expect(crouch.ink).not.toEqual(breath.ink);
+    }
+  });
+
+  it('draws with an empty face (reduced-motion still path)', () => {
+    for (const frame of FRAMES) {
+      expect(() => draw(1, frame, {})).not.toThrow();
+      expect(inkCount(draw(1, frame, {}))).toBeGreaterThan(20);
+    }
+  });
 });
 
 describe('night pond', () => {
@@ -183,6 +205,15 @@ describe('night pond', () => {
     const scene = nightPond(W, H, { seed: 'still', still: true, frogs: 2 });
     for (let fr = 0; fr < 12 * 30; fr++) scene.render(fr / 12, F);
     expect(scene.frogs().every((f) => f.state === 'sit')).toBe(true);
+  });
+
+  it('renders frog ink on the first still frame without look or poke', () => {
+    const W = 120, H = 60, F = new Field(W, H);
+    const scene = nightPond(W, H, { seed: 'rm-first', still: true, frogs: 2, k: 1.4 });
+    scene.render(0, F);
+    expect(F.ink.some((c) => c === INK.skin + 1)).toBe(true);
+    expect(F.ink.some((c) => c === INK.eye + 1)).toBe(true);
+    expect(F.v.every(Number.isFinite)).toBe(true);
   });
 
   it('answers pokes, taps and reactions without breaking', () => {
