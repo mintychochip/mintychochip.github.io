@@ -28,5 +28,10 @@ describe('Resume component', () => {
     const rustCard = Array.from(langCards).find((c) => c.textContent?.includes('Rust'));
     expect(rustCard).toBeDefined();
     expect(rustCard?.querySelector('.lang-icon')).not.toBeNull();
+
+    const text = document.body.textContent ?? '';
+    expect(text).toContain('Kotlin');
+    expect(text).toContain('quill compiler');
+    expect(text).not.toContain('Microservices');
   });
 });

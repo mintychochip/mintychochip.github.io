@@ -4,6 +4,7 @@ export const site = {
   intro: 'Software engineer.',
   githubUser: 'mintychochip',
   github: 'https://github.com/mintychochip',
+  linkedin: 'https://www.linkedin.com/in/justinclo',
   email: 'justincarllo@gmail.com',
   resumeUrl: '/resume.pdf',
   resumeFile: 'mintychochip-resume.pdf',

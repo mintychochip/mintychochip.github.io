@@ -148,6 +148,8 @@
 <style>
   .chart {
     margin: 22px 0 0;
+    max-width: 100%;
+    min-width: 0;
   }
   .frame {
     padding: 0 0 30px 56px;

@@ -31,7 +31,7 @@ describe('LanguageIcon component', () => {
   });
 
   it('renders Java, TypeScript, Python, and Go icons', () => {
-    for (const lang of ['Java', 'TypeScript', 'Python', 'Go', 'Svelte', 'C++', 'Shell', 'Kotlin']) {
+    for (const lang of ['Java', 'TypeScript', 'Python', 'Go', 'Svelte', 'C++', 'Shell', 'Kotlin', 'React', 'Vue']) {
       document.body.innerHTML = '';
       mount(LanguageIcon, {
         target: document.body,

@@ -106,6 +106,7 @@
   }
   .stage {
     margin-top: 24px;
+    max-width: 100%;
     background: #0d1117;
     border: 1px solid #1a2a22;
     overflow: hidden;

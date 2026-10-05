@@ -108,6 +108,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    max-width: 100%;
   }
 
   .head-umans-logo {
@@ -178,6 +179,8 @@
     font: inherit;
     font-weight: 700;
     text-align: left;
+    white-space: normal;
+    max-width: 100%;
     cursor: var(--cursor-pointer);
     text-decoration: underline;
     text-decoration-color: transparent;

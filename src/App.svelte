@@ -200,8 +200,15 @@
 
   main {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 76px;
     margin-top: 76px;
+    min-width: 0;
+    max-width: 100%;
+  }
+  main > :global(*) {
+    min-width: 0;
+    max-width: 100%;
   }
   .wordle-main,
   .secret-main {

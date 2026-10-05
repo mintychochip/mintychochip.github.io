@@ -3,16 +3,16 @@
   import LanguageIcon from './LanguageIcon.svelte';
 
   const LANGUAGES = [
-    { name: 'Rust', level: 'Systems, Tooling & Token Stores' },
-    { name: 'Java', level: 'High-Throughput Plugins & Semantic Search' },
-    { name: 'TypeScript', level: 'Full-Stack, Agents & Interactive Web' },
-    { name: 'JavaScript', level: 'Browser APIs & Realtime Graphics' },
-    { name: 'Python', level: 'ML Pipelines, Evaluation & Automation' },
-    { name: 'Go', level: 'Distributed Services & Backend Microservices' },
-    { name: 'Astro', level: 'Performant Content & Server Engines' },
-    { name: 'Svelte', level: 'Reactive UI & State Primitives' },
-    { name: 'C++', level: 'Performance-Critical Core Algorithms' },
-    { name: 'Shell', level: 'POSIX Scripts, CI/CD & Dev Automation' },
+    { name: 'Java', level: 'Paper plugins & semantic search' },
+    { name: 'TypeScript', level: 'Sites, QR tools & hackathon apps' },
+    { name: 'Python', level: 'FastAPI hackathon platform' },
+    { name: 'Rust', level: 'Token store, CLIs & services' },
+    { name: 'C++', level: 'OpenGL engine' },
+    { name: 'Kotlin', level: 'quill compiler & bytecode VM' },
+    { name: 'Astro', level: 'Guildpost & QuickQR' },
+    { name: 'React', level: 'Hackathon & QuickQR frontends' },
+    { name: 'Svelte', level: 'This portfolio' },
+    { name: 'Vue', level: 'Flappy-ve & QuickQR' },
   ];
 </script>
 

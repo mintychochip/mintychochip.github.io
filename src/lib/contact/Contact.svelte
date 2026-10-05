@@ -1,5 +1,6 @@
 <script lang="ts">
   import { site } from '../site';
+  import SocialIcon from '../components/SocialIcon.svelte';
   import { mailto, validate, type Draft, type DraftErrors } from './mail';
 
   let draft = $state<Draft>({ name: '', email: '', message: '' });
@@ -29,7 +30,15 @@
 <section id="contact" aria-labelledby="contact-title">
   <h2 id="contact-title">Contact</h2>
   <p class="lede">
-    <a href="mailto:{site.email}">{site.email}</a>, or write here and your mail app opens with it filled in.
+    <a class="with-icon" href="mailto:{site.email}">
+      <SocialIcon name="gmail" size={18} />
+      {site.email}
+    </a>,
+    <a class="with-icon" href={site.linkedin}>
+      <SocialIcon name="linkedin" size={18} />
+      LinkedIn
+    </a>,
+    or write here and your mail app opens with it filled in.
   </p>
   <form bind:this={form} novalidate onsubmit={submit}>
     <label>
@@ -96,6 +105,15 @@
     text-decoration: underline;
     text-decoration-thickness: 2px;
     text-underline-offset: 5px;
+  }
+  .lede a.with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+  }
+  .with-icon:hover {
+    color: var(--accent);
   }
   .lede a:hover {
     color: var(--accent);

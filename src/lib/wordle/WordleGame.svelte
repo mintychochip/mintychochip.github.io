@@ -548,7 +548,8 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 600px;
+    max-width: min(600px, 100%);
+    min-width: 0;
     margin: 0 auto;
     padding: 8px 0 24px;
     gap: 16px;

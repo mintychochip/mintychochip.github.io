@@ -192,7 +192,7 @@
     color: var(--accent);
   }
 
-  @media (max-width: 720px) {
+  @media (max-width: 860px) {
     .mast {
       flex-direction: column;
       align-items: flex-start;

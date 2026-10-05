@@ -1,6 +1,7 @@
 <script lang="ts">
   import PondCanvas from '../pond/PondCanvas.svelte';
   import { site } from '../site';
+  import SocialIcon from './SocialIcon.svelte';
 
   const year = new Date().getFullYear();
 </script>
@@ -16,8 +17,15 @@
   <div class="row">
     <span>{site.name}, {year}</span>
     <span class="links">
-      <a href={site.github}>GitHub</a>
-      <a href="mailto:{site.email}">Email</a>
+      <a class="icon-link" href={site.github} aria-label="GitHub">
+        <SocialIcon name="github" size={18} />
+      </a>
+      <a class="icon-link" href={site.linkedin} aria-label="LinkedIn">
+        <SocialIcon name="linkedin" size={18} />
+      </a>
+      <a class="icon-link" href="mailto:{site.email}" aria-label="Gmail">
+        <SocialIcon name="gmail" size={18} />
+      </a>
     </span>
   </div>
 </footer>
@@ -41,11 +49,20 @@
   }
   .links {
     display: flex;
+    align-items: center;
     gap: 18px;
   }
   a {
     text-decoration: none;
     padding: 2px 0;
+  }
+  .icon-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px;
+  }
+  .icon-link:hover {
+    opacity: 0.8;
   }
   a:hover {
     color: var(--accent);

@@ -12,9 +12,11 @@ import {
   siMarkdown,
   siOpenjdk,
   siPython,
+  siReact,
   siRust,
   siSvelte,
   siTypescript,
+  siVuedotjs,
 } from 'simple-icons';
 
 /** Simple Icons slug → icon (official brand SVG paths from https://simpleicons.org). */
@@ -28,6 +30,9 @@ const ICON_BY_KEY: Record<string, SimpleIcon> = {
   js: siJavascript,
   python: siPython,
   py: siPython,
+  react: siReact,
+  vue: siVuedotjs,
+  'vue.js': siVuedotjs,
   go: siGo,
   golang: siGo,
   svelte: siSvelte,

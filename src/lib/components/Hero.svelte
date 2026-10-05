@@ -2,15 +2,23 @@
   import PondCanvas from '../pond/PondCanvas.svelte';
   import { clamp } from '../pond/field';
   import { site } from '../site';
+  import SocialIcon from './SocialIcon.svelte';
 
   let title: HTMLHeadingElement | undefined = $state();
 
   /** The title's box as fractions of the pond, so no frog sits behind the name. */
   function titleBox(): [number, number, number, number] | undefined {
-    const art = title?.parentElement;
-    if (!title || !art) return undefined;
-    const a = art.getBoundingClientRect(), t = title.getBoundingClientRect();
-    return [(t.left - a.left) / a.width, (t.top - a.top) / a.height, (t.right - a.left) / a.width, (t.bottom - a.top) / a.height];
+    const scene = title?.parentElement?.querySelector('.scene');
+    if (!title || !scene) return undefined;
+    const a = scene.getBoundingClientRect(), t = title.getBoundingClientRect();
+    if (t.top >= a.bottom - 2) return undefined;
+    const pad = 14;
+    return [
+      Math.max(0, (t.left - a.left - pad) / a.width),
+      Math.max(0, (t.top - a.top - 26) / a.height),
+      Math.min(1, (t.right - a.left + pad) / a.width),
+      Math.min(1, (t.bottom - a.top + 6) / a.height),
+    ];
   }
 
   const pond = (W: number) => ({
@@ -24,7 +32,9 @@
 
 <header class="hero">
   <div class="art">
-    <PondCanvas seed="mintychochip-dusk" palette="night" options={pond} interactive />
+    <div class="scene">
+      <PondCanvas seed="mintychochip-dusk" palette="night" options={pond} interactive />
+    </div>
     <h1 bind:this={title}>
       <span class="who">{site.givenName}</span>
       <span class="handle">({site.name})</span>
@@ -33,8 +43,15 @@
   <div class="intro">
     <p>{site.intro}</p>
     <p class="links">
-      <a href={site.github}>GitHub</a>
-      <a href="mailto:{site.email}">Email</a>
+      <a class="icon-link" href={site.github} aria-label="GitHub">
+        <SocialIcon name="github" />
+      </a>
+      <a class="icon-link" href={site.linkedin} aria-label="LinkedIn">
+        <SocialIcon name="linkedin" />
+      </a>
+      <a class="icon-link" href="mailto:{site.email}" aria-label="Gmail">
+        <SocialIcon name="gmail" />
+      </a>
     </p>
   </div>
 </header>
@@ -43,6 +60,9 @@
   .art {
     position: relative;
     height: 330px;
+  }
+  .scene {
+    height: 100%;
   }
   h1 {
     position: absolute;
@@ -67,12 +87,6 @@
   .handle {
     font-size: 0.56em;
   }
-  .links a {
-    text-decoration: none;
-  }
-  .links a:hover {
-    color: var(--accent);
-  }
   .intro {
     display: flex;
     flex-wrap: wrap;
@@ -86,23 +100,31 @@
   }
   .links {
     display: flex;
+    align-items: center;
     gap: 24px;
   }
-  .links a {
-    padding: 2px 0;
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-    text-underline-offset: 5px;
+  .icon-link {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    padding: 2px;
+  }
+  .icon-link:hover {
+    opacity: 0.8;
   }
   @media (max-width: 640px) {
     .art {
-      height: 240px;
+      height: auto;
+    }
+    .scene {
+      height: 220px;
     }
     h1 {
-      left: 14px;
-      bottom: 14px;
-      max-width: calc(100% - 24px);
-      font-size: clamp(26px, 8vw, 38px);
+      position: static;
+      max-width: 100%;
+      margin-top: 12px;
+      text-shadow: none;
+      font-size: clamp(28px, 8vw, 40px);
     }
     .intro {
       margin-top: 16px;
@@ -113,14 +135,11 @@
     }
   }
   @media (max-width: 380px) {
-    .art {
-      height: 210px;
+    .scene {
+      height: 190px;
     }
     h1 {
-      left: 10px;
-      bottom: 10px;
-      max-width: calc(100% - 16px);
-      font-size: clamp(22px, 7.5vw, 30px);
+      font-size: clamp(26px, 8vw, 34px);
     }
     .links {
       gap: 14px;
