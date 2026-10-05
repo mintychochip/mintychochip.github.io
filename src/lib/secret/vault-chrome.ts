@@ -2,9 +2,9 @@
 
 export const SECRET_TAB_LABEL = 'Happy Anniversary';
 
-export const VAULT_FROG_LINE = 'The vault is sealed. 🔒';
+export const VAULT_FROG_LINE = 'The door opened. 🔒';
 
-export const VAULT_TOAST_LINE = 'The vault door is shut.';
+export const VAULT_TOAST_LINE = 'Come on in.';
 
 export const SECRET_LOAD_ERROR = 'Secret vault didn’t load.';
 

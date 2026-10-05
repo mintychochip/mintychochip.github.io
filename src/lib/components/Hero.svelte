@@ -25,7 +25,10 @@
 <header class="hero">
   <div class="art">
     <PondCanvas seed="mintychochip-dusk" palette="night" options={pond} interactive />
-    <h1 bind:this={title}>{site.name}</h1>
+    <h1 bind:this={title}>
+      <span class="who">{site.givenName}</span>
+      <span class="handle">({site.name})</span>
+    </h1>
   </div>
   <div class="intro">
     <p>{site.intro}</p>
@@ -45,11 +48,24 @@
     position: absolute;
     left: 27px;
     bottom: 21px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 0.32em;
+    row-gap: 2px;
+    max-width: calc(100% - 48px);
     margin: 0;
     font-size: clamp(34px, 5.5vw, 50px);
     line-height: 1;
     text-shadow: 3px 3px 0 var(--bg);
     pointer-events: none;
+  }
+  .who,
+  .handle {
+    white-space: nowrap;
+  }
+  .handle {
+    font-size: 0.56em;
   }
   .links a {
     text-decoration: none;
@@ -85,6 +101,7 @@
     h1 {
       left: 14px;
       bottom: 14px;
+      max-width: calc(100% - 24px);
       font-size: clamp(26px, 8vw, 38px);
     }
     .intro {
@@ -102,6 +119,7 @@
     h1 {
       left: 10px;
       bottom: 10px;
+      max-width: calc(100% - 16px);
       font-size: clamp(22px, 7.5vw, 30px);
     }
     .links {

@@ -6,9 +6,15 @@ import TabBar from './TabBar.svelte';
 describe('TabBar component', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
+    class MockIntersectionObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+    vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
   });
 
-  it('shows current area and the new tab popout link', () => {
+  it('lists the site sections and keeps a wordle popout', () => {
     const onSelectTab = vi.fn();
     mount(TabBar, {
       target: document.body,
@@ -18,7 +24,10 @@ describe('TabBar component', () => {
       },
     });
 
-    expect(document.body.textContent).toContain('Portfolio');
+    const nav = document.querySelector('[aria-label="Main site navigation"]');
+    expect(nav?.textContent).toContain('github');
+    expect(nav?.textContent).toContain('wordle');
+    expect(nav?.textContent).not.toContain('Happy Anniversary');
 
     const popout = document.querySelector('.tab-popout') as HTMLAnchorElement;
     expect(popout).not.toBeNull();
@@ -27,27 +36,25 @@ describe('TabBar component', () => {
     expect(popout.getAttribute('rel')).toContain('noopener');
   });
 
-  it('reflects wordle and secret active areas', async () => {
+  it('opens wordle from the nav link', async () => {
     const onSelectTab = vi.fn();
-
-    document.body.innerHTML = '';
     mount(TabBar, {
       target: document.body,
-      props: {
-        activeTab: 'wordle',
-        onSelectTab,
-      },
+      props: { activeTab: 'portfolio', onSelectTab },
     });
     await tick();
-    expect(document.body.textContent).toContain('Wordle');
 
-    document.body.innerHTML = '';
+    const wordle = Array.from(document.querySelectorAll('.links a')).find((el) => el.textContent === 'wordle') as HTMLAnchorElement;
+    wordle.click();
+    await tick();
+    expect(onSelectTab).toHaveBeenCalledWith('wordle');
+  });
+
+  it('names the secret area only while it is open', async () => {
+    const onSelectTab = vi.fn();
     mount(TabBar, {
       target: document.body,
-      props: {
-        activeTab: 'secret',
-        onSelectTab,
-      },
+      props: { activeTab: 'secret', onSelectTab },
     });
     await tick();
     expect(document.body.textContent).toContain('Happy Anniversary');

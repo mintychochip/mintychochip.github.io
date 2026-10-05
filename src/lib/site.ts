@@ -1,5 +1,6 @@
 export const site = {
   name: 'mintychochip',
+  givenName: 'Justin Lo',
   intro: 'Software engineer.',
   githubUser: 'mintychochip',
   github: 'https://github.com/mintychochip',

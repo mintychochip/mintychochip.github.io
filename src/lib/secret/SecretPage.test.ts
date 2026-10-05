@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount, tick, unmount } from 'svelte';
 import SecretPage from './SecretPage.svelte';
+import { clearVaultGrant, issueVaultToken, vaultGrantActive } from './vault-gate';
 import type { VaultCopy } from './vault-types';
 
 const FIXTURE: VaultCopy = {
@@ -49,6 +50,7 @@ describe('SecretPage component', () => {
     vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
     window.location.hash = '';
     document.body.innerHTML = '';
+    clearVaultGrant();
   });
 
   afterEach(() => {
@@ -58,7 +60,7 @@ describe('SecretPage component', () => {
     }
   });
 
-  it('shows a passphrase form and ignores token links', async () => {
+  it('stays sealed without a token, including a token link', async () => {
     window.location.hash = '#secret?token=dev';
     app = mount(SecretPage, {
       target: document.body,
@@ -67,12 +69,42 @@ describe('SecretPage component', () => {
     await tick();
 
     expect(document.querySelector('.denied-title')?.textContent).toContain("BUMPY'S SECRET VAULT");
-    expect(document.querySelector('#vault-passphrase')).not.toBeNull();
+    expect(document.querySelector('#vault-passphrase')).toBeNull();
+    expect(document.querySelector('input')).toBeNull();
     expect(document.querySelector('.vault-container')).toBeNull();
     expect(document.body.textContent).not.toContain('one-time secret token');
+    expect(vaultGrantActive()).toBe(false);
   });
 
-  it('stays shut when the passphrase is wrong', async () => {
+  it('opens from the wordle token and locks again', async () => {
+    issueVaultToken();
+    app = mount(SecretPage, {
+      target: document.body,
+      props: {
+        onNavigate: vi.fn(),
+        openVault: async () => FIXTURE,
+      },
+    });
+
+    await vi.waitFor(() => {
+      expect(document.querySelector('.loader-overlay')).not.toBeNull();
+    }, 5000);
+
+    (document.querySelector('.skip-btn') as HTMLButtonElement).click();
+    await vi.waitFor(() => {
+      expect(document.querySelector('.letter3d-stage')).not.toBeNull();
+    });
+    expect(document.querySelector('#vault-passphrase')).toBeNull();
+
+    (document.querySelector('.logout-btn') as HTMLButtonElement).click();
+    await tick();
+    expect(document.querySelector('.denied-title')).not.toBeNull();
+    expect(document.querySelector('.letter3d-stage')).toBeNull();
+    expect(vaultGrantActive()).toBe(false);
+  });
+
+  it('drops a token that cannot open the vault', async () => {
+    issueVaultToken();
     app = mount(SecretPage, {
       target: document.body,
       props: {
@@ -82,46 +114,12 @@ describe('SecretPage component', () => {
         },
       },
     });
-    await tick();
+    await vi.waitFor(() => {
+      expect(document.querySelector('.passphrase-error')?.textContent).toContain('did not open');
+    });
 
-    const input = document.querySelector('#vault-passphrase') as HTMLInputElement;
-    input.value = 'wrong-phrase';
-    (document.querySelector('.passphrase-form') as HTMLFormElement).requestSubmit();
-    await tick();
-    await tick();
-
-    expect(document.querySelector('.passphrase-error')?.textContent).toContain('does not open');
     expect(document.querySelector('.vault-container')).toBeNull();
     expect(document.querySelector('.loader-overlay')).toBeNull();
-  });
-
-  it('opens after the passphrase decrypts and locks again', async () => {
-    app = mount(SecretPage, {
-      target: document.body,
-      props: {
-        onNavigate: vi.fn(),
-        openVault: async (phrase: string) => {
-          if (phrase !== 'right-phrase') throw new Error('sealed');
-          return FIXTURE;
-        },
-      },
-    });
-    await tick();
-
-    const input = document.querySelector('#vault-passphrase') as HTMLInputElement;
-    input.value = 'right-phrase';
-    (document.querySelector('.passphrase-form') as HTMLFormElement).requestSubmit();
-    await vi.waitFor(() => {
-      expect(document.querySelector('.loader-overlay')).not.toBeNull();
-    }, 5000);
-
-    (document.querySelector('.skip-btn') as HTMLButtonElement).click();
-    await tick();
-    expect(document.querySelector('.letter3d-stage')).not.toBeNull();
-
-    (document.querySelector('.logout-btn') as HTMLButtonElement).click();
-    await tick();
-    expect(document.querySelector('#vault-passphrase')).not.toBeNull();
-    expect(document.querySelector('.letter3d-stage')).toBeNull();
+    expect(vaultGrantActive()).toBe(false);
   });
 });

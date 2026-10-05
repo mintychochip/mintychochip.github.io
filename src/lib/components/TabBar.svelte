@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { site } from '../site';
+  import { playKeyPress } from '../wordle/sound';
   import { SECRET_TAB_LABEL } from '../secret/vault-chrome';
 
   let {
@@ -8,177 +10,209 @@
     activeTab: 'portfolio' | 'wordle' | 'secret';
     onSelectTab: (tab: 'portfolio' | 'wordle' | 'secret') => void;
   } = $props();
+
+  let activeSectionId = $state('');
+
+  const sections = site.nav.filter((link) => link.label !== 'wordle');
+
+  function scrollToSection(targetId: string, href: string) {
+    const targetEl = document.getElementById(targetId);
+    if (!targetEl) return;
+    targetEl.scrollIntoView({ behavior: 'smooth' });
+    activeSectionId = targetId;
+    try {
+      history.replaceState(null, '', href);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function openSection(href: string, event: MouseEvent) {
+    if (event.ctrlKey || event.metaKey || event.shiftKey) return;
+    event.preventDefault();
+    playKeyPress(true);
+    const targetId = href.slice(1);
+    if (activeTab !== 'portfolio') {
+      onSelectTab('portfolio');
+      setTimeout(() => scrollToSection(targetId, href), 120);
+    } else {
+      scrollToSection(targetId, href);
+    }
+  }
+
+  function openWordle(event: MouseEvent) {
+    if (event.ctrlKey || event.metaKey || event.shiftKey) return;
+    event.preventDefault();
+    playKeyPress(true);
+    onSelectTab('wordle');
+  }
+
+  function goHome(event: MouseEvent) {
+    if (event.ctrlKey || event.metaKey || event.shiftKey) return;
+    event.preventDefault();
+    playKeyPress(true);
+    onSelectTab('portfolio');
+    activeSectionId = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  $effect(() => {
+    const tab = activeTab;
+    if (tab !== 'portfolio') return;
+    if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((entry) => entry.isIntersecting);
+        if (visible.length === 0) return;
+        visible.sort((a, b) => Math.abs(a.boundingClientRect.top) - Math.abs(b.boundingClientRect.top));
+        activeSectionId = visible[0].target.id;
+      },
+      { rootMargin: '-10% 0px -60% 0px', threshold: [0, 0.2, 0.5] }
+    );
+
+    function watch() {
+      observer.disconnect();
+      for (const link of sections) {
+        const el = document.getElementById(link.href.slice(1));
+        if (el) observer.observe(el);
+      }
+    }
+
+    watch();
+    const timer = window.setTimeout(watch, 300);
+    return () => {
+      window.clearTimeout(timer);
+      observer.disconnect();
+    };
+  });
 </script>
 
-<nav class="tab-bar" aria-label="Main site navigation">
-  <div class="nav-brand-group">
-    <a
-      href="#portfolio"
-      class="brand-badge px"
-      onclick={(e) => {
-        if (!e.ctrlKey && !e.metaKey && !e.shiftKey) {
-          e.preventDefault();
-          onSelectTab('portfolio');
-        }
-      }}
-    >
-      <span class="brand-star">✦</span>
-      <span class="brand-name">mintychochip</span>
-    </a>
-  </div>
+<nav class="mast" aria-label="Main site navigation">
+  <a class="brand" href="#portfolio" onclick={goHome}>mintychochip</a>
 
-  <div class="tabs" role="tablist" aria-label="Current area">
-    <span class="area-pill px" class:portfolio={activeTab === 'portfolio'} class:wordle={activeTab === 'wordle'} class:secret={activeTab === 'secret'}>
-      {#if activeTab === 'portfolio'}
-        <span class="tab-glyph">✦</span>
-        <span class="tab-name">Portfolio</span>
-      {:else if activeTab === 'wordle'}
-        <span class="tab-glyph">🟩</span>
-        <span class="tab-name">Wordle</span>
-      {:else}
-        <span class="tab-glyph">💖</span>
-        <span class="tab-name">{SECRET_TAB_LABEL}</span>
-      {/if}
+  <div class="links">
+    {#each sections as link (link.href)}
+      <a
+        href={link.href}
+        class:current={activeTab === 'portfolio' && activeSectionId === link.href.slice(1)}
+        onclick={(event) => openSection(link.href, event)}
+      >{link.label}</a>
+    {/each}
+    <span class="wordle-slot">
+      <a href="#wordle" class:current={activeTab === 'wordle'} onclick={openWordle}>wordle</a>
+      <a
+        href="#wordle"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="tab-popout"
+        title="Open Wordle in a new browser tab"
+        aria-label="Open Wordle in a new browser tab"
+      >↗</a>
     </span>
-
-  </div>
-
-  <div class="tab-side">
-    <a
-      href="#wordle"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="tab-popout px"
-      title="Open Wordle in a new browser tab"
-      aria-label="Open Wordle in a new browser tab"
-    >
-      <span class="popout-text">New Tab</span>
-      <span class="popout-icon">↗</span>
-    </a>
+    {#if activeTab === 'secret'}
+      <span class="current secret">{SECRET_TAB_LABEL}</span>
+    {/if}
   </div>
 </nav>
 
 <style>
-  .tab-bar {
+  .mast {
     display: flex;
+    align-items: baseline;
     justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 24px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid rgba(104, 113, 132, 0.25);
+    gap: 18px 32px;
+    margin-bottom: 22px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(104, 113, 132, 0.28);
     user-select: none;
-    flex-wrap: wrap;
   }
 
-  .nav-brand-group {
-    display: flex;
-    align-items: center;
-  }
-
-  .brand-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 12px;
-    background: var(--field);
-    border: 1px solid var(--dim);
+  .brand {
     color: var(--fg);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
     text-decoration: none;
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    transition: all 0.15s ease;
+    flex-shrink: 0;
   }
 
-  .brand-badge:hover {
+  .brand:hover {
     color: var(--accent);
-    border-color: var(--accent);
-    background: var(--field-focus);
   }
 
-  .brand-star {
-    color: var(--accent);
-    font-size: 15px;
-    line-height: 1;
-  }
-
-  .tabs {
+  .links {
     display: flex;
-    gap: 10px;
     flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: 8px 18px;
   }
 
-  .area-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    background: var(--field);
+  .links a,
+  .current {
     color: var(--muted);
-    font-size: 15px;
-    font-weight: 700;
-    border: 1px solid var(--dim);
+    font-size: 18px;
+    line-height: 1.2;
+    text-decoration: none;
   }
 
-  .area-pill.portfolio {
+  .links a:hover {
+    color: var(--fg);
+  }
+
+  .links a.current,
+  .current.secret {
     color: var(--accent);
-    border-color: var(--accent);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 6px;
   }
 
-  .area-pill.wordle {
-    color: #8bbf73;
-    border-color: #6b9e52;
-  }
-
-  .area-pill.secret {
-    background: #2a1122;
+  .current.secret {
     color: #ff94c2;
-    border-color: #f48cb8;
-    box-shadow: 0 0 12px rgba(244, 140, 184, 0.25);
   }
 
-  .tab-glyph {
-    font-size: 15px;
-    line-height: 1;
+  .wordle-slot {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-left: 8px;
+    padding-left: 16px;
+    border-left: 1px solid rgba(104, 113, 132, 0.35);
   }
 
   .tab-popout {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 12px;
-    background: transparent;
     color: var(--dim);
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 15px;
     text-decoration: none;
-    border: 1px solid rgba(104, 113, 132, 0.3);
-    transition: all 0.15s ease;
   }
 
   .tab-popout:hover {
     color: var(--accent);
-    border-color: var(--accent);
-    background: var(--field);
   }
 
-  .popout-icon {
-    font-size: 13px;
-    line-height: 1;
-  }
+  @media (max-width: 720px) {
+    .mast {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
 
-  @media (max-width: 480px) {
-    .area-pill {
-      padding: 6px 12px;
-      font-size: 14px;
-      gap: 6px;
+    .links {
+      justify-content: flex-start;
+      gap: 8px 14px;
     }
-    .popout-text {
-      display: none;
+
+    .links a,
+    .current {
+      font-size: 16px;
     }
-    .tab-popout {
-      padding: 6px 10px;
+
+    .wordle-slot {
+      margin-left: 0;
+      padding-left: 0;
+      border-left: 0;
     }
   }
 </style>

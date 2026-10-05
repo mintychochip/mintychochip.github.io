@@ -2,62 +2,26 @@
   let {
     onNavigate,
     error = '',
-    busy = false,
-    onSubmit,
   }: {
     onNavigate: (tab: 'portfolio' | 'wordle') => void;
     error?: string;
-    busy?: boolean;
-    onSubmit: (passphrase: string) => void;
   } = $props();
-
-  let passphrase = $state('');
-
-  function handleSubmit(event: SubmitEvent) {
-    event.preventDefault();
-    if (busy) return;
-    const field = event.currentTarget;
-    const entered = field instanceof HTMLFormElement
-      ? String(new FormData(field).get('vault-passphrase') ?? '')
-      : passphrase;
-    onSubmit(entered);
-  }
 </script>
 
 <div class="denied-wrap">
   <div class="denied-card px">
     <div class="denied-header">
       <div class="denied-led"></div>
-      <span class="denied-tag">CLEARANCE REFUSED // TOKEN REQUIRED</span>
+      <span class="denied-tag">CLEARANCE REFUSED // SEALED</span>
     </div>
 
     <div class="denied-content">
       <div class="denied-icon">🔒</div>
       <h2 class="denied-title">BUMPY'S SECRET VAULT</h2>
-      <p class="denied-message">
-        This vault is sealed. The passphrase opens it. Nothing else does.
-      </p>
-
-      <form class="passphrase-form" onsubmit={handleSubmit}>
-        <label class="passphrase-label" for="vault-passphrase">Passphrase</label>
-        <input
-          id="vault-passphrase"
-          class="passphrase-input px"
-          type="password"
-          name="vault-passphrase"
-          autocomplete="off"
-          spellcheck="false"
-          bind:value={passphrase}
-          disabled={busy}
-          required
-        />
-        {#if error}
-          <p class="passphrase-error" role="alert">{error}</p>
-        {/if}
-        <button type="submit" class="btn px wordle-btn" disabled={busy}>
-          {busy ? 'Checking…' : 'Open the vault'}
-        </button>
-      </form>
+      <p class="denied-message">This vault is sealed.</p>
+      {#if error}
+        <p class="passphrase-error" role="alert">{error}</p>
+      {/if}
 
       <div class="denied-actions">
         <button type="button" class="btn px wordle-btn" onclick={() => onNavigate('wordle')}>
@@ -136,34 +100,8 @@
     line-height: 1.5;
   }
 
-  .passphrase-form {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 18px;
-    text-align: left;
-  }
-
-  .passphrase-label {
-    font-size: 12px;
-    letter-spacing: 1px;
-    color: var(--muted);
-  }
-
-  .passphrase-input {
-    width: 100%;
-    box-sizing: border-box;
-    background: #0f1422;
-    color: var(--fg);
-    border: 1px solid var(--dim);
-    padding: 12px;
-    font: inherit;
-    font-size: 16px;
-  }
-
   .passphrase-error {
-    margin: 0;
+    margin: 0 0 16px;
     color: var(--error);
     font-size: 14px;
   }

@@ -13,6 +13,7 @@
   import WordleGame from './lib/wordle/WordleGame.svelte';
   import SecretPage from './lib/secret/SecretPage.svelte';
   import { SECRET_LOAD_ERROR } from './lib/secret/vault-chrome';
+  import { clearVaultGrant } from './lib/secret/vault-gate';
 
   type Tab = 'portfolio' | 'wordle' | 'secret';
 
@@ -30,7 +31,6 @@
 
   let activeTab = $state<Tab>(getTabFromHash());
   let secretRevealed = $state(false);
-  let wordleRef = $state<ReturnType<typeof WordleGame>>();
 
   function setTab(tab: Tab) {
     activeTab = tab;
@@ -53,28 +53,9 @@
     }
   }
 
-  function handleWordleAction(action: 'daily' | 'practice' | 'help' | 'stats' | 'settings') {
-    if (activeTab !== 'wordle') {
-      setTab('wordle');
-      setTimeout(() => {
-        executeWordleAction(action);
-      }, 50);
-    } else {
-      executeWordleAction(action);
-    }
-  }
-
-  function executeWordleAction(action: 'daily' | 'practice' | 'help' | 'stats' | 'settings') {
-    if (!wordleRef) return;
-    if (action === 'daily') wordleRef.switchMode('daily');
-    else if (action === 'practice') wordleRef.switchMode('practice');
-    else if (action === 'help') wordleRef.openHelpModal();
-    else if (action === 'stats') wordleRef.openStatsModal();
-    else if (action === 'settings') wordleRef.openSettingsModal();
-  }
-
   function handleSecretAction(action: 'lock' | 'wordle' | 'portfolio') {
     if (action === 'lock') {
+      clearVaultGrant();
       secretRevealed = false;
       setTab('portfolio');
     } else if (action === 'wordle') {
@@ -127,8 +108,6 @@
   <div class="page-layout">
     <PageSidebar
       {activeTab}
-      onSelectTab={setTab}
-      onWordleAction={handleWordleAction}
       onSecretAction={handleSecretAction}
       {secretRevealed}
     />
@@ -174,10 +153,7 @@
       {:else if activeTab === 'wordle'}
         <main class="wordle-main">
           <svelte:boundary>
-            <WordleGame
-              bind:this={wordleRef}
-              onNavigateToSecret={() => setTab('secret')}
-            />
+            <WordleGame onNavigateToSecret={() => setTab('secret')} />
             {#snippet failed()}
               <p class="broken">Wordle game didn’t load.</p>
             {/snippet}

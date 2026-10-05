@@ -35,6 +35,7 @@
   import SettingsModal from './SettingsModal.svelte';
   import StatsModal from './StatsModal.svelte';
   import { VAULT_FROG_LINE, VAULT_TOAST_LINE } from '../secret/vault-chrome';
+  import { isVaultWord, issueVaultToken } from '../secret/vault-gate';
 
   let {
     onNavigateToSecret,
@@ -43,6 +44,7 @@
   } = $props();
 
   function openVaultDoor() {
+    issueVaultToken();
     setFrogReaction('hop', VAULT_FROG_LINE, 3000);
     showToast(VAULT_TOAST_LINE, 2500);
     playSecretUnlock(true);
@@ -202,7 +204,7 @@
       return;
     }
 
-    if (settings.hardMode && currentGuess !== 'BUMPY') {
+    if (settings.hardMode && !isVaultWord(currentGuess)) {
       const violation = checkHardModeViolation(currentGuess, guesses, targetWord);
       if (violation) {
         showToast(violation);
@@ -294,7 +296,7 @@
       }
     }
 
-    if (guessToSubmit === 'BUMPY') {
+    if (isVaultWord(guessToSubmit)) {
       setTimeout(openVaultDoor, 5 * 160 + 200);
     }
   }

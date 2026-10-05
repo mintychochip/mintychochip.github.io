@@ -36,4 +36,15 @@ describe('public source', () => {
     }
     expect(hits).toEqual([]);
   });
+
+  it('does not spell the door check next to the wordle game', () => {
+    const game = readFileSync(join(SRC, 'lib/wordle/WordleGame.svelte'), 'utf8');
+    const gate = readFileSync(join(SRC, 'lib/secret/vault-gate.ts'), 'utf8');
+    const opener = readFileSync(join(SRC, 'lib/secret/vault-open.ts'), 'utf8');
+    expect(game).not.toContain('BUMPY');
+    expect(gate).not.toContain('BUMPY');
+    expect(opener).not.toContain('BUMPY');
+    expect(game + gate + opener).not.toContain('sk_live_');
+    expect(game + gate + opener).not.toContain('minty_bumpy_token');
+  });
 });

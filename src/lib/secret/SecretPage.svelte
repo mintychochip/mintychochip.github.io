@@ -3,6 +3,7 @@
   import type { Component } from 'svelte';
   import GrandLoader from './GrandLoader.svelte';
   import SecretDenied from './SecretDenied.svelte';
+  import { clearVaultGrant, vaultGrantActive } from './vault-gate';
   import type { VaultCopy } from './vault-types';
 
   let {
@@ -12,13 +13,13 @@
   }: {
     onNavigate: (tab: 'portfolio' | 'wordle') => void;
     onReveal?: (open: boolean) => void;
-    openVault?: (passphrase: string) => Promise<VaultCopy>;
+    openVault?: () => Promise<VaultCopy>;
   } = $props();
 
   type VaultView = 'denied' | 'loading' | 'vault';
-  let view = $state<VaultView>('denied');
+  let view = $state<VaultView>(vaultGrantActive() ? 'loading' : 'denied');
+  let loaderDone = false;
   let error = $state('');
-  let busy = $state(false);
   let payload = $state<VaultCopy | null>(null);
   let Vault = $state<Component<{
     onLogout: () => void;
@@ -26,35 +27,40 @@
     copy: VaultCopy;
   }> | null>(null);
 
-  async function defaultOpen(passphrase: string): Promise<VaultCopy> {
+  async function defaultOpen(): Promise<VaultCopy> {
     const { openSealedVault } = await import('./vault-open');
-    return openSealedVault(passphrase);
+    return openSealedVault();
   }
 
   function lock() {
+    clearVaultGrant();
     payload = null;
     Vault = null;
+    loaderDone = false;
     error = '';
-    busy = false;
     view = 'denied';
   }
 
-  async function handleSubmit(passphrase: string) {
+  function finishLoader() {
+    loaderDone = true;
+    if (payload && Vault) view = 'vault';
+  }
+
+  async function unlock() {
     error = '';
-    busy = true;
     try {
       const opener = openVault ?? defaultOpen;
-      const opened = await opener(passphrase);
+      const opened = await opener();
       const viewMod = await import('./SecretVault.svelte');
       payload = opened;
       Vault = viewMod.default;
-      view = 'loading';
+      view = loaderDone ? 'vault' : 'loading';
     } catch {
+      clearVaultGrant();
       payload = null;
       Vault = null;
-      error = 'That passphrase does not open the vault.';
-    } finally {
-      busy = false;
+      view = 'denied';
+      error = 'The vault did not open.';
     }
   }
 
@@ -68,12 +74,13 @@
       const clean = hash.split('?')[0] || '#secret';
       window.location.hash = clean;
     }
+    if (vaultGrantActive()) void unlock();
   });
 </script>
 
 <div class="secret-page-root">
   {#if view === 'loading'}
-    <GrandLoader onComplete={() => (view = 'vault')} />
+    <GrandLoader onComplete={finishLoader} />
   {:else if view === 'vault' && Vault && payload}
     <Vault
       copy={payload}
@@ -81,7 +88,7 @@
       {onNavigate}
     />
   {:else}
-    <SecretDenied {onNavigate} {error} {busy} onSubmit={handleSubmit} />
+    <SecretDenied {onNavigate} {error} />
   {/if}
 </div>
 

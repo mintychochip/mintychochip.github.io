@@ -45,7 +45,8 @@ function vaultChunk(path: string): string | undefined {
     path.includes('SecretPage') ||
     path.includes('SecretDenied') ||
     path.includes('GrandLoader') ||
-    path.includes('vault-chrome')
+    path.includes('vault-chrome') ||
+    path.includes('vault-gate')
   ) {
     return 'vault-door';
   }
