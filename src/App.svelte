@@ -12,7 +12,7 @@
   import PageSidebar from './lib/components/PageSidebar.svelte';
   import WordleGame from './lib/wordle/WordleGame.svelte';
   import SecretPage from './lib/secret/SecretPage.svelte';
-  import { revokeVaultSession } from './lib/secret/auth';
+  import { SECRET_LOAD_ERROR } from './lib/secret/vault-chrome';
 
   type Tab = 'portfolio' | 'wordle' | 'secret';
 
@@ -29,14 +29,16 @@
   }
 
   let activeTab = $state<Tab>(getTabFromHash());
+  let secretRevealed = $state(false);
   let wordleRef = $state<ReturnType<typeof WordleGame>>();
 
-  function setTab(tab: Tab, token?: string) {
+  function setTab(tab: Tab) {
     activeTab = tab;
+    if (tab !== 'secret') secretRevealed = false;
     if (typeof window !== 'undefined') {
       if (tab === 'secret') {
-        window.location.hash = token ? `#secret?token=${token}` : '#secret';
-        document.title = "mintychochip — happy anniversary 💖";
+        window.location.hash = '#secret';
+        document.title = 'mintychochip';
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (tab === 'wordle') {
         window.location.hash = '#wordle';
@@ -51,7 +53,7 @@
     }
   }
 
-  function handleWordleAction(action: 'daily' | 'practice' | 'help' | 'stats' | 'settings' | 'secret') {
+  function handleWordleAction(action: 'daily' | 'practice' | 'help' | 'stats' | 'settings') {
     if (activeTab !== 'wordle') {
       setTab('wordle');
       setTimeout(() => {
@@ -62,19 +64,18 @@
     }
   }
 
-  function executeWordleAction(action: 'daily' | 'practice' | 'help' | 'stats' | 'settings' | 'secret') {
+  function executeWordleAction(action: 'daily' | 'practice' | 'help' | 'stats' | 'settings') {
     if (!wordleRef) return;
     if (action === 'daily') wordleRef.switchMode('daily');
     else if (action === 'practice') wordleRef.switchMode('practice');
     else if (action === 'help') wordleRef.openHelpModal();
     else if (action === 'stats') wordleRef.openStatsModal();
     else if (action === 'settings') wordleRef.openSettingsModal();
-    else if (action === 'secret') wordleRef.triggerBumpy();
   }
 
   function handleSecretAction(action: 'lock' | 'wordle' | 'portfolio') {
     if (action === 'lock') {
-      revokeVaultSession();
+      secretRevealed = false;
       setTab('portfolio');
     } else if (action === 'wordle') {
       setTab('wordle');
@@ -84,23 +85,30 @@
   }
 
   onMount(() => {
+    function scrollToAnchor(hash: string) {
+      if (!hash || hash === '#portfolio' || hash === '#') return;
+      setTimeout(() => {
+        const el = document.getElementById(hash.slice(1));
+        el?.scrollIntoView({ behavior: 'smooth' });
+      }, 50);
+    }
+
     function handleHashChange() {
       const hash = window.location.hash.toLowerCase();
       if (hash === '#secret' || hash.startsWith('#secret')) {
         activeTab = 'secret';
-        document.title = "mintychochip — happy anniversary 💖";
+        document.title = 'mintychochip';
       } else if (hash === '#wordle' || hash.startsWith('#wordle')) {
         activeTab = 'wordle';
         document.title = 'mintychochip — wordle';
+      } else if (activeTab !== 'portfolio' && document.getElementById(hash.slice(1))) {
+        // In-page anchors inside the secret/wordle tabs (e.g. "Continue to your
+        // passes") must not bounce the visitor back to the portfolio.
+        scrollToAnchor(hash);
       } else {
         activeTab = 'portfolio';
         document.title = 'mintychochip';
-        if (hash && hash !== '#portfolio' && hash !== '#') {
-          setTimeout(() => {
-            const el = document.querySelector(window.location.hash);
-            el?.scrollIntoView({ behavior: 'smooth' });
-          }, 50);
-        }
+        scrollToAnchor(hash);
       }
     }
 
@@ -122,6 +130,7 @@
       onSelectTab={setTab}
       onWordleAction={handleWordleAction}
       onSecretAction={handleSecretAction}
+      {secretRevealed}
     />
 
     <div class="page-content">
@@ -167,7 +176,7 @@
           <svelte:boundary>
             <WordleGame
               bind:this={wordleRef}
-              onNavigateToSecret={(token) => setTab('secret', token)}
+              onNavigateToSecret={() => setTab('secret')}
             />
             {#snippet failed()}
               <p class="broken">Wordle game didn’t load.</p>
@@ -177,9 +186,9 @@
       {:else if activeTab === 'secret'}
         <main class="secret-main">
           <svelte:boundary>
-            <SecretPage onNavigate={setTab} />
+            <SecretPage onNavigate={setTab} onReveal={(open) => (secretRevealed = open)} />
             {#snippet failed()}
-              <p class="broken">Secret vault didn’t load.</p>
+              <p class="broken">{SECRET_LOAD_ERROR}</p>
             {/snippet}
           </svelte:boundary>
         </main>

@@ -46,6 +46,7 @@ describe('PageSidebar', () => {
     const pageNav = document.querySelector('[aria-label="WORDLE page navigation"]');
     expect(pageNav).not.toBeNull();
     expect(pageNav?.textContent).toContain('Daily Puzzle');
+    expect(pageNav?.textContent).not.toContain("Bumpy's Vault");
 
     const daily = Array.from(document.querySelectorAll('.page-nav .nav-link')).find((el) =>
       el.textContent?.includes('Daily Puzzle')

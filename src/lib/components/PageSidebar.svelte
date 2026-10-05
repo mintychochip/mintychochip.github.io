@@ -1,6 +1,7 @@
 <script lang="ts">
   import { site } from '../site';
   import { playKeyPress } from '../wordle/sound';
+  import { SECRET_PAGE_HEADING, secretPageItems } from '../secret/vault-chrome';
 
   export interface SidebarItem {
     id: string;
@@ -16,11 +17,13 @@
     onSelectTab,
     onWordleAction,
     onSecretAction,
+    secretRevealed = false,
   }: {
     activeTab: 'portfolio' | 'wordle' | 'secret';
     onSelectTab: (tab: 'portfolio' | 'wordle' | 'secret') => void;
-    onWordleAction?: (action: 'daily' | 'practice' | 'help' | 'stats' | 'settings' | 'secret') => void;
+    onWordleAction?: (action: 'daily' | 'practice' | 'help' | 'stats' | 'settings') => void;
     onSecretAction?: (action: 'lock' | 'wordle' | 'portfolio') => void;
+    secretRevealed?: boolean;
   } = $props();
 
   let activeSectionId = $state<string>('');
@@ -77,40 +80,15 @@
       icon: '⚙️',
       action: () => onWordleAction?.('settings'),
     },
-    {
-      id: 'wordle-secret',
-      label: "Bumpy's Vault",
-      icon: '🐸',
-      badge: 'SECRET',
-      action: () => onWordleAction?.('secret'),
-    },
   ];
 
-  const SECRET_PAGE_ITEMS: SidebarItem[] = [
-    { id: 'anniversary-pond', label: 'Frog Pond', icon: '🐸', href: '#anniversary-pond' },
-    { id: 'anniversary-letter', label: 'Love Letter', icon: '💌', href: '#anniversary-letter' },
-    { id: 'anniversary-reasons', label: '8 Reasons Why', icon: '✨', href: '#anniversary-reasons' },
-    { id: 'anniversary-coupons', label: 'Love Vouchers', icon: '🎟️', href: '#anniversary-coupons' },
-    { id: 'anniversary-wordle', label: 'Mini Wordle', icon: '🟩', href: '#anniversary-wordle' },
-    { id: 'anniversary-oracle', label: 'Wordle Oracle', icon: '🔮', href: '#anniversary-oracle' },
-    { id: 'anniversary-jukebox', label: 'Love Jukebox', icon: '🎶', href: '#anniversary-jukebox' },
-    {
-      id: 'secret-lock',
-      label: 'Lock Page',
-      icon: '🔒',
-      action: () => onSecretAction?.('lock'),
-    },
-  ];
+  const secretItems = $derived(secretPageItems(() => onSecretAction?.('lock')));
 
   const pageItems = $derived(
-    activeTab === 'wordle' ? WORDLE_PAGE_ITEMS : activeTab === 'secret' ? SECRET_PAGE_ITEMS : []
+    activeTab === 'wordle' ? WORDLE_PAGE_ITEMS : activeTab === 'secret' && secretRevealed ? secretItems : []
   );
 
-  const pageHeading = $derived(
-    activeTab === 'wordle'
-      ? { title: 'WORDLE', tag: 'THIS PAGE', icon: '🟩' }
-      : { title: 'ANNIVERSARY', tag: 'THIS PAGE', icon: '💖' }
-  );
+  const pageHeading = $derived(activeTab === 'wordle' ? { title: 'WORDLE', tag: 'THIS PAGE', icon: '🟩' } : SECRET_PAGE_HEADING);
 
   function scrollToSection(targetId: string, href: string) {
     const targetEl = document.getElementById(targetId);
@@ -181,13 +159,13 @@
     'projects',
     'resume',
     'contact',
+    'anniversary-letter3d',
     'anniversary-pond',
     'anniversary-letter',
     'anniversary-reasons',
     'anniversary-coupons',
     'anniversary-wordle',
     'anniversary-oracle',
-    'anniversary-jukebox',
   ] as const;
 
   $effect(() => {

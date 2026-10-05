@@ -1,9 +1,27 @@
 <script lang="ts">
   let {
     onNavigate,
+    error = '',
+    busy = false,
+    onSubmit,
   }: {
     onNavigate: (tab: 'portfolio' | 'wordle') => void;
+    error?: string;
+    busy?: boolean;
+    onSubmit: (passphrase: string) => void;
   } = $props();
+
+  let passphrase = $state('');
+
+  function handleSubmit(event: SubmitEvent) {
+    event.preventDefault();
+    if (busy) return;
+    const field = event.currentTarget;
+    const entered = field instanceof HTMLFormElement
+      ? String(new FormData(field).get('vault-passphrase') ?? '')
+      : passphrase;
+    onSubmit(entered);
+  }
 </script>
 
 <div class="denied-wrap">
@@ -17,19 +35,33 @@
       <div class="denied-icon">🔒</div>
       <h2 class="denied-title">BUMPY'S SECRET VAULT</h2>
       <p class="denied-message">
-        This hidden chamber is protected by Bumpy the Frog. Direct access is prohibited.
+        This vault is sealed. The passphrase opens it. Nothing else does.
       </p>
 
-      <div class="lore-box px">
-        <p>
-          To enter, find <strong>Bumpy</strong> sitting on his lilypad in the <strong>Wordle</strong> tab.
-          Clicking Bumpy will issue you an exclusive, one-time secret token to bypass security!
-        </p>
-      </div>
+      <form class="passphrase-form" onsubmit={handleSubmit}>
+        <label class="passphrase-label" for="vault-passphrase">Passphrase</label>
+        <input
+          id="vault-passphrase"
+          class="passphrase-input px"
+          type="password"
+          name="vault-passphrase"
+          autocomplete="off"
+          spellcheck="false"
+          bind:value={passphrase}
+          disabled={busy}
+          required
+        />
+        {#if error}
+          <p class="passphrase-error" role="alert">{error}</p>
+        {/if}
+        <button type="submit" class="btn px wordle-btn" disabled={busy}>
+          {busy ? 'Checking…' : 'Open the vault'}
+        </button>
+      </form>
 
       <div class="denied-actions">
         <button type="button" class="btn px wordle-btn" onclick={() => onNavigate('wordle')}>
-          Find Bumpy in Wordle 🐸
+          Back to Wordle
         </button>
         <button type="button" class="btn px portfolio-btn" onclick={() => onNavigate('portfolio')}>
           ← Portfolio
@@ -104,19 +136,36 @@
     line-height: 1.5;
   }
 
-  .lore-box {
-    background: #0f1422;
-    border-left: 3px solid #d69e2e;
-    padding: 12px 14px;
-    margin-bottom: 24px;
+  .passphrase-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
     text-align: left;
-    font-size: 14px;
-    color: var(--fg);
-    line-height: 1.5;
   }
 
-  .lore-box p {
+  .passphrase-label {
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+
+  .passphrase-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: #0f1422;
+    color: var(--fg);
+    border: 1px solid var(--dim);
+    padding: 12px;
+    font: inherit;
+    font-size: 16px;
+  }
+
+  .passphrase-error {
     margin: 0;
+    color: var(--error);
+    font-size: 14px;
   }
 
   .denied-actions {

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { SECRET_TAB_LABEL } from '../secret/vault-chrome';
+
   let {
     activeTab = 'portfolio',
     onSelectTab,
@@ -35,7 +37,7 @@
         <span class="tab-name">Wordle</span>
       {:else}
         <span class="tab-glyph">💖</span>
-        <span class="tab-name">Happy Anniversary</span>
+        <span class="tab-name">{SECRET_TAB_LABEL}</span>
       {/if}
     </span>
 

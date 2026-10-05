@@ -15,7 +15,7 @@
 
   const LOG_STEPS = [
     { delay: 100, text: '>> INITIATING BUMPY SECURE HANDSHAKE...' },
-    { delay: 500, text: '>> ONE-TIME TOKEN DETECTED: sk_live_... [AUTHENTICATED]' },
+    { delay: 500, text: '>> PASSPHRASE ACCEPTED' },
     { delay: 950, text: '>> CALIBRATING POND FREQUENCIES & LILYPADS...' },
     { delay: 1450, text: '>> DETECTING SPECIAL OCCASION ARCHIVE... [MATCH FOUND]' },
     { delay: 1950, text: '>> CLEARANCE LEVEL: VIP LIFETIME ACCESS [GRANTED]' },

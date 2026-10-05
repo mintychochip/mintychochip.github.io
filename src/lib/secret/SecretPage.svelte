@@ -1,78 +1,87 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { isVaultSessionActive, revokeVaultSession, validateAndConsumeToken } from './auth';
+  import type { Component } from 'svelte';
   import GrandLoader from './GrandLoader.svelte';
   import SecretDenied from './SecretDenied.svelte';
-  import SecretVault from './SecretVault.svelte';
+  import type { VaultCopy } from './vault-types';
 
   let {
     onNavigate,
+    onReveal,
+    openVault,
   }: {
     onNavigate: (tab: 'portfolio' | 'wordle') => void;
+    onReveal?: (open: boolean) => void;
+    openVault?: (passphrase: string) => Promise<VaultCopy>;
   } = $props();
 
-  type VaultView = 'checking' | 'loading' | 'vault' | 'denied';
-  let view = $state<VaultView>('checking');
+  type VaultView = 'denied' | 'loading' | 'vault';
+  let view = $state<VaultView>('denied');
+  let error = $state('');
+  let busy = $state(false);
+  let payload = $state<VaultCopy | null>(null);
+  let Vault = $state<Component<{
+    onLogout: () => void;
+    onNavigate: (tab: 'portfolio' | 'wordle') => void;
+    copy: VaultCopy;
+  }> | null>(null);
 
-  function checkAccess() {
-    if (typeof window === 'undefined') return;
-
-    // Check if session is already authorized
-    if (isVaultSessionActive()) {
-      view = 'vault';
-      return;
-    }
-
-    // Check for one-time token in URL hash or query params
-    const hash = window.location.hash || '';
-    const search = window.location.search || '';
-    let token = '';
-
-    if (hash.includes('token=')) {
-      token = hash.split('token=')[1]?.split('&')[0];
-    } else if (search.includes('token=')) {
-      token = new URLSearchParams(search).get('token') || '';
-    }
-
-    if (token && validateAndConsumeToken(token)) {
-      if (token === 'preview' || token === 'sk_preview') {
-        view = 'vault';
-      } else {
-        // Valid one-time token! Trigger the grand loading screen animation
-        view = 'loading';
-      }
-    } else {
-      // Missing or invalid token
-      view = 'denied';
-    }
+  async function defaultOpen(passphrase: string): Promise<VaultCopy> {
+    const { openSealedVault } = await import('./vault-open');
+    return openSealedVault(passphrase);
   }
 
-  function handleLogout() {
-    revokeVaultSession();
+  function lock() {
+    payload = null;
+    Vault = null;
+    error = '';
+    busy = false;
     view = 'denied';
   }
 
-  onMount(() => {
-    checkAccess();
-
-    function handleHash() {
-      checkAccess();
+  async function handleSubmit(passphrase: string) {
+    error = '';
+    busy = true;
+    try {
+      const opener = openVault ?? defaultOpen;
+      const opened = await opener(passphrase);
+      const viewMod = await import('./SecretVault.svelte');
+      payload = opened;
+      Vault = viewMod.default;
+      view = 'loading';
+    } catch {
+      payload = null;
+      Vault = null;
+      error = 'That passphrase does not open the vault.';
+    } finally {
+      busy = false;
     }
-    window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
+  }
+
+  $effect(() => {
+    onReveal?.(view !== 'denied');
+  });
+
+  onMount(() => {
+    const hash = window.location.hash || '';
+    if (hash.includes('token=')) {
+      const clean = hash.split('?')[0] || '#secret';
+      window.location.hash = clean;
+    }
   });
 </script>
 
 <div class="secret-page-root">
   {#if view === 'loading'}
     <GrandLoader onComplete={() => (view = 'vault')} />
-  {:else if view === 'vault'}
-    <SecretVault
-      onLogout={handleLogout}
+  {:else if view === 'vault' && Vault && payload}
+    <Vault
+      copy={payload}
+      onLogout={lock}
       {onNavigate}
     />
-  {:else if view === 'denied'}
-    <SecretDenied {onNavigate} />
+  {:else}
+    <SecretDenied {onNavigate} {error} {busy} onSubmit={handleSubmit} />
   {/if}
 </div>
 

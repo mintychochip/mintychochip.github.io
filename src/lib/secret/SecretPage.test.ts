@@ -2,10 +2,37 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount, tick, unmount } from 'svelte';
 import SecretPage from './SecretPage.svelte';
-import { generateBumpyToken, revokeVaultSession, validateAndConsumeToken } from './auth';
+import type { VaultCopy } from './vault-types';
+
+const FIXTURE: VaultCopy = {
+  letter: {
+    cover: { kicker: 'a note', title: 'Sample Card' },
+    greeting: 'Hello there,',
+    paragraphs: ['A sample paragraph.'],
+    signoff: 'Yours,',
+    signature: 'A friend',
+    postscript: 'More below.',
+  },
+  banner: { clearance: 'SEALED', heading: 'Sample heading', subheading: 'Sample sub' },
+  pond: { title: 'Sample pond', idleSpeech: 'Ribbit', loveLines: ['Ribbit'], button: 'Send' },
+  letterStamp: 'SAMPLE',
+  reasons: { title: 'Reasons', desc: 'Some reasons', items: [] },
+  coupons: [],
+  wordle: {
+    title: 'Riddle',
+    prompt: 'Guess',
+    target: 'AAAAA',
+    hint: 'none',
+    wrong: 'no',
+    solvedTitle: 'yes',
+    solvedBody: 'done',
+    keys: ['A'],
+  },
+  oracle: { title: 'Oracle', desc: 'Answers' },
+};
 
 describe('SecretPage component', () => {
-  let app: any;
+  let app: ReturnType<typeof mount> | null = null;
 
   beforeEach(() => {
     class MockResizeObserver {
@@ -20,10 +47,6 @@ describe('SecretPage component', () => {
     }
     vi.stubGlobal('ResizeObserver', MockResizeObserver);
     vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
-
-    sessionStorage.clear();
-    localStorage.clear();
-    revokeVaultSession();
     window.location.hash = '';
     document.body.innerHTML = '';
   });
@@ -35,74 +58,70 @@ describe('SecretPage component', () => {
     }
   });
 
-  it('renders denied gate when unauthenticated and without token', async () => {
-    const onNavigate = vi.fn();
+  it('shows a passphrase form and ignores token links', async () => {
+    window.location.hash = '#secret?token=dev';
     app = mount(SecretPage, {
       target: document.body,
-      props: { onNavigate },
+      props: { onNavigate: vi.fn() },
     });
     await tick();
 
     expect(document.querySelector('.denied-title')?.textContent).toContain("BUMPY'S SECRET VAULT");
-    expect(document.querySelector('.wordle-btn')).not.toBeNull();
+    expect(document.querySelector('#vault-passphrase')).not.toBeNull();
+    expect(document.querySelector('.vault-container')).toBeNull();
+    expect(document.body.textContent).not.toContain('one-time secret token');
   });
 
-  it('triggers grand loader and unlocks vault when valid token is in URL', async () => {
-    const token = generateBumpyToken();
-    window.location.hash = `#secret?token=${token}`;
-
-    const onNavigate = vi.fn();
+  it('stays shut when the passphrase is wrong', async () => {
     app = mount(SecretPage, {
       target: document.body,
-      props: { onNavigate },
+      props: {
+        onNavigate: vi.fn(),
+        openVault: async () => {
+          throw new Error('sealed');
+        },
+      },
     });
     await tick();
 
-    // With a valid token, GrandLoader is active
-    expect(document.querySelector('.loader-overlay')).not.toBeNull();
-    expect(document.querySelector('.loader-title')?.textContent).toContain("DECRYPTING ANNIVERSARY VAULT");
-
-    // Clicking Skip finishes the loader
-    const skipBtn = document.querySelector('.skip-btn') as HTMLButtonElement;
-    expect(skipBtn).not.toBeNull();
-    skipBtn.click();
+    const input = document.querySelector('#vault-passphrase') as HTMLInputElement;
+    input.value = 'wrong-phrase';
+    (document.querySelector('.passphrase-form') as HTMLFormElement).requestSubmit();
+    await tick();
     await tick();
 
-    // Now vault is displayed!
-    expect(document.querySelector('.vault-container')).not.toBeNull();
-    expect(document.querySelector('.vault-heading')?.textContent).toContain("HAPPY ANNIVERSARY");
+    expect(document.querySelector('.passphrase-error')?.textContent).toContain('does not open');
+    expect(document.querySelector('.vault-container')).toBeNull();
+    expect(document.querySelector('.loader-overlay')).toBeNull();
   });
 
-  it('renders vault immediately when session is already authenticated', async () => {
-    // Pre-authorize session
-    validateAndConsumeToken('dev');
-    const onNavigate = vi.fn();
+  it('opens after the passphrase decrypts and locks again', async () => {
     app = mount(SecretPage, {
       target: document.body,
-      props: { onNavigate },
+      props: {
+        onNavigate: vi.fn(),
+        openVault: async (phrase: string) => {
+          if (phrase !== 'right-phrase') throw new Error('sealed');
+          return FIXTURE;
+        },
+      },
     });
     await tick();
 
-    expect(document.querySelector('.clearance-tag')).not.toBeNull();
-    expect(document.querySelector('.vault-heading')?.textContent).toContain("HAPPY ANNIVERSARY");
-  });
+    const input = document.querySelector('#vault-passphrase') as HTMLInputElement;
+    input.value = 'right-phrase';
+    (document.querySelector('.passphrase-form') as HTMLFormElement).requestSubmit();
+    await vi.waitFor(() => {
+      expect(document.querySelector('.loader-overlay')).not.toBeNull();
+    }, 5000);
 
-  it('locks vault and returns to denied screen when Lock Vault is clicked', async () => {
-    validateAndConsumeToken('dev');
-    const onNavigate = vi.fn();
-    app = mount(SecretPage, {
-      target: document.body,
-      props: { onNavigate },
-    });
+    (document.querySelector('.skip-btn') as HTMLButtonElement).click();
     await tick();
+    expect(document.querySelector('.letter3d-stage')).not.toBeNull();
 
-    expect(document.querySelector('.clearance-tag')).not.toBeNull();
-
-    const lockBtn = document.querySelector('.logout-btn') as HTMLButtonElement;
-    lockBtn.click();
+    (document.querySelector('.logout-btn') as HTMLButtonElement).click();
     await tick();
-
-    // Now locked
-    expect(document.querySelector('.denied-title')?.textContent).toContain("BUMPY'S SECRET VAULT");
+    expect(document.querySelector('#vault-passphrase')).not.toBeNull();
+    expect(document.querySelector('.letter3d-stage')).toBeNull();
   });
 });

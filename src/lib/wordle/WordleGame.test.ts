@@ -158,7 +158,27 @@ describe('WordleGame component', () => {
     expect(revealedTiles.length).toBe(5);
   });
 
-  it('invokes onNavigateToSecret when Bumpy the frog is clicked', async () => {
+  it('keeps the vault closed when Bumpy the frog is clicked', async () => {
+    const onNavigateToSecret = vi.fn();
+    window.location.hash = '#wordle';
+    app = mount(WordleGame, {
+      target: document.body,
+      props: { onNavigateToSecret },
+    });
+    await tick();
+
+    const bumpyFrog = document.querySelector('.frog-container') as HTMLButtonElement;
+    expect(bumpyFrog).not.toBeNull();
+    expect(bumpyFrog.getAttribute('aria-label')).toBe('Bumpy the Frog');
+    bumpyFrog.click();
+    await new Promise((r) => setTimeout(r, 500));
+
+    expect(onNavigateToSecret).not.toHaveBeenCalled();
+    expect(window.location.hash).toBe('#wordle');
+    expect(document.body.textContent).not.toContain('secret vault');
+  });
+
+  it('opens the vault door when BUMPY is entered', async () => {
     const onNavigateToSecret = vi.fn();
     app = mount(WordleGame, {
       target: document.body,
@@ -166,12 +186,15 @@ describe('WordleGame component', () => {
     });
     await tick();
 
-    const bumpyFrog = document.querySelector('.frog-container.clickable') as HTMLButtonElement;
-    expect(bumpyFrog).not.toBeNull();
-    bumpyFrog.click();
-    await new Promise((r) => setTimeout(r, 500));
+    for (const ch of 'bumpy') {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: ch, bubbles: true }));
+    }
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    await tick();
 
+    expect(onNavigateToSecret).not.toHaveBeenCalled();
+    await new Promise((r) => setTimeout(r, 1200));
     expect(onNavigateToSecret).toHaveBeenCalledOnce();
-    expect(onNavigateToSecret.mock.calls[0][0]).toMatch(/^sk_live_/);
+    expect(onNavigateToSecret.mock.calls[0]).toEqual([]);
   });
 });

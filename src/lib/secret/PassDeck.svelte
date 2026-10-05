@@ -50,24 +50,34 @@
     return i - activeIndex;
   }
 
+  const SPREAD_X = [0, 40, 66, 80];
+  const SPREAD_SCALE = [1, 0.9, 0.79, 0.72];
+  const SPREAD_Z = [0, -40, -110, -180];
+  const SPREAD_Y = [0, 10, 18, 26];
+  const SPREAD_OPACITY = [1, 0.78, 0.4, 0.16];
+
   function slideTransform(rel: number): string {
     const dragShift = dragging ? dragX * 0.3 : 0;
     const d = Math.min(Math.abs(rel), 3);
-    const x = rel * 58 + dragShift;
-    const rot = rel * -26 + dragX * 0.035;
-    const y = d * 13;
-    const scale = rel === 0 ? 1.02 : Math.max(0.72, 1 - d * 0.13);
-    const z = rel === 0 ? 70 : -d * 90;
-    return `translateX(${x}%) translateY(${y}px) translateZ(${z}px) rotateY(${rot}deg) scale(${scale})`;
+    const sign = rel < 0 ? -1 : 1;
+    const x = (rel === 0 ? 0 : sign * SPREAD_X[d]) + dragShift;
+    const rot = rel * -22 + dragX * 0.035;
+    const y = rel === 0 ? 0 : SPREAD_Y[d];
+    return `translateX(${x}%) translateY(${y}px) translateZ(${SPREAD_Z[d]}px) rotateY(${rot}deg) scale(${SPREAD_SCALE[d]})`;
   }
 
   function slideOpacity(rel: number): number {
-    const d = Math.min(Math.abs(rel), 3);
-    return [1, 0.88, 0.62, 0.4][d] ?? 0.32;
+    return SPREAD_OPACITY[Math.min(Math.abs(rel), 3)];
   }
 
   function onPointerDown(e: PointerEvent) {
     if (!trackEl) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    // Let controls inside the card (e.g. Redeem) receive their own clicks.
+    const target = e.target;
+    if (target instanceof HTMLElement && target.closest('button, a, input, select, textarea, [contenteditable="true"]')) {
+      return;
+    }
     dragging = true;
     pointerStartX = e.clientX;
     trackEl.setPointerCapture(e.pointerId);
@@ -96,10 +106,9 @@
 
   function handleCarouselKeydown(e: KeyboardEvent) {
     const target = e.target;
-    if (target instanceof HTMLElement) {
-      if (target.closest('input, textarea, select, [contenteditable="true"]')) return;
-      if (target.closest('button, a')) return;
-    }
+    // The toolbar only holds carousel controls, so arrows may drive the deck
+    // from any of them; text entry is the sole exception.
+    if (target instanceof HTMLElement && target.closest('input, textarea, select, [contenteditable="true"]')) return;
     if (e.key === 'ArrowLeft') {
       e.preventDefault();
       go(-1);
@@ -147,9 +156,9 @@
     </div>
     <div class="pass-topbar-actions">
       {#if onLock}
-        <button type="button" class="top-btn px" onclick={onLock}>Lock vault</button>
+        <button type="button" class="top-btn" onclick={onLock}>Lock vault</button>
       {/if}
-      <a class="top-btn px ghost" href="#vault-rest">More below ↓</a>
+      <a class="top-btn ghost" href="#vault-rest">More below ↓</a>
     </div>
   </header>
 
@@ -170,7 +179,6 @@
         <div
           class="carousel-slide"
           class:is-center={rel === 0}
-          class:is-far={Math.abs(rel) > 1}
           style="
             transform: {slideTransform(rel)};
             opacity: {slideOpacity(rel)};
@@ -179,7 +187,6 @@
         >
           <div class="slide-card-wrap">
             <PassCard
-              featured
               active={rel === 0}
               title={pass.title}
               icon={pass.icon}
@@ -204,7 +211,7 @@
   >
     <button
       type="button"
-      class="nav-fab px"
+      class="nav-fab"
       aria-label="Previous pass"
       disabled={activeIndex <= 0}
       onclick={() => go(-1)}
@@ -229,7 +236,7 @@
 
     <button
       type="button"
-      class="nav-fab px"
+      class="nav-fab"
       aria-label="Next pass"
       disabled={activeIndex >= passes.length - 1}
       onclick={() => go(1)}
@@ -250,7 +257,7 @@
     width: 100vw;
     max-width: 100vw;
     margin-left: calc(50% - 50vw);
-    min-height: 100dvh;
+    min-height: calc(100dvh - var(--vp-bar-h, 0px));
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -385,6 +392,7 @@
     letter-spacing: 0.04em;
     padding: 9px 16px;
     border: 1px solid rgba(244, 140, 184, 0.35);
+    border-radius: 10px;
     background: rgba(244, 140, 184, 0.08);
     color: #ffd9ea;
     text-decoration: none;
@@ -428,10 +436,6 @@
     box-shadow: 0 0 0 2px rgba(244, 140, 184, 0.55);
   }
 
-  .carousel-shell:focus-visible {
-    box-shadow: inset 0 0 0 2px rgba(244, 140, 184, 0.5);
-  }
-
   .carousel-track.dragging .carousel-slide {
     transition: none;
   }
@@ -470,6 +474,8 @@
   .slide-card-wrap {
     width: 100%;
     height: 100%;
+    /* Mirrored floor reflection; degrades to nothing where unsupported. */
+    -webkit-box-reflect: below 6px linear-gradient(transparent 64%, rgba(255, 255, 255, 0.15));
   }
 
   .carousel-ui {
@@ -487,6 +493,7 @@
     width: 46px;
     height: 46px;
     border: 1px solid rgba(244, 140, 184, 0.28);
+    border-radius: 50%;
     background: rgba(244, 140, 184, 0.07);
     color: #ffd9ea;
     font-size: 17px;
@@ -515,6 +522,7 @@
     gap: 6px;
     padding: 7px 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
     background: rgba(255, 255, 255, 0.04);
   }
 
@@ -523,6 +531,7 @@
     height: 6px;
     padding: 0;
     border: none;
+    border-radius: 999px;
     background: rgba(255, 255, 255, 0.22);
     cursor: var(--cursor-pointer);
     transition:
@@ -552,7 +561,7 @@
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    padding: 12px 16px 28px;
+    padding: 12px 16px calc(28px + var(--vp-bar-h, 0px));
     text-decoration: none;
     font-size: 11px;
     font-weight: 600;

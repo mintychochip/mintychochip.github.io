@@ -4,18 +4,15 @@
   let {
     mood = 'idle',
     message = '',
-    onSecretClick,
   }: {
     mood?: 'idle' | 'thinking' | 'happy' | 'sad' | 'hop';
     message?: string;
-    onSecretClick?: () => void;
   } = $props();
 
   let isHovered = $state(false);
 
   function handleClick() {
     playFrogCroak();
-    onSecretClick?.();
   }
 
   // 13 columns x 9 rows
@@ -63,18 +60,16 @@
 
 <button
   type="button"
-  class="frog-container"
+  class="frog-container clickable"
   class:hop={mood === 'hop' || mood === 'happy'}
   class:sad={mood === 'sad'}
-  class:clickable={Boolean(onSecretClick)}
-  aria-label={onSecretClick ? "Bumpy the Frog — Click to visit Bumpy's secret vault" : 'Bumpy the Frog'}
-  title={onSecretClick ? "Click Bumpy to visit the secret vault" : undefined}
+  aria-label="Bumpy the Frog"
   onclick={handleClick}
   onpointerenter={() => (isHovered = true)}
   onpointerleave={() => (isHovered = false)}
 >
   <div class="speech-bubble" class:visible={Boolean(message) || isHovered}>
-    {isHovered && !message ? 'Psst... click me! 🗝️' : (message || 'Ribbit!')}
+    {message || 'Ribbit!'}
   </div>
 
   <svg class="frog-svg" viewBox="0 0 16 16" width="68" height="68" shape-rendering="crispEdges">

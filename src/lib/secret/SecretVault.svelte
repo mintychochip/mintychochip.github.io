@@ -3,10 +3,10 @@
   import PondCanvas from '../pond/PondCanvas.svelte';
   import { PALETTES, type PaletteName } from '../pond/palette';
   import { getDailyWord, isValidWord } from '../wordle/words';
+  import VaultMusicPlayer from '../music/VaultMusicPlayer.svelte';
   import {
     playDelete,
     playDuetCroak,
-    playFrogCroak,
     playHeartChime,
     playInvalid,
     playKeyPress,
@@ -15,15 +15,18 @@
     playSecretUnlock,
     playWin,
   } from '../wordle/sound';
-  import { logoutSecret } from './auth';
   import PassDeck from './PassDeck.svelte';
+  import LoveLetter3D from './LoveLetter3D.svelte';
+  import type { VaultCopy } from './vault-types';
 
   let {
     onLogout,
     onNavigate,
+    copy,
   }: {
     onLogout: () => void;
     onNavigate: (tab: 'portfolio' | 'wordle') => void;
+    copy: VaultCopy;
   } = $props();
 
   // Floating hearts counter
@@ -55,12 +58,11 @@
   let selectedPalette = $state<PaletteName>('dusk');
   let labSeed = $state('anniversary-pond-2026');
   let pondRef = $state<ReturnType<typeof PondCanvas>>();
-  let frogSpeech = $state('Happy Anniversary, sweet girl! 🎀❤️');
+  let frogSpeech = $state(copy.pond.idleSpeech);
   let speechTimer: ReturnType<typeof setTimeout> | null = null;
 
   const availablePalettes: PaletteName[] = ['dusk', 'potion', 'ember', 'night', 'moss', 'mist'];
 
-  // Reasons Why I Love You
   interface ReasonCard {
     id: number;
     title: string;
@@ -69,66 +71,6 @@
     revealed: boolean;
   }
 
-  let reasons = $state<ReasonCard[]>([
-    {
-      id: 1,
-      title: 'Our Morning Boba & Coffee Runs',
-      icon: '🧋',
-      body: 'The way your face lights up on that first sip, and how the simplest errand becomes the highlight of my day when I am with you.',
-      revealed: false,
-    },
-    {
-      id: 2,
-      title: 'Your Smile That Melts Everything Away',
-      icon: '✨',
-      body: 'No matter how stressful or hectic a day gets, one smile from you makes everything instantly okay. It is my favorite sight in the world.',
-      revealed: false,
-    },
-    {
-      id: 3,
-      title: 'Cozy Movie & Cuddle Nights',
-      icon: '🛋️',
-      body: 'Curled up under warm blankets, sharing snacks, and you inevitably resting your head on my shoulder halfway through the show.',
-      revealed: false,
-    },
-    {
-      id: 4,
-      title: 'My Number One Cheerleader',
-      icon: '🧩',
-      body: 'You always believe in me, celebrate my wins, and lift me up when I doubt myself. I am so lucky to have you in my corner.',
-      revealed: false,
-    },
-    {
-      id: 5,
-      title: 'Our Adventures & Silly Inside Jokes',
-      icon: '✈️',
-      body: 'Every trip we take, singing together in the car, exploring new spots, and laughing so hard our stomachs hurt at things only we understand.',
-      revealed: false,
-    },
-    {
-      id: 6,
-      title: 'My Lifelong Player Two',
-      icon: '🎮',
-      body: 'The best teammate for games, for road trips, and for life. I would choose you on my team every single time, in every universe.',
-      revealed: false,
-    },
-    {
-      id: 7,
-      title: 'Our Foodie Quests & Late Night Treats',
-      icon: '🍝',
-      body: 'Exploring new restaurants, ordering way too much food, sharing bites, and play-fighting over who gets the last french fry.',
-      revealed: false,
-    },
-    {
-      id: 8,
-      title: 'Simply Everything About You',
-      icon: '💖',
-      body: 'Your huge compassionate heart, your sharp mind, your warmth, your silliness, and the way you make home feel like wherever you are.',
-      revealed: false,
-    },
-  ]);
-
-  // Love Coupons
   interface Coupon {
     id: number;
     title: string;
@@ -137,55 +79,16 @@
     redeemed: boolean;
   }
 
-  let coupons = $state<Coupon[]>([
-    {
-      id: 1,
-      title: 'Unlimited Massage Pass',
-      icon: '💆‍♀️',
-      desc: 'One long, relaxing back & shoulder massage. No time limit or questions asked!',
-      redeemed: false,
-    },
-    {
-      id: 2,
-      title: 'Fancy Dinner Date of Your Choice',
-      icon: '🍽️',
-      desc: 'Pick any restaurant, anywhere, anytime. All delicious treats completely on me.',
-      redeemed: false,
-    },
-    {
-      id: 3,
-      title: 'Late-Night Boba / Sweet Treat Delivery',
-      icon: '🧋',
-      desc: 'Craving something sweet or an ice-cold boba? Instant delivery directly to your couch.',
-      redeemed: false,
-    },
-    {
-      id: 4,
-      title: 'Movie Night Executive Control',
-      icon: '🎬',
-      desc: 'Complete 100% control over the movie lineup and snacks. No complaints permitted!',
-      redeemed: false,
-    },
-    {
-      id: 5,
-      title: 'Win-Any-Argument Free Pass',
-      icon: '👑',
-      desc: 'Play this card during any playful debate and you are instantly and officially 100% right.',
-      redeemed: false,
-    },
-    {
-      id: 6,
-      title: 'Spontaneous Weekend Getaway',
-      icon: '🏖️',
-      desc: 'A fun day trip or weekend escape together to explore, relax, and make new memories.',
-      redeemed: false,
-    },
-  ]);
+  let reasons = $state<ReasonCard[]>(copy.reasons.items.map((item) => ({ ...item, revealed: false })));
+  let coupons = $state<Coupon[]>(copy.coupons.map((item) => ({ ...item, redeemed: false })));
 
   let activePassIndex = $state(0);
 
+  // The vault stays shut until the sealed letter has been opened.
+  let letterOpened = $state(false);
+
   // Mini Love Wordle puzzle
-  const LOVE_TARGET = 'HEART';
+  const loveTarget = copy.wordle.target;
   let loveGuess = $state('');
   let loveSolved = $state(false);
   let loveHint = $state(false);
@@ -216,13 +119,13 @@
       playInvalid(true);
       return;
     }
-    if (loveGuess === LOVE_TARGET) {
+    if (loveGuess === loveTarget) {
       loveSolved = true;
       playWin(true);
       playLoveSerenade(true);
       triggerHeartShower();
     } else {
-      loveError = 'Close! Hint: What beats for you every day?';
+      loveError = copy.wordle.wrong;
       playInvalid(true);
     }
   }
@@ -248,7 +151,6 @@
   }
 
   function handleLogoutClick() {
-    logoutSecret();
     onLogout();
   }
 
@@ -258,15 +160,10 @@
     triggerHeartShower();
 
     if (speechTimer) clearTimeout(speechTimer);
-    const quotes = [
-      'Bumpy says: "Ribbit! You are the sweetest human! 🐸❤️"',
-      'Girlfriend Frog says: "Ribbit! He loves you so much! 🎀💕"',
-      'Both frogs harmonizing: "Happy Anniversary!! 🐸💕🎀"',
-      'Ribbit! You two are our favorite pair! 💖',
-    ];
-    frogSpeech = quotes[Math.floor(Math.random() * quotes.length)];
+    const quotes = copy.pond.loveLines;
+    frogSpeech = quotes[Math.floor(Math.random() * quotes.length)] ?? copy.pond.idleSpeech;
     speechTimer = setTimeout(() => {
-      frogSpeech = 'Happy Anniversary, sweet girl! 🎀❤️';
+      frogSpeech = copy.pond.idleSpeech;
     }, 4000);
   }
 
@@ -353,6 +250,20 @@
   {/each}
 </div>
 
+<div class="vault-shell">
+  {#if !letterOpened}
+    <div class="early-lock">
+      <button type="button" class="btn px mini-btn logout-btn" onclick={handleLogoutClick}>
+        Lock Vault 🔒
+      </button>
+    </div>
+  {/if}
+  <!-- 3D sealed letter intro: the flap opens before the passes are handed over -->
+  <LoveLetter3D letter={copy.letter} onOpened={() => (letterOpened = true)} />
+
+  <!-- Nothing else in the vault exists until the letter has been opened. -->
+  {#if letterOpened}
+
 <PassDeck
   bind:activeIndex={activePassIndex}
   passes={coupons}
@@ -365,8 +276,7 @@
     <div class="banner-top">
       <div class="clearance-tag">
         <span class="pulse-dot"></span>
-        <span>CLEARANCE: LEVEL ❤️ // FOREVER & ALWAYS</span>
-        <span class="token-badge">sk_live_authenticated 🗝️</span>
+        <span>{copy.banner.clearance}</span>
       </div>
       <div class="banner-actions">
         <button type="button" class="btn px mini-btn logout-btn" onclick={handleLogoutClick}>
@@ -376,9 +286,9 @@
     </div>
     <div class="banner-bottom">
       <div>
-        <h1 class="vault-heading">HAPPY ANNIVERSARY, MY LOVE! 💖</h1>
+        <h1 class="vault-heading">{copy.banner.heading}</h1>
         <p class="vault-subheading">
-          Pond, letter, games, and everything else — scroll down whenever you are ready.
+          {copy.banner.subheading}
         </p>
       </div>
       <nav class="quick-nav">
@@ -398,7 +308,7 @@
     <div class="card-header">
       <div class="header-left">
         <span class="card-icon">🐸💕🎀</span>
-        <h2 class="card-title">Bumpy & Girlfriend's Anniversary Pond</h2>
+        <h2 class="card-title">{copy.pond.title}</h2>
       </div>
       <div class="frog-bubble px">
         {frogSpeech}
@@ -423,7 +333,7 @@
     <div class="pond-bar">
       <div class="pond-actions">
         <button type="button" class="btn px love-btn" onclick={handleFrogLoveClick}>
-          Send Love to Bumpy & Girlfriend 🐸💕
+          {copy.pond.button}
         </button>
         <button type="button" class="btn px serenade-btn" onclick={() => playLoveSerenade(true)}>
           Play Love Serenade 🎶
@@ -452,23 +362,17 @@
   <section id="anniversary-letter" class="love-letter-card px">
     <div class="letter-stamp">
       <span class="stamp-icon">💌</span>
-      <span class="stamp-text">SPECIAL DELIVERY FOR PLAYER TWO</span>
+      <span class="stamp-text">{copy.letterStamp}</span>
     </div>
 
     <div class="letter-body">
-      <h2 class="letter-greeting">To My Favorite Person in the World,</h2>
-      <p class="letter-para">
-        Happy Anniversary! Every single day with you is my happiest day. From our lazy mornings, late-night snack runs, and cozy movie cuddles, to laughing until our stomachs hurt and navigating everything together, you make my life endlessly brighter.
-      </p>
-      <p class="letter-para">
-        You are the kindest, smartest, funniest, and most gorgeous girl in the universe. Thank you for being my rock, my biggest supporter, my best friend, and my lifelong Player Two.
-      </p>
-      <p class="letter-para">
-        I built this secret vault just for you because you deserve all the love, happiness, and magic in the world. I love you more than words, code, or infinite Wordle puzzles could ever express!
-      </p>
+      <h2 class="letter-greeting">{copy.letter.greeting}</h2>
+      {#each copy.letter.paragraphs as paragraph}
+        <p class="letter-para">{paragraph}</p>
+      {/each}
       <div class="letter-signoff">
-        <span>Forever & always yours,</span>
-        <strong class="signature">With all my love ❤️</strong>
+        <span>{copy.letter.signoff}</span>
+        <strong class="signature">{copy.letter.signature} ❤️</strong>
       </div>
     </div>
 
@@ -483,10 +387,10 @@
   <section id="anniversary-reasons" class="panel px">
       <div class="panel-header">
         <span class="panel-icon">✨</span>
-        <h2 class="panel-title">8 Reasons Why I Love You (Click to Reveal)</h2>
+        <h2 class="panel-title">{copy.reasons.title}</h2>
       </div>
       <div class="panel-body">
-        <p class="desc">A few of the million things that make you so special to me:</p>
+        <p class="desc">{copy.reasons.desc}</p>
         <div class="reasons-list">
           {#each reasons as r (r.id)}
             <button
@@ -517,10 +421,10 @@
     <section id="anniversary-wordle" class="panel px">
       <div class="panel-header">
         <span class="panel-icon">🟩</span>
-        <h2 class="panel-title">Our Mini Love Wordle (5-Letter Riddle)</h2>
+        <h2 class="panel-title">{copy.wordle.title}</h2>
       </div>
       <div class="panel-body">
-        <p class="desc">Can you guess the 5-letter word that beats for you every day?</p>
+        <p class="desc">{copy.wordle.prompt}</p>
 
         <!-- Mini Tiles -->
         <div class="love-tiles-row">
@@ -538,14 +442,14 @@
         {#if loveSolved}
           <div class="love-solved-box px">
             <span class="solved-star">💖 🟩🟩🟩🟩🟩 💖</span>
-            <strong>YOU SOLVED MY HEART!</strong>
-            <p>Not that you ever had to guess — my heart is already completely yours!</p>
+            <strong>{copy.wordle.solvedTitle}</strong>
+            <p>{copy.wordle.solvedBody}</p>
           </div>
         {:else}
           <!-- Quick Keyboard Helper -->
           <div class="love-keys-box">
             <div class="love-keys-row">
-              {#each ['H', 'E', 'A', 'R', 'T', 'S', 'W', 'Y', 'O', 'U'] as letter}
+              {#each copy.wordle.keys as letter}
                 <button
                   type="button"
                   class="key-btn px"
@@ -572,7 +476,7 @@
             </div>
             {#if loveHint}
               <div class="hint-text px">
-                Hint: It starts with <strong>H</strong> and rhymes with <em>PART</em>! (Or spells H-E-A-R-T ❤️)
+                {copy.wordle.hint}
               </div>
             {/if}
             {#if loveError}
@@ -587,10 +491,10 @@
     <section id="anniversary-oracle" class="panel px">
       <div class="panel-header">
         <span class="panel-icon">🔮</span>
-        <h2 class="panel-title">Wordle Oracle: Girlfriend VIP Answers</h2>
+        <h2 class="panel-title">{copy.oracle.title}</h2>
       </div>
       <div class="panel-body">
-        <p class="desc">Exclusive anniversary perk: You never have to lose a Wordle game again!</p>
+        <p class="desc">{copy.oracle.desc}</p>
 
         <div class="intel-card px">
           <div class="intel-row">
@@ -646,37 +550,26 @@
       </div>
     </section>
   </div>
+  </div>
+  {/if}
 
-  <!-- 8-Bit Romantic Synthesizer Jukebox -->
-  <section id="anniversary-jukebox" class="panel px jukebox-panel">
-    <div class="panel-header">
-      <span class="panel-icon">🎶</span>
-      <h2 class="panel-title">8-Bit Retro Love Jukebox</h2>
+  {#if !letterOpened}
+    <div class="vault-locked px">
+      <p class="locked-title">🔒 Everything else waits behind the letter</p>
+      <p class="locked-sub">
+        Open the card above and the passes, pond, games and the rest of the vault unlock.
+      </p>
+      <button
+        type="button"
+        class="btn px locked-btn"
+        onclick={() => document.getElementById('anniversary-letter3d')?.scrollIntoView({ behavior: 'smooth' })}
+      >
+        Take me to the letter 💌
+      </button>
     </div>
-    <div class="panel-body">
-      <p class="desc">Live synthesizer triggers tuned for our celebration:</p>
-      <div class="sound-grid">
-        <button type="button" class="sound-btn px romantic-tune" onclick={() => playLoveSerenade(true)}>
-          Anniversary Serenade 🎶
-        </button>
-        <button type="button" class="sound-btn px romantic-tune" onclick={() => playHeartChime(true)}>
-          Heart Chime 💖
-        </button>
-        <button type="button" class="sound-btn px frog-duet" onclick={() => playDuetCroak(true)}>
-          Bumpy & Girlfriend Duet 🐸💕
-        </button>
-        <button type="button" class="sound-btn px" onclick={() => playWin(true)}>
-          Victory Fanfare 🏆
-        </button>
-        <button type="button" class="sound-btn px" onclick={() => playSecretUnlock(true)}>
-          Secret Discovery 🗝️
-        </button>
-        <button type="button" class="sound-btn px" onclick={() => playFrogCroak(true)}>
-          Bumpy Solo Croak 🐸
-        </button>
-      </div>
-    </div>
-  </section>
+  {/if}
+
+  <VaultMusicPlayer />
 </div>
 
 <style>
@@ -714,6 +607,60 @@
       transform: translateY(-105vh) scale(1.15) rotate(15deg);
       opacity: 0;
     }
+  }
+
+
+  /* Shown instead of the vault until the letter has been opened. */
+  .vault-locked {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 28px 24px 36px;
+    border: 1px solid rgba(244, 140, 184, 0.3);
+    background: rgba(20, 10, 18, 0.7);
+    color: #ffe6f1;
+    text-align: center;
+  }
+
+  .locked-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .locked-sub {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255, 230, 241, 0.72);
+  }
+
+  .locked-btn {
+    margin-top: 6px;
+    border: 1px solid rgba(244, 140, 184, 0.5);
+    background: rgba(244, 140, 184, 0.16);
+    color: #ffe6f1;
+  }
+
+  .locked-btn:hover,
+  .locked-btn:focus-visible {
+    background: rgba(244, 140, 184, 0.3);
+  }
+  /* Bottom music bar reserves its own height so no content hides behind it. */
+  .vault-shell {
+    --vp-bar-h: 76px;
+    padding-bottom: var(--vp-bar-h);
+  }
+
+  .early-lock {
+    display: flex;
+    justify-content: flex-end;
+    max-width: var(--width);
+    margin: 0 auto 12px;
   }
 
   .vault-container {
@@ -754,16 +701,6 @@
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 1.5px;
-  }
-
-  .token-badge {
-    background: #2a1122;
-    border: 1px solid #f48cb8;
-    color: #ffc4da;
-    padding: 2px 8px;
-    font-size: 11px;
-    letter-spacing: 1px;
-    border-radius: 2px;
   }
 
   .pulse-dot {
@@ -1404,53 +1341,6 @@
     color: #080c18;
   }
 
-  /* Jukebox */
-  .sound-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-
-  .sound-btn {
-    background: #0e1320;
-    border: 1px solid var(--dim);
-    color: var(--fg);
-    font-size: 13px;
-    font-weight: 700;
-    padding: 10px 4px;
-    cursor: var(--cursor-pointer);
-    transition: all 0.15s ease;
-    font-family: inherit;
-  }
-
-  .sound-btn:hover {
-    background: var(--field-focus);
-    border-color: #f48cb8;
-    color: #ffe8f3;
-  }
-
-  .sound-btn.romantic-tune {
-    background: #251329;
-    border-color: #d65a8f;
-    color: #ff94c2;
-  }
-
-  .sound-btn.romantic-tune:hover {
-    background: #d65a8f;
-    color: #ffffff;
-  }
-
-  .sound-btn.frog-duet {
-    background: #172418;
-    border-color: #8bbf73;
-    color: #a8cc5c;
-  }
-
-  .sound-btn.frog-duet:hover {
-    background: #8bbf73;
-    color: #080c18;
-  }
-
   @media (max-width: 768px) {
     .vault-grid {
       grid-template-columns: 1fr;
@@ -1458,8 +1348,11 @@
     .vault-heading {
       font-size: 24px;
     }
-    .sound-grid {
-      grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 720px) {
+    .vault-shell {
+      --vp-bar-h: 62px;
     }
   }
 </style>

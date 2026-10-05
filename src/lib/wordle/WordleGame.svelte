@@ -27,7 +27,6 @@
     playSecretUnlock,
     playWin,
   } from './sound';
-  import { generateBumpyToken } from '../secret/auth';
   import { getDailyWord, getRandomWord, isValidWord } from './words';
   import WordleFrog from './WordleFrog.svelte';
   import WordleGrid from './WordleGrid.svelte';
@@ -35,24 +34,23 @@
   import HelpModal from './HelpModal.svelte';
   import SettingsModal from './SettingsModal.svelte';
   import StatsModal from './StatsModal.svelte';
+  import { VAULT_FROG_LINE, VAULT_TOAST_LINE } from '../secret/vault-chrome';
 
   let {
     onNavigateToSecret,
   }: {
-    onNavigateToSecret?: (token: string) => void;
+    onNavigateToSecret?: () => void;
   } = $props();
 
-  function handleBumpyClick() {
-    const token = generateBumpyToken();
-    setFrogReaction('hop', 'One-time passkey granted! 🗝️', 3000);
+  function openVaultDoor() {
+    setFrogReaction('hop', VAULT_FROG_LINE, 3000);
+    showToast(VAULT_TOAST_LINE, 2500);
     playSecretUnlock(true);
-    setTimeout(() => {
-      if (onNavigateToSecret) {
-        onNavigateToSecret(token);
-      } else {
-        window.location.hash = `#secret?token=${token}`;
-      }
-    }, 450);
+    if (onNavigateToSecret) {
+      onNavigateToSecret();
+    } else {
+      window.location.hash = '#secret';
+    }
   }
 
   // State
@@ -204,7 +202,7 @@
       return;
     }
 
-    if (settings.hardMode) {
+    if (settings.hardMode && currentGuess !== 'BUMPY') {
       const violation = checkHardModeViolation(currentGuess, guesses, targetWord);
       if (violation) {
         showToast(violation);
@@ -297,17 +295,7 @@
     }
 
     if (guessToSubmit === 'BUMPY') {
-      const token = generateBumpyToken();
-      setTimeout(() => {
-        setFrogReaction('hop', 'Vault passkey! 🗝️', 3000);
-        showToast("Bumpy's Vault Unlocked! 🐸✨", 2500);
-        playSecretUnlock(true);
-        if (onNavigateToSecret) {
-          onNavigateToSecret(token);
-        } else {
-          window.location.hash = `#secret?token=${token}`;
-        }
-      }, 5 * 160 + 200);
+      setTimeout(openVaultDoor, 5 * 160 + 200);
     }
   }
 
@@ -381,9 +369,6 @@
   }
   export function switchMode(newMode: GameMode) {
     handleModeChange(newMode);
-  }
-  export function triggerBumpy() {
-    handleBumpyClick();
   }
 </script>
 
@@ -499,7 +484,7 @@
 
   <!-- Frog Mascot (Bumpy) -->
   <div class="frog-bar">
-    <WordleFrog mood={frogMood} message={frogMessage} onSecretClick={handleBumpyClick} />
+    <WordleFrog mood={frogMood} message={frogMessage} />
   </div>
 
   <!-- Game Board Grid -->
