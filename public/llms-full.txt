@@ -1,0 +1,120 @@
+# Justin Lo (mintychochip)
+
+> Personal site of Justin Lo, a software engineer who publishes as mintychochip. Canonical URL: https://mintychochip.dev. This file is the written copy of the public page. The page itself is a client-rendered single-page app. A short index lives at https://mintychochip.dev/llms.txt.
+
+Justin Lo (mintychochip) is a software engineer. The home page shows that name over a night pond, then the line “Software engineer.” Icon links go to GitHub, LinkedIn, and email.
+
+- GitHub: https://github.com/mintychochip
+- LinkedIn: https://www.linkedin.com/in/justinclo
+- Email: justincarllo@gmail.com
+- Resume PDF: https://mintychochip.dev/resume.pdf (download name mintychochip-resume.pdf)
+
+The nav jumps to GitHub activity, token usage, blog, projects, resume, contact, and Wordle. Those are sections of https://mintychochip.dev, not separate HTML documents.
+
+---
+
+# GitHub activity
+
+https://mintychochip.dev/#github
+
+A contribution heatmap for the last year on GitHub, with a short summary of the yearly total, the current streak, the longest streak, and the busiest day. Hovering or tapping a square shows that day’s commits. The official graph is on https://github.com/mintychochip. Counts are loaded live and are not copied into this file.
+
+---
+
+# Token usage
+
+https://mintychochip.dev/#usage
+
+A chart of coding-agent token use. The page loads daily totals and can show 7-day, 30-day, 90-day, 1-year, and all-time ranges when enough history exists. The summary states the token total for the selected span, the average per day, the busiest day, the all-time total, and an estimated API cost when the data includes one.
+
+Machine-readable copies:
+
+- https://mintychochip.dev/v1/usage/models?from=YYYY-MM-DD&to=YYYY-MM-DD
+- https://mintychochip.dev/v1/usage/series
+
+Both are JSON with schema_version 1. Model rows include model, provider, input_tokens, output_tokens, total_tokens, and estimated_cost_usd. The series file has daily points for those metrics.
+
+---
+
+# Blog
+
+https://mintychochip.dev/#blog
+
+One post, August 2026, about a 5 minute read. Title: Yes, That Was Me: Inside Umans AI’s “The Token Gap”. It answers https://blog.umans.ai/blog/the-token-gap/.
+
+Umans AI’s article opens with a developer who ran about 11 billion tokens in one day. That account is mintychochip. Their post is the infrastructure story. This post is what was happening on his machine that weekend.
+
+On June 29, 2026 the recorded peak was 10.95 billion tokens, 53,248 API calls, and a 99% cache hit rate. The comparison drawn in the post is that a 10 billion lifetime total, the kind of figure named at OpenAI DevDay, was compressed into a single day.
+
+Saturday, June 28 was already near 10 billion tokens and about 50 thousand requests. A Discord message from mintychochip that afternoon said he had beaten his record: 10 billion in one day. Sunday continued with refactors, tests, and more agent loops. By the rollover the dashboard showed 10,950.8 million input tokens and 53,248 API calls.
+
+The work was closed-loop agentic coding, not a hand-typed chat. Each turn resent a large static prefix (repo context, diagnostics, search hits) and changed a small diff. Agents ran tests, read failures, and patched again without a person approving every step. Several repos ran at once, which is why the request count reached the tens of thousands. He tracks that usage in his own tooling. The Umans chart is the vendor view. The token usage section on this site is the ongoing view.
+
+The 99% cache hit rate is what made the day possible. Agent loops repeat almost the same prefix, so prefix and KV caching kept the day affordable. The post agrees with Umans that agentic scale is a cache and prefill-routing problem, and treats the weekend as one datapoint for that claim rather than a boast.
+
+Images on the post:
+
+- https://mintychochip.dev/images/openai-devday-tokens.webp
+- https://mintychochip.dev/images/discord-10b-record.png
+- https://mintychochip.dev/images/umans-10b-usage.png
+- https://mintychochip.dev/images/umans-logo.svg
+
+---
+
+# Projects
+
+https://mintychochip.dev/#projects
+
+Project cards are loaded from the public GitHub API for user mintychochip. Forks, the profile README repo, and this site’s repo are skipped. Cards link to the repository, except ModularJobs, which links to https://jobs.mintychochip.dev. Descriptions longer than 20 words are truncated on the card. The all-repositories link is https://github.com/mintychochip?tab=repositories.
+
+Projects the page can show before the API answers:
+
+- toktally (Rust): Cross-harness token-usage store. Plugins sync Claude Code, Codex, Grok, Hermes and other coding agents into a Rust API. https://github.com/mintychochip/toktally
+- kitsune (Java): AI semantic search for Minecraft. Natural-language item finder using DJL and Hugging Face. https://github.com/mintychochip/kitsune
+- Alchemica (Java): Custom potion brewing for Minecraft. Cauldron-based alchemy with flexible recipes. https://github.com/mintychochip/Alchemica
+- dungeon-generator (Java): Paper plugin that generates deterministic, graph-first 3D dungeons. https://github.com/mintychochip/dungeon-generator
+- ModularJobs (Java): Modular job system for Minecraft Paper servers with skill trees and RPG progression. https://jobs.mintychochip.dev
+- guildpost (Astro): Game server browser with 2000+ Minecraft servers. Live status, player counts, community rankings. https://github.com/mintychochip/guildpost
+
+---
+
+# Resume and stack
+
+https://mintychochip.dev/#resume
+
+Heading: Resume & Stack. Lede: Core programming languages, systems, and credentials. The PDF is https://mintychochip.dev/resume.pdf.
+
+Languages and technologies listed on the page:
+
+- Java: Paper plugins and semantic search
+- TypeScript: Sites, QR tools, and hackathon apps
+- Python: FastAPI hackathon platform
+- Rust: Token store, CLIs, and services
+- C++: OpenGL engine
+- Kotlin: quill compiler and bytecode VM
+- Astro: Guildpost and QuickQR
+- React: Hackathon and QuickQR frontends
+- Svelte: This portfolio
+- Vue: Flappy-ve and QuickQR
+
+---
+
+# Contact
+
+https://mintychochip.dev/#contact
+
+Reach Justin at justincarllo@gmail.com or at https://www.linkedin.com/in/justinclo. The form asks for a name, an email, and a message. Submitting does not post to a server. It opens the visitor’s mail app with a draft addressed to justincarllo@gmail.com and the form contents filled in. Empty fields are rejected in the page before that happens.
+
+---
+
+# Wordle
+
+https://mintychochip.dev/#wordle
+
+A 5-letter word game on the site. Guess the word in 6 tries. Each guess must be a valid 5-letter word. Tiles show whether a letter is in the correct spot, in the word in another spot, or absent. Daily Wordle is one shared puzzle per day. Practice mode deals more games. Statistics, settings, and the rules sit in dialogs on that view. A separate window can be opened from the header.
+
+---
+
+# What this file leaves out
+
+Live GitHub contribution counts, the live token chart, and the full repository list change when their sources change. Read those from the page or from the JSON and GitHub URLs above. The resume PDF is the credential document. This file does not reproduce it.

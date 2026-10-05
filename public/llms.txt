@@ -1,0 +1,31 @@
+# Justin Lo (mintychochip)
+
+> Personal site of Justin Lo, a software engineer who publishes as mintychochip. One page covers the portfolio, GitHub activity, token usage, a blog post, projects, resume, contact, and a Wordle.
+
+The canonical site is https://mintychochip.dev. It is a client-rendered single page, so the sections below are hash links on that page. Prefer https://mintychochip.dev/llms-full.txt when you need the written copy instead of the rendered app.
+
+## Site
+
+- [Home](https://mintychochip.dev/): Justin Lo (mintychochip), software engineer, with links to GitHub, LinkedIn, and email.
+- [GitHub activity](https://mintychochip.dev/#github): Contribution heatmap for github.com/mintychochip.
+- [Token usage](https://mintychochip.dev/#usage): Chart of coding-agent token use.
+- [Blog](https://mintychochip.dev/#blog): First-person cross-reference to Umans AI’s “The Token Gap”.
+- [Projects](https://mintychochip.dev/#projects): Public repositories loaded from GitHub.
+- [Resume and stack](https://mintychochip.dev/#resume): Languages and a PDF resume.
+- [Contact](https://mintychochip.dev/#contact): Email justincarllo@gmail.com and a note form that opens a mail draft.
+- [Wordle](https://mintychochip.dev/#wordle): Daily and practice 5-letter puzzles.
+
+## Files
+
+- [Resume PDF](https://mintychochip.dev/resume.pdf): Downloadable resume, saved as mintychochip-resume.pdf.
+- [Usage models](https://mintychochip.dev/v1/usage/models): JSON of token totals by model. Query with from and to as YYYY-MM-DD.
+- [Usage series](https://mintychochip.dev/v1/usage/series): JSON of daily token and cost points.
+- [Full text](https://mintychochip.dev/llms-full.txt): Expanded plain-text copy of the public site.
+
+## Optional
+
+- [GitHub](https://github.com/mintychochip): Profile and repositories.
+- [LinkedIn](https://www.linkedin.com/in/justinclo): Profile.
+- [Email](mailto:justincarllo@gmail.com): justincarllo@gmail.com.
+- [ModularJobs](https://jobs.mintychochip.dev): Live site for the ModularJobs project.
+- [Umans AI, The Token Gap](https://blog.umans.ai/blog/the-token-gap/): The article this site’s blog post answers.

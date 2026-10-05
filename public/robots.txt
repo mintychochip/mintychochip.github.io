@@ -1,0 +1,7 @@
+# https://mintychochip.dev
+User-agent: *
+Allow: /
+
+# Plain-text maps for language models
+# https://mintychochip.dev/llms.txt
+# https://mintychochip.dev/llms-full.txt
