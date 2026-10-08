@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { site } from '../site';
+   import { site } from '../site';
   import { playKeyPress } from '../wordle/sound';
   import { SECRET_TAB_LABEL } from '../secret/vault-chrome';
 

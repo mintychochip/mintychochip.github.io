@@ -2,22 +2,26 @@
   import { onMount } from 'svelte';
   import { Field, packPalette, quantize } from './field';
   import { INK_COLORS, PALETTES, type PaletteName } from './palette';
+  import { BIOME_CONFIGS, BIOME_PALETTES, type BiomeName } from './biome';
+  import { createBiomeScene, type BiomeOpts } from './scene';
   import { nightPond, type NightOpts, type Scene } from './night';
   import { prefersReducedMotion, subscribe } from './ticker';
 
   type SceneOpts = Omit<NightOpts, 'seed' | 'still'>;
+  type BiomeSceneOpts = Omit<BiomeOpts, 'seed' | 'still'>;
   const inks = packPalette(INK_COLORS);
 
   interface Props {
     seed: string;
     palette?: PaletteName;
+    biome?: BiomeName;
     /** Scene options, or a function of the art size in pixels. */
-    options?: SceneOpts | ((W: number, H: number) => SceneOpts);
+    options?: SceneOpts | BiomeSceneOpts | ((W: number, H: number) => SceneOpts | BiomeSceneOpts);
     /** Pointer movement and clicks reach the scene. */
     interactive?: boolean;
   }
 
-  let { seed, palette = 'night', options = {}, interactive = false }: Props = $props();
+  let { seed, palette = 'night', biome, options = {}, interactive = false }: Props = $props();
 
   let wrap: HTMLDivElement;
   let canvas: HTMLCanvasElement;
@@ -29,7 +33,8 @@
   let W = 0, H = 0;
   let clock: ReturnType<typeof subscribe> | null = null;
   const still = prefersReducedMotion();
-  const colors = $derived(packPalette(PALETTES[palette]));
+  const colors = $derived(packPalette(biome ? BIOME_PALETTES[biome] : PALETTES[palette]));
+  const bgColor = $derived(biome ? BIOME_CONFIGS[biome].bg : PALETTES[palette][0]);
 
   /** Art pixels are 3 CSS px, nudged so each covers a whole number of device pixels. */
   function pixelScale() {
@@ -60,7 +65,11 @@
     px = new Uint32Array(img.data.buffer);
     field = new Field(W, H);
     const opts = typeof options === 'function' ? options(W, H) : options;
-    scene = nightPond(W, H, { ...opts, seed, still });
+    if (biome) {
+      scene = createBiomeScene(W, H, BIOME_CONFIGS[biome], { ...opts, seed, still });
+    } else {
+      scene = nightPond(W, H, { ...opts, seed, still });
+    }
     draw(clock?.time ?? 0);
   }
 
@@ -103,7 +112,7 @@
   });
 </script>
 
-<div class="pond" bind:this={wrap} style:background={PALETTES[palette][0]}>
+<div class="pond" bind:this={wrap} style:background={bgColor}>
   <canvas
     bind:this={canvas}
     aria-hidden="true"

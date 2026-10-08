@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { assignPalettes } from '../pond/palette';
+  import { assignBiomes } from '../pond/biome';
   import { site } from '../site';
   import { FALLBACK, PER_PAGE, fetchProjects, type Project } from './github';
   import ProjectCard from './ProjectCard.svelte';
@@ -11,7 +11,7 @@
 
   const pages = $derived(Math.max(1, Math.ceil(projects.length / PER_PAGE)));
   const shown = $derived(projects.slice(page * PER_PAGE, (page + 1) * PER_PAGE));
-  const palettes = $derived(assignPalettes(shown.map((p) => p.name)));
+  const biomes = $derived(assignBiomes(shown.map((p) => p.name)));
 
   function go(n: number) {
     page = Math.min(pages - 1, Math.max(0, n));
@@ -38,7 +38,7 @@
   </div>
   <div class="grid">
     {#each shown as p, i (p.name)}
-      <ProjectCard project={p} palette={palettes[i]} />
+      <ProjectCard project={p} biome={biomes[i]} />
     {/each}
   </div>
   {#if pages > 1}

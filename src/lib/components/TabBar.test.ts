@@ -5,7 +5,8 @@ import TabBar from './TabBar.svelte';
 
 describe('TabBar component', () => {
   beforeEach(() => {
-    document.body.innerHTML = '';
+
+   document.body.innerHTML = '';
     class MockIntersectionObserver {
       observe() {}
       unobserve() {}
