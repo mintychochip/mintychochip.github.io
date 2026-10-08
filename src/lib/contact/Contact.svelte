@@ -4,6 +4,16 @@
   import { mailto, validate, type Draft, type DraftErrors } from './mail';
 
   let draft = $state<Draft>({ name: '', email: '', message: '' });
+  let copied = $state(false);
+
+  function copyMessage() {
+    const text = `${draft.message}\n\n${draft.name}\n${draft.email}`;
+    navigator.clipboard.writeText(text).then(() => {
+      copied = true;
+      setTimeout(() => (copied = false), 2000);
+    });
+  }
+
   let errors = $state<DraftErrors>({});
   let sent = $state(false);
   let form: HTMLFormElement;
@@ -83,8 +93,12 @@
     </label>
     <div class="wide actions">
       <button class="btn px" type="submit">Send</button>
+      <button class="btn px" type="button" onclick={copyMessage}>
+        {copied ? 'Copied!' : 'Copy message'}
+      </button>
       <p class="note" role="status">
         {#if sent}Your email app should open with the message drafted — review and send it there.{/if}
+        {#if !sent}Your mail app opens with the message drafted. No mail app? Copy it and email me at <a href="mailto:{site.email}">{site.email}</a>.{/if}
       </p>
     </div>
   </form>

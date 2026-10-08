@@ -17,6 +17,7 @@
   --error: #e8977c;
   --width: 960px;
   --font: 'Pixelify Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Space Mono', ui-monospace, 'Courier New', monospace;
   color-scheme: dark;
 }
 
@@ -43,7 +44,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
-  font: 400 20px/1.45 var(--font);
+  font: 400 20px/1.45 var(--font-body);
   overflow-x: hidden;
   max-width: 100%;
 }
@@ -79,6 +80,7 @@ textarea {
 h1,
 h2,
 h3 {
+  font-family: var(--font);
   font-weight: 700;
   overflow-wrap: break-word;
 }
