@@ -1,5 +1,5 @@
 import { TAU, clamp, hash, lerp, mul, rng, sceneTone, type Field } from './field';
-import { drawFrog as paintFrog, frogBox, mouthAt as frogMouth, sizeFor, type Frame, type FrogFace, type FrogKind } from './frog';
+import { drawFrog as paintFrog, drawTowel, frogBox, mouthAt as frogMouth, sizeFor, type Frame, type FrogFace, type FrogKind } from './frog';
 import { INK } from './palette';
 
 /** Options every scene takes. */
@@ -83,6 +83,8 @@ export interface Setting<P extends Perch = Perch> {
   backdrop: Float32Array;
   /** Whether (x, y) is water a frog can dive into and swim through. Settings without water leave it out. */
   water?(x: number, y: number): boolean;
+  /** Frogs that slip into the water stay a while to soak, eyes shut, a towel on their heads. */
+  soak?: boolean;
   /** Moving layer under the perches and frogs: water, waves, glints, twinkling stars. */
   back(F: Field, t: number): void;
   /** Draws a perch with its top surface at row `top` (bobbing and landing dips included). */
@@ -125,7 +127,7 @@ interface Hop {
 
 interface Tongue { fly: Fly; caught: boolean }
 
-type State = 'sit' | 'croak' | 'snap' | 'turn' | 'crouch' | 'air' | 'land' | 'swim';
+type State = 'sit' | 'croak' | 'snap' | 'turn' | 'crouch' | 'air' | 'land' | 'swim' | 'soak';
 
 interface Frog {
   /** The perch it sits on, or swims to. */
@@ -371,9 +373,11 @@ export function pond<P extends Perch>(W: number, H: number, o: SceneOpts, make: 
         return;
       }
     }
-    if (roll >= 0.42 && roll < 0.52 && startDive(f, t)) return;
-    if (roll < 0.74) { f.state = 'croak'; f.t0 = t; ripple(x, y, t, 0.6); return; }
-    if (roll < 0.88) { f.state = 'turn'; f.t0 = t; return; }
+    // A hot spring tempts a frog in three times as often.
+    const [diveTo, croakTo, turnTo] = setting.soak ? [0.72, 0.86, 0.94] : [0.52, 0.74, 0.88];
+    if (roll >= 0.42 && roll < diveTo && startDive(f, t)) return;
+    if (roll < croakTo) { f.state = 'croak'; f.t0 = t; ripple(x, y, t, 0.6); return; }
+    if (roll < turnTo) { f.state = 'turn'; f.t0 = t; return; }
     f.look = [r() * 2 - 1, r() - 0.7];
   }
 
@@ -424,14 +428,22 @@ export function pond<P extends Perch>(W: number, H: number, o: SceneOpts, make: 
             if (h.dive) {
               ripple(h.x1, h.y1, end, 1.3);
               splash(h.x1, h.y1, end, 7, k * 0.8);
-              const found = landing(h.x1, h.y1);
-              const to = found >= 0 ? found : f.perch;
-              holder[to] = f;
-              f.perch = to;
-              f.swim = { x: h.x1, y: h.y1, to, wake: end };
               f.hop = null;
-              f.state = 'swim';
               f.t0 = end;
+              if (setting.soak) {
+                // In for a soak: it takes no perch until it climbs out.
+                f.perch = -1;
+                f.swim = { x: h.x1, y: h.y1, to: -1, wake: end };
+                f.state = 'soak';
+                f.next = end + 6 + 6 * r();
+              } else {
+                const found = landing(h.x1, h.y1);
+                const to = found >= 0 ? found : f.perch;
+                holder[to] = f;
+                f.perch = to;
+                f.swim = { x: h.x1, y: h.y1, to, wake: end };
+                f.state = 'swim';
+              }
             } else {
               f.perch = h.to;
               f.shift = h.shift;
@@ -448,6 +460,21 @@ export function pond<P extends Perch>(W: number, H: number, o: SceneOpts, make: 
           break;
         }
         if (f.state === 'land' && age >= LAND_T + SETTLE_T) { f.hop = null; f.state = 'sit'; f.t0 += LAND_T + SETTLE_T; f.next = Math.max(f.next, t + 1.2 + 2 * r()); continue; }
+        if (f.state === 'soak') {
+          const sw = f.swim!;
+          if (t - sw.wake > 1.6) { sw.wake = t; ripple(sw.x, sw.y, t, 0.25); }
+          if (t < f.next) break;
+          const to = landing(sw.x, sw.y);
+          if (to < 0) { f.next = t + 3; break; }
+          holder[to] = f;
+          f.perch = to;
+          setting.taken?.(perches[to]);
+          sw.to = to;
+          f.state = 'swim';
+          f.t0 = t;
+          continue;
+        }
+
         if (f.state === 'swim') {
           const sw = f.swim!;
           const [ex, ey] = approach(perches[sw.to], sw.x);
@@ -558,11 +585,13 @@ export function pond<P extends Perch>(W: number, H: number, o: SceneOpts, make: 
       case 'land':
         frame = age < LAND_T ? 'crouch' : 'sit';
         break;
-      case 'swim': {
+      case 'swim':
+      case 'soak': {
         const b = frogBox(size);
         dy = y + b.h - b.swim;
         clipY = Math.round(y);
         frame = 'sit';
+        if (f.state === 'soak') face.eyes = 'happy';
         break;
       }
     }
@@ -586,9 +615,8 @@ export function pond<P extends Perch>(W: number, H: number, o: SceneOpts, make: 
       }
     }
     if (face.eyes === undefined && !f.tongue && t >= f.blink && t < f.blink + 0.17) face.eyes = 'shut';
-
     const shadowH = Math.max(1, box.h * 0.08);
-    if (f.state !== 'air' && f.state !== 'swim') {
+    if (f.state !== 'air' && f.state !== 'swim' && f.state !== 'soak') {
       F.ell(x - light * 0.06 * box.w, dy - 0.5, box.w * 0.46, shadowH, 0, mul(0.6), true);
     } else if (f.state === 'air' && f.hop) {
       const h = f.hop, u = clamp((t - h.t0) / h.dur, 0, 1);
@@ -596,10 +624,11 @@ export function pond<P extends Perch>(W: number, H: number, o: SceneOpts, make: 
       F.ell(x, gy - 0.5, box.w * 0.4 * (1 - 0.4 * Math.sin(Math.PI * u)), shadowH, 0, mul(0.6), true);
     }
     paintFrog(F, size, frame, face, x, dy - lift, { mirror, clipY, kind: f.kind });
-    if (f.state === 'swim') {
+    if (f.state === 'swim' || f.state === 'soak') {
       const half = Math.max(2, Math.round(box.w * 0.35)), wy = Math.round(y);
       for (let j = -half; j <= half; j++) F.dot(x + j, wy, F.get(x + j, wy) > 0.3 ? 0.62 : 0.4);
     }
+    if (f.state === 'soak') drawTowel(F, size, x, dy);
 
     if (f.state === 'snap' && f.tongue) {
       const tg = f.tongue;
@@ -650,7 +679,7 @@ export function pond<P extends Perch>(W: number, H: number, o: SceneOpts, make: 
     perches.forEach((P, i) => order.push({ y: P.y, draw: () => setting.drawPerch(F, P, surface(i, t), t) }));
     for (const f of frogs) {
       const g = frogXY(f, t).ground;
-      const seated = f.state !== 'air' && f.state !== 'swim';
+      const seated = f.state !== 'air' && f.state !== 'swim' && f.state !== 'soak';
       order.push({ y: (seated ? Math.max(g, perches[f.perch].y) : g) + 0.01, draw: () => drawFrog(F, f, t) });
     }
     order.sort((a, b) => a.y - b.y);

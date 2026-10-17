@@ -366,6 +366,19 @@ describe('tied perches', () => {
   });
 });
 
+describe('onsen', () => {
+  it('lets frogs slip into the spring for a soak, towels on, within a minute', () => {
+    const W = 160, H = 70, F = new Field(W, H);
+    const scene = makeScene('onsen', W, H, { seed: 'soak', k: 1.4, frogs: 2 });
+    let towel = false;
+    for (let fr = 0; fr < 12 * 60 && !towel; fr++) {
+      scene.render(fr / 12, F);
+      towel = scene.frogs().some((f) => f.state === 'soak') && F.ink.some((c) => c === INK.towel + 1);
+    }
+    expect(towel).toBe(true);
+  });
+});
+
 describe('bars', () => {
   it('picks round tick steps', () => {
     expect(niceStep(0.7)).toBe(1);

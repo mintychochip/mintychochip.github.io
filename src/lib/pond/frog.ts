@@ -386,3 +386,14 @@ export function drawFrog(F: Field, size: number, frame: Frame, face: FrogFace, x
     }
   }
 }
+
+/** A folded towel on the head of a frog drawn with its feet at (x, y), for a soak in a hot spring. */
+export function drawTowel(F: Field, size: number, x: number, y: number) {
+  const S = SIZES[size].frames.sit;
+  const [left, top] = place(S, x, y);
+  const w = [4, 6, 8][size], h = size === 0 ? 1 : 2;
+  const x0 = left + Math.floor((S.w - w) / 2);
+  for (let j = 0; j < h; j++) {
+    for (let i = 0; i < w; i++) F.paint(x0 + i, top - h + j, j === h - 1 && h > 1 ? INK.towelStripe : INK.towel);
+  }
+}

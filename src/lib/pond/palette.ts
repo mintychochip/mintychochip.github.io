@@ -10,6 +10,7 @@ const ANCHORS = {
   potion: ['#0c0918', '#231848', '#45327e', '#7559b8', '#ab8ce2', '#eee0ff'],
   mist: ['#081014', '#15303a', '#2a5764', '#4f8c96', '#90c1c6', '#e9f4ef'],
   day: ['#10240f', '#2d5a24', '#6aa13f', '#bfe08a', '#a9dcf2', '#ffffff'],
+  snow: ['#0d1026', '#262d5c', '#4a5594', '#8a92c9', '#c9cdeb', '#ffffff'],
 } as const;
 
 export type PaletteName = keyof typeof ANCHORS;
@@ -87,9 +88,12 @@ export const INK = {
   bow: 15, bowLight: 16, bowKnot: 17, bowFold: 18,
   /** Scene accents: meadow flowers and butterflies, mushroom caps. */
   petalPink: 19, petalYellow: 20, petalWhite: 21, capRed: 22, capShade: 23,
+  /** The onsen: the frogs' folded towels, the lantern's glow and its flicker. */
+  towel: 24, towelStripe: 25, lantern: 26, flame: 27,
 } as const;
 export const INK_COLORS = [
   '#0b1409', '#2b8a37', '#45c148', '#7be07e', '#b8f3a9', '#dff6c4', '#ffffff', '#ff9fb4', '#ef7a93',
   '#2a0f1a', '#9e3d6b', '#d65a8f', '#f48cb8', '#ffc4da', '#ffe8f3', '#ff4d94', '#ffc0dc', '#8f1248', '#d42a72',
   '#ff8fbf', '#ffd94a', '#fbfbf4', '#d8453b', '#94292a',
+  '#f6efe2', '#8cbcd8', '#ffb347', '#fff1b8',
 ];
