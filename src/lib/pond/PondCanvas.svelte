@@ -37,10 +37,11 @@
   import { INK_COLORS, PALETTES, type PaletteName } from './palette';
   import { BIOME_CONFIGS, BIOME_PALETTES, type BiomeName } from './biome';
   import { createBiomeScene, type BiomeOpts } from './scene';
-  import { nightPond, type NightOpts, type Scene } from './night';
+  import { pond, type Scene, type SceneOpts as PondOpts } from './life';
+  import { lake } from './scenes/lake';
   import { prefersReducedMotion, subscribe, type Clock } from './ticker';
 
-  type SceneOpts = Omit<NightOpts, 'seed' | 'still'>;
+  type SceneOpts = Omit<PondOpts, 'seed' | 'still'>;
   type BiomeSceneOpts = Omit<BiomeOpts, 'seed' | 'still'>;
   const inks = packPalette(INK_COLORS);
 
@@ -95,7 +96,7 @@
     if (biome) {
       scene = createBiomeScene(W, H, BIOME_CONFIGS[biome], { ...opts, seed, still });
     } else {
-      scene = nightPond(W, H, { ...opts, seed, still });
+      scene = pond(W, H, { ...opts, seed, still }, lake);
     }
     draw(clock?.time ?? 0);
   }

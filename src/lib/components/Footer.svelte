@@ -11,7 +11,7 @@
     <PondCanvas
       seed="footer"
       palette="night"
-      options={(W) => ({ k: 1.1, frogs: 2, flies: 4, pads: Math.max(3, Math.round(W / 44)), horizon: 0.3, reeds: false, moon: false })}
+      options={{ k: 1.1, frogs: 2, flies: 4, horizon: 0.3 }}
     />
   </div>
   <div class="row">

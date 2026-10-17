@@ -54,15 +54,7 @@
         seed="github-activity-pond"
         palette="night"
         interactive
-        options={(W) => ({
-          k: 1.25,
-          frogs: 2,
-          flies: 5,
-          pads: Math.max(3, Math.round(W / 40)),
-          horizon: 0.4,
-          moon: true,
-          reeds: true,
-        })}
+        options={{ k: 1.25, frogs: 2, flies: 5, horizon: 0.4 }}
       />
     </div>
 

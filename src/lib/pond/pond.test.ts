@@ -2,12 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { bars, niceStep } from './bars';
 import { Field, levelsOf, packPalette, quantize, sceneTone } from './field';
 import { drawFrog, frogBox, sizeFor, type Frame, type FrogFace } from './frog';
-import { nightPond } from './night';
+import { pond } from './life';
+import { lake } from './scenes/lake';
 import { INK, INK_COLORS, LEVELS, PALETTES, PALETTE_NAMES, assignPalettes, ramp } from './palette';
 
 const render = (seed: string, t: number, W = 120, H = 60) => {
   const F = new Field(W, H);
-  const scene = nightPond(W, H, { seed, k: 1.4, frogs: 2, flies: 4 });
+  const scene = pond(W, H, { seed, k: 1.4, frogs: 2, flies: 4 }, lake);
   for (let fr = 0; fr <= t * 12; fr++) scene.render(fr / 12, F);
   return { F, scene };
 };
@@ -258,7 +259,7 @@ describe('night pond', () => {
 
   it('keeps frogs in the frame and every value finite over a long run', () => {
     const W = 160, H = 70, F = new Field(W, H);
-    const scene = nightPond(W, H, { seed: 'long', k: 1.6, frogs: 3, flies: 6 });
+    const scene = pond(W, H, { seed: 'long', k: 1.6, frogs: 3, flies: 6 }, lake);
     const seen = new Set<string>();
     for (let fr = 0; fr < 12 * 120; fr++) {
       scene.render(fr / 12, F);
@@ -275,14 +276,14 @@ describe('night pond', () => {
 
   it('holds still when asked to', () => {
     const W = 100, H = 60, F = new Field(W, H);
-    const scene = nightPond(W, H, { seed: 'still', still: true, frogs: 2 });
+    const scene = pond(W, H, { seed: 'still', still: true, frogs: 2 }, lake);
     for (let fr = 0; fr < 12 * 30; fr++) scene.render(fr / 12, F);
     expect(scene.frogs().every((f) => f.state === 'sit')).toBe(true);
   });
 
   it('renders frog ink on the first still frame without look or poke', () => {
     const W = 120, H = 60, F = new Field(W, H);
-    const scene = nightPond(W, H, { seed: 'rm-first', still: true, frogs: 2, k: 1.4 });
+    const scene = pond(W, H, { seed: 'rm-first', still: true, frogs: 2, k: 1.4 }, lake);
     scene.render(0, F);
     expect(F.ink.some((c) => c === INK.skin + 1)).toBe(true);
     expect(F.ink.some((c) => c === INK.eye + 1)).toBe(true);
@@ -291,7 +292,7 @@ describe('night pond', () => {
 
   it('answers pokes, taps and reactions without breaking', () => {
     const W = 100, H = 60, F = new Field(W, H);
-    const scene = nightPond(W, H, { seed: 'touch', frogs: 1 });
+    const scene = pond(W, H, { seed: 'touch', frogs: 1 }, lake);
     for (let fr = 0; fr < 48; fr++) {
       if (fr === 5) scene.poke(50, 45);
       if (fr === 10) scene.tap(50, 45);
@@ -305,7 +306,7 @@ describe('night pond', () => {
   it('seats the two frogs side by side on her pad, face to face, when they meet', () => {
     for (const seed of ['meet-a', 'meet-b', 'meet-c']) {
       const W = 160, H = 70, F = new Field(W, H);
-      const scene = nightPond(W, H, { seed, k: 1.4, frogs: 2, flies: 4 });
+      const scene = pond(W, H, { seed, k: 1.4, frogs: 2, flies: 4 }, lake);
       let fr = 0;
       const run = (seconds: number) => {
         for (const end = fr + seconds * 12; fr < end; fr++) scene.render(fr / 12, F);
