@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { bars, niceStep } from './bars';
 import { Field, levelsOf, packPalette, quantize, sceneTone } from './field';
 import { drawFrog, frogBox, sizeFor, type Frame, type FrogFace } from './frog';
+import { pond, type Perch } from './life';
 import { SCENE_NAMES, assignScenes, makeScene, type SceneName } from './scenes';
 import { INK, INK_COLORS, LEVELS, PALETTES, PALETTE_NAMES, ramp } from './palette';
 
@@ -341,6 +342,27 @@ describe('meadow', () => {
       scene.render(fr / 12, F);
       for (const f of scene.frogs()) expect(f.state).not.toBe('swim');
     }
+  });
+});
+
+describe('tied perches', () => {
+  it('seats the two frogs on different perches even when the biggest tie', () => {
+    const W = 120, H = 60, F = new Field(W, H);
+    const scene = pond(W, H, { seed: 'tie', k: 1.4, frogs: 2 }, (c) => {
+      const y = c.y0 + 10;
+      const p = c.depthAt(y);
+      const rx = 0.45 * c.frogAt(p).w + 1;
+      const perches: Perch[] = [0.2, 0.5, 0.8].map((u) => ({ x: W * u, y, rx, ry: rx * 0.4, p, floats: false, ph: 0 }));
+      return {
+        perches, light: 1, backdrop: new Float32Array(W * H),
+        back() {}, drawPerch() {}, front() {}, fly() {},
+      };
+    });
+    scene.render(0, F);
+    const [a, b] = scene.frogs();
+    expect(a.x).not.toBe(b.x);
+    expect(F.ink.some((cc) => cc === INK.skin + 1)).toBe(true);
+    expect(F.ink.some((cc) => cc === INK.pinkSkin + 1)).toBe(true);
   });
 });
 

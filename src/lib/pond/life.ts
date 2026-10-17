@@ -193,10 +193,10 @@ export function pond<P extends Perch>(W: number, H: number, o: SceneOpts, make: 
   const count = o.frogs ?? 1;
   const chosen: number[] = [];
   if (count === 2 && homes.length >= 3) {
-    const top3 = homes.slice(0, 3);
-    const far = top3.reduce((min, i) => (perches[i].y < perches[min].y ? i : min), top3[0]);
-    const near = top3.reduce((max, i) => (perches[i].y > perches[max].y ? i : max), top3[0]);
-    chosen.push(near, far);
+    // The nearest of the three biggest seats the green frog, the farthest the pink one. Ordered by seat height
+    // with a stable sort, so tied heights still hand the frogs two different perches.
+    const byDepth = [...homes.slice(0, 3)].sort((a, b) => perches[a].y - perches[b].y);
+    chosen.push(byDepth[2], byDepth[0]);
   } else {
     chosen.push(...homes.slice(0, count));
   }
