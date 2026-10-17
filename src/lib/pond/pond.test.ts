@@ -333,6 +333,17 @@ describe.each(SCENE_NAMES)('%s scene', (name) => {
   });
 });
 
+describe('meadow', () => {
+  it('keeps its frogs out of the water: there is none', () => {
+    const W = 160, H = 70, F = new Field(W, H);
+    const scene = makeScene('meadow', W, H, { seed: 'dry', k: 1.4, frogs: 2 });
+    for (let fr = 0; fr < 12 * 120; fr++) {
+      scene.render(fr / 12, F);
+      for (const f of scene.frogs()) expect(f.state).not.toBe('swim');
+    }
+  });
+});
+
 describe('bars', () => {
   it('picks round tick steps', () => {
     expect(niceStep(0.7)).toBe(1);
