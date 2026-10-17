@@ -152,9 +152,10 @@ takes the next scene not yet used on the page, in registry order.
   each other, no more than a frog's width apart.
 
 Scene-specific checks: meadow frogs never swim; onsen frogs soak within a
-minute; perches stay out of `clear` boxes in every scene; every pond's scene
-exists; pass icons map as above and an unknown icon falls back in order.
-The frog sprite and palette tests stay as they are.
+minute; perches stay out of `clear` boxes in every scene; pass icons map as
+above and an unknown icon falls back in order. That every pond names a real
+scene is the `SceneName` type's job, checked by `npm run check`. The frog
+sprite and palette tests stay as they are.
 
 ## Speed
 
