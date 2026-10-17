@@ -30,7 +30,6 @@ function obfuscateVaultChunks(): Plugin {
 }
 
 function vaultChunk(path: string): string | undefined {
-  if (path.includes('node_modules/three')) return 'three';
   if (path.includes('.test.')) return;
   if (
     path.includes('/secret/vault-crypto') ||

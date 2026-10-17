@@ -2,32 +2,32 @@
 
 export const SECRET_TAB_LABEL = 'Happy Anniversary';
 
-export const VAULT_FROG_LINE = 'The door opened. 🔒';
+export const VAULT_FROG_LINE = 'Ribbit! A letter is waiting for you.';
 
 export const VAULT_TOAST_LINE = 'Come on in.';
 
 export const SECRET_LOAD_ERROR = 'Secret vault didn’t load.';
 
-export const SECRET_PAGE_HEADING = { title: 'ANNIVERSARY', tag: 'THIS PAGE', icon: '💖' };
+export const SECRET_PAGE_TITLE = 'Anniversary';
 
 export interface SecretNavItem {
   id: string;
   label: string;
-  icon?: string;
   href?: string;
-  badge?: string;
   action?: () => void;
 }
 
-export function secretPageItems(onLock: () => void): SecretNavItem[] {
+/** The vault's navigation. Until the letter is open nothing after it exists, so only the letter is offered. */
+export function secretPageItems(onLock: () => void, unlocked: boolean): SecretNavItem[] {
+  const letter = { id: 'anniversary-letter', label: 'Letter', href: '#anniversary-letter' };
+  const lock = { id: 'secret-lock', label: 'Lock vault', action: onLock };
+  if (!unlocked) return [letter, lock];
   return [
-    { id: 'anniversary-letter3d', label: 'Sealed Letter', icon: '✉️', href: '#anniversary-letter3d' },
-    { id: 'anniversary-pond', label: 'Frog Pond', icon: '🐸', href: '#anniversary-pond' },
-    { id: 'anniversary-letter', label: 'Love Letter', icon: '💌', href: '#anniversary-letter' },
-    { id: 'anniversary-reasons', label: '8 Reasons Why', icon: '✨', href: '#anniversary-reasons' },
-    { id: 'anniversary-coupons', label: 'Love Vouchers', icon: '🎟️', href: '#anniversary-coupons' },
-    { id: 'anniversary-wordle', label: 'Mini Wordle', icon: '🟩', href: '#anniversary-wordle' },
-    { id: 'anniversary-oracle', label: 'Wordle Oracle', icon: '🔮', href: '#anniversary-oracle' },
-    { id: 'secret-lock', label: 'Lock Page', icon: '🔒', action: onLock },
+    letter,
+    { id: 'anniversary-passes', label: 'Love passes', href: '#anniversary-passes' },
+    { id: 'anniversary-reasons', label: 'Reasons jar', href: '#anniversary-reasons' },
+    { id: 'anniversary-wordle', label: "Bumpy's puzzle", href: '#anniversary-wordle' },
+    { id: 'anniversary-pond', label: 'Goodnight', href: '#anniversary-pond' },
+    lock,
   ];
 }

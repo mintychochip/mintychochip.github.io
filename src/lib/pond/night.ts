@@ -14,8 +14,8 @@ export interface NightOpts {
   reeds?: boolean;
   /** Draw the moon and its glint; light still comes from its side. */
   moon?: boolean;
-  /** A box [left, top, right, bottom], as fractions of the frame, kept clear of pads and the frogs on them. */
-  clear?: readonly [number, number, number, number];
+  /** Boxes [left, top, right, bottom], as fractions of the frame, kept clear of pads and the frogs on them. */
+  clear?: readonly (readonly [number, number, number, number])[];
   /** No autonomous actions: frogs sit and look around. */
   still?: boolean;
 }
@@ -30,6 +30,11 @@ export interface Scene {
   look(x: number, y: number): void;
   /** Something nearby happened (the card was hovered): a frog does something. */
   react(): void;
+  /**
+   * The green frog goes to the pink one: she shuffles to one side of her lily pad, he hops onto the other side,
+   * they turn to face each other, and both croak under a heart. Only ponds with both frogs do anything.
+   */
+  meet?(): void;
   /** Where each frog is and what it is doing, for tests and tools. */
   frogs(): { state: string; x: number; y: number; s: number; dir: number }[];
 }
@@ -47,6 +52,8 @@ interface Fly {
 interface Hop {
   x0: number; y0: number; s0: number; x1: number; y1: number; s1: number;
   t0: number; dur: number; h: number; to: number; dive: boolean; climb: boolean;
+  /** Where on the pad it lands, sideways from the middle. */
+  shift: number;
 }
 
 interface Tongue { fly: Fly; caught: boolean }
@@ -62,6 +69,8 @@ interface Frog {
   hop: Hop | null; tongue: Tongue | null;
   swim: { x: number; y: number; to: number; wake: number } | null;
   look: [number, number];
+  /** Sideways from the middle of its pad: off-centre only while it shares the pad with the other frog. */
+  shift: number;
 }
 
 const CROUCH_T = 0.17, LAND_T = 0.17, SETTLE_T = 0.17;
@@ -69,6 +78,10 @@ const SNAP_WIND = 0.09, SNAP_OUT = 0.17, SNAP_BACK = 0.17, SNAP_GULP = 0.33;
 const CROAK_T = 1.2, TURN_T = 0.25, FIDGET_T = 1.2, STARTLE_T = 0.9;
 /** Frog scale per pad depth, in art pixels per unit of a frog about 9 units tall; `sizeFor` turns it into a drawing. */
 const SIZE = 0.95;
+/** The heart that rises between the frogs when they meet; h is its shine. */
+const MEET_HEART = ['.xx.xx.', 'xhxxxxx', 'xxxxxxx', '.xxxxx.', '..xxx..', '...x...'];
+/** Seconds the heart floats before it is gone. */
+const MEET_HEART_T = 2.4;
 
 export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
   const k = o.k ?? 1;
@@ -122,9 +135,9 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
     x: Math.floor(r() * W), y: Math.floor(r() * y0 * 0.8), ph: r() * TAU, sp: 0.8 + 2 * r(),
   })).filter((s) => s.y < far[s.x] && Math.hypot(s.x - moon.x, s.y - moon.y) > moon.R + halo * 0.6);
 
-  const [cl, ct, cr, cb] = o.clear ?? [0, 0, 0, 0];
-  /** Whether anything from x0..x1, y0..y1 (art pixels) would show inside the clear box. */
-  const inClear = (xa: number, ya: number, xb: number, yb: number) => xb > cl * W && xa < cr * W && yb > ct * H && ya < cb * H;
+  /** Whether anything from x0..x1, y0..y1 (art pixels) would show inside a clear box. */
+  const inClear = (xa: number, ya: number, xb: number, yb: number) =>
+    (o.clear ?? []).some(([cl, ct, cr, cb]) => xb > cl * W && xa < cr * W && yb > ct * H && ya < cb * H);
 
   const pads: Pad[] = [];
   const want = o.pads ?? Math.max(2, Math.round(W / (22 * k)));
@@ -164,7 +177,7 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
       kind: pi === topPad ? 'pink' : 'green',
       state: 'sit', t0: 0, next: 1 + r() * 3, blink: 1 + r() * 4, snapAt: 1 + r() * 2,
       fidget: 2 + r() * 5, startled: -9,
-      hop: null, tongue: null, swim: null, look: [0.5, 0],
+      hop: null, tongue: null, swim: null, look: [0.5, 0], shift: 0,
     };
     pads[pi].frog = f;
     return f;
@@ -203,6 +216,8 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
   const drops: { x: number; y: number; vx: number; vy: number; t0: number }[] = [];
   let now = 0;
   let pointer: { x: number; y: number; t: number } | null = null;
+  /** A meeting asked for by `meet()`: hopping over, turning to face each other, then the heart. */
+  let meeting: { stage: 'go' | 'face' | 'love'; t: number; x: number; y: number } | null = null;
 
   const ripple = (x: number, y: number, t: number, s = 1) => {
     if (y >= y0 && ripples.length < 40) ripples.push({ x, y, t0: t, p: depthAt(y), s });
@@ -227,18 +242,18 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
     if (f.hop && (f.state === 'air' || f.state === 'land')) {
       const h = f.hop;
       if (f.state === 'land') {
-        if (h.to >= 0) { const [x, y] = seat(pads[h.to], t); return { x, y, s: h.s1, ground: y }; }
+        if (h.to >= 0) { const [x, y] = seat(pads[h.to], t); return { x: x + f.shift, y, s: h.s1, ground: y }; }
         return { x: h.x1, y: h.y1, s: h.s1, ground: h.y1 };
       }
       const u = clamp((t - h.t0) / h.dur, 0, 1);
       let x1 = h.x1, y1 = h.y1;
-      if (h.to >= 0) [x1, y1] = seat(pads[h.to], t);
+      if (h.to >= 0) { [x1, y1] = seat(pads[h.to], t); x1 += h.shift; }
       const gy = lerp(h.y0, y1, u);
       return { x: lerp(h.x0, x1, u), y: gy - h.h * 4 * u * (1 - u), s: lerp(h.s0, h.s1, u), ground: gy };
     }
     const P = pads[f.pad];
     const [x, y] = seat(P, t);
-    return { x, y, s: scale(f, P), ground: y };
+    return { x: x + f.shift, y, s: scale(f, P), ground: y };
   }
 
   function freePads(f: Frog, x: number, y: number, maxD: number) {
@@ -247,18 +262,24 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
       .filter(({ P, i, d }) => i !== f.pad && !P.frog && fitsFrog(P) && d < maxD && d > P.rx * 0.5);
   }
 
-  function startHop(f: Frog, t: number, to: number) {
+  /** The frog is leaving its pad, which stays taken if the other frog shares it. */
+  function leave(f: Frog) {
+    pads[f.pad].frog = frogs.find((o) => o !== f && o.pad === f.pad) ?? null;
+  }
+
+  function startHop(f: Frog, t: number, to: number, shift = 0) {
     const P0 = pads[f.pad], P1 = pads[to];
-    const [xa, ya] = seat(P0, t), [xb, yb] = seat(P1, t);
+    const [sa, ya] = seat(P0, t), [sb, yb] = seat(P1, t);
+    const xa = sa + f.shift, xb = sb + shift;
     const dist = Math.hypot(xb - xa, yb - ya);
-    P0.frog = null;
-    P1.frog = f;
+    leave(f);
+    P1.frog ??= f;
     P1.lotus = false;
     if (Math.abs(xb - xa) > 2 * k) f.dir = xb > xa ? 1 : -1;
     f.hop = {
       x0: xa, y0: ya, s0: scale(f, P0), x1: xb, y1: yb, s1: scale(f, P1),
       t0: t + CROUCH_T, dur: clamp(0.36 + (0.11 * dist) / (10 * k), 0.4, 0.8),
-      h: 5 * k * (P0.p + P1.p) * 0.5 + 0.16 * dist, to, dive: false, climb: false,
+      h: 5 * k * (P0.p + P1.p) * 0.5 + 0.16 * dist, to, dive: false, climb: false, shift,
     };
     f.state = 'crouch';
     f.t0 = t;
@@ -266,18 +287,18 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
 
   function startDive(f: Frog, t: number) {
     const P0 = pads[f.pad];
-    const [xa, ya] = seat(P0, t);
+    const [sx, ya] = seat(P0, t), xa = sx + f.shift;
     for (let tries = 0; tries < 12; tries++) {
       const dx = (12 + 22 * r()) * k * P0.p * (r() < 0.5 ? -1 : 1);
       const x = xa + dx, y = clamp(ya + (r() - 0.3) * 10 * k, y0 + 3 * k, H - 3 * k);
       if (x < 4 * k || x > W - 4 * k || inClear(x - 4 * k, y - 3 * k, x + 4 * k, y + k)) continue;
       if (pads.some((P) => Math.abs(P.x - x) < P.rx + 2 * k && Math.abs(P.y - y) < P.ry + 3 * k)) continue;
-      P0.frog = null;
+      leave(f);
       f.dir = dx > 0 ? 1 : -1;
       const p = depthAt(y);
       f.hop = {
         x0: xa, y0: ya, s0: scale(f, P0), x1: x, y1: y, s1: k * p * SIZE * f.sz, t0: t + CROUCH_T,
-        dur: clamp(0.36 + (0.11 * Math.abs(dx)) / (10 * k), 0.4, 0.75), h: 8 * k * P0.p + 0.2 * Math.abs(dx), to: -1, dive: true, climb: false,
+        dur: clamp(0.36 + (0.11 * Math.abs(dx)) / (10 * k), 0.4, 0.75), h: 8 * k * P0.p + 0.2 * Math.abs(dx), to: -1, dive: true, climb: false, shift: 0,
       };
       f.state = 'crouch';
       f.t0 = t;
@@ -292,7 +313,7 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
     const [xb, yb] = seat(P1, t);
     const s = k * depthAt(sw.y) * SIZE * f.sz, b = frogBox(sizeFor(s));
     f.dir = xb > sw.x ? 1 : -1;
-    f.hop = { x0: sw.x, y0: sw.y + b.h - b.swim, s0: s, x1: xb, y1: yb, s1: scale(f, P1), t0: t, dur: 0.38, h: 3.5 * k * P1.p, to: sw.to, dive: false, climb: true };
+    f.hop = { x0: sw.x, y0: sw.y + b.h - b.swim, s0: s, x1: xb, y1: yb, s1: scale(f, P1), t0: t, dur: 0.38, h: 3.5 * k * P1.p, to: sw.to, dive: false, climb: true, shift: 0 };
     f.swim = null;
     f.state = 'air';
     f.t0 = t;
@@ -386,6 +407,7 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
               f.t0 = end;
             } else {
               f.pad = h.to;
+              f.shift = h.shift;
               const P = pads[h.to];
               P.dip = end; P.dipA = 0.9 * k * P.p;
               ripple(h.x1, h.y1, end, 0.9);
@@ -415,9 +437,38 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
       if (t >= f.blink + 0.17) f.blink = t + 2 + 4 * r();
       if (t >= f.fidget + FIDGET_T) f.fidget = t + 4 + 7 * r();
     }
+    if (meeting) updateMeeting(t);
     for (const fl of flies) if (fl.out && fl.gone > 0 && t >= fl.gone) { placeFly(fl); fl.out = false; fl.gone = 0; }
     for (let i = ripples.length - 1; i >= 0; i--) if (t - ripples[i].t0 > 2 || t < ripples[i].t0) ripples.splice(i, 1);
     for (let i = drops.length - 1; i >= 0; i--) if (t - drops[i].t0 > 0.6 || t < drops[i].t0) drops.splice(i, 1);
+  }
+
+  function updateMeeting(t: number) {
+    const green = frogs.find((f) => f.kind === 'green');
+    const pink = frogs.find((f) => f.kind === 'pink');
+    if (!meeting || !green || !pink) return;
+    const idle = green.state === 'sit' && pink.state === 'sit';
+    if (meeting.stage === 'go' && idle && green.pad !== pink.pad) {
+      // She shuffles to one side of her pad and he hops onto the other, so they sit on it together.
+      const P = pads[pink.pad];
+      const side = frogXY(green, t).x >= P.x ? 1 : -1;
+      // Side by side with their outlines just touching, even on a pad too small for both: they squeeze onto it.
+      const room = 0.46 * frogBox(sizeFor(scale(pink, P))).w;
+      startHop(pink, t, pink.pad, -side * room);
+      startHop(green, t, pink.pad, side * room);
+    } else if (meeting.stage === 'go' && idle) {
+      const toPink = frogXY(pink, t).x >= frogXY(green, t).x ? 1 : -1;
+      if (green.dir !== toPink) { green.state = 'turn'; green.t0 = t; }
+      if (pink.dir !== -toPink) { pink.state = 'turn'; pink.t0 = t; }
+      meeting.stage = 'face';
+    } else if (meeting.stage === 'face' && idle) {
+      const a = frogXY(green, t), b = frogXY(pink, t);
+      for (const f of [green, pink]) { f.state = 'croak'; f.t0 = t; }
+      const heads = Math.min(a.y - frogBox(sizeFor(a.s)).h, b.y - frogBox(sizeFor(b.s)).h);
+      meeting = { stage: 'love', t, x: (a.x + b.x) / 2, y: heads - 2 * k };
+    } else if (meeting.stage === 'love' && t - meeting.t > MEET_HEART_T) {
+      meeting = null;
+    }
   }
 
   const glint = new Float32Array(H);
@@ -626,6 +677,22 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
     order.sort((a, b) => a.y - b.y);
     for (const d of order) d.draw();
 
+    if (meeting?.stage === 'love') {
+      const age = t - meeting.t;
+      // It floats up, then blinks out over its last half second.
+      if (!(age > MEET_HEART_T - 0.5 && Math.floor(t * 12) % 2 === 0)) {
+        const s = k >= 2 ? 2 : 1;
+        const hx = Math.round(meeting.x - (7 * s) / 2);
+        const hy = Math.round(meeting.y - 6 * s - age * 2 * k);
+        MEET_HEART.forEach((row, j) => [...row].forEach((ch, i) => {
+          if (ch === '.') return;
+          for (let dy = 0; dy < s; dy++) for (let dx = 0; dx < s; dx++) {
+            F.paint(hx + i * s + dx, hy + j * s + dy, ch === 'h' ? INK.bowLight : INK.bow);
+          }
+        }));
+      }
+    }
+
     for (const dp of drops) {
       const a = t - dp.t0, y = dp.y + dp.vy * a + 40 * k * a * a;
       if (y < dp.y) F.dot(dp.x + dp.vx * a, y, 0.85);
@@ -694,6 +761,14 @@ export function nightPond(W: number, H: number, o: NightOpts = {}): Scene {
       ripple(x, y, now, 1);
       const f = idle[0];
       if (f) { f.state = 'croak'; f.t0 = now; }
+    },
+    meet() {
+      const green = frogs.find((f) => f.kind === 'green');
+      const pink = frogs.find((f) => f.kind === 'pink');
+      if (!green || !pink || meeting) return;
+      // Neither wanders off or snaps at flies until they have met.
+      for (const f of [green, pink]) { f.next = now + 6; f.snapAt = now + 6; }
+      meeting = { stage: 'go', t: now, x: 0, y: 0 };
     },
     react() {
       const idle = frogs.filter((f) => f.state === 'sit');

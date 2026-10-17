@@ -8,132 +8,73 @@
   } = $props();
 </script>
 
-<div class="denied-wrap">
-  <div class="denied-card px">
-    <div class="denied-header">
-      <div class="denied-led"></div>
-      <span class="denied-tag">CLEARANCE REFUSED // SEALED</span>
-    </div>
-
-    <div class="denied-content">
-      <div class="denied-icon">🔒</div>
-      <h2 class="denied-title">BUMPY'S SECRET VAULT</h2>
-      <p class="denied-message">This vault is sealed.</p>
-      {#if error}
-        <p class="passphrase-error" role="alert">{error}</p>
-      {/if}
-
-      <div class="denied-actions">
-        <button type="button" class="btn px wordle-btn" onclick={() => onNavigate('wordle')}>
-          Back to Wordle
-        </button>
-        <button type="button" class="btn px portfolio-btn" onclick={() => onNavigate('portfolio')}>
-          ← Portfolio
-        </button>
-      </div>
-    </div>
+<div class="denied">
+  <svg class="lock" viewBox="0 0 9 10" shape-rendering="crispEdges" aria-hidden="true">
+    <path d="M2 0h5v1h-5zM1 1h1v3h-1zM7 1h1v3h-1zM0 4h9v6h-9z" style:fill="var(--muted)" />
+    <path d="M4 6h1v2h-1z" style:fill="var(--bg)" />
+  </svg>
+  <h2 class="denied-title">Bumpy's vault is sealed</h2>
+  <p class="denied-message">It opens for one person, with one word.</p>
+  {#if error}
+    <p class="passphrase-error" role="alert">{error}</p>
+  {/if}
+  <div class="denied-actions">
+    <button type="button" class="btn px" onclick={() => onNavigate('wordle')}>Back to Wordle</button>
+    <button type="button" class="text-btn" onclick={() => onNavigate('portfolio')}>Portfolio</button>
   </div>
 </div>
 
 <style>
-  .denied-wrap {
-    width: 100%;
-    max-width: 480px;
-    margin: 32px auto 0;
+  .denied {
+    display: grid;
+    justify-items: center;
+    max-width: 520px;
+    margin: 72px auto 0;
+    text-align: center;
     user-select: none;
   }
 
-  .denied-card {
-    background: var(--field);
-    border: 2px solid var(--dim);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
-    overflow: hidden;
-  }
-
-  .denied-header {
-    background: #111726;
-    padding: 10px 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 2px solid var(--dim);
-  }
-
-  .denied-led {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--error);
-    box-shadow: 0 0 8px var(--error);
-  }
-
-  .denied-tag {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    color: var(--error);
-  }
-
-  .denied-content {
-    padding: 32px 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .denied-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
+  .lock {
+    width: 36px;
+    height: 40px;
   }
 
   .denied-title {
-    margin: 0;
-    font-size: 24px;
-    letter-spacing: 1px;
+    margin: 20px 0 0;
+    font-size: clamp(24px, 5vw, 30px);
+    line-height: 1.2;
   }
 
   .denied-message {
-    margin: 8px 0 20px;
-    font-size: 15px;
+    margin: 10px 0 0;
     color: var(--muted);
-    line-height: 1.5;
   }
 
   .passphrase-error {
-    margin: 0 0 16px;
+    margin: 12px 0 0;
     color: var(--error);
-    font-size: 14px;
   }
 
   .denied-actions {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px 22px;
+    margin-top: 26px;
   }
 
-  .wordle-btn {
-    background: var(--accent);
-    color: #080c18;
-    padding: 12px;
-    font-size: 16px;
-  }
-
-  .wordle-btn:hover {
-    background: #9ecc85;
-  }
-
-  .portfolio-btn {
-    background: transparent;
-    border: 1px solid var(--dim);
+  .text-btn {
+    padding: 6px 0;
+    border: 0;
+    background: none;
     color: var(--muted);
-    padding: 10px;
-    font-size: 14px;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: var(--cursor-pointer);
   }
 
-  .portfolio-btn:hover {
-    color: var(--fg);
-    border-color: var(--fg);
+  .text-btn:hover {
+    color: var(--accent);
   }
 </style>

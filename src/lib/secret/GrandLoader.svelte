@@ -8,20 +8,31 @@
     onComplete: () => void;
   } = $props();
 
-  let progress = $state(0);
-  let statusLines = $state<string[]>([]);
-  let doorOpening = $state(false);
-  let completed = $state(false);
-
-  const LOG_STEPS = [
-    { delay: 100, text: '>> INITIATING BUMPY SECURE HANDSHAKE...' },
-    { delay: 500, text: '>> CLEARANCE ACCEPTED' },
-    { delay: 950, text: '>> CALIBRATING POND FREQUENCIES & LILYPADS...' },
-    { delay: 1450, text: '>> DETECTING SPECIAL OCCASION ARCHIVE... [MATCH FOUND]' },
-    { delay: 1950, text: '>> CLEARANCE LEVEL: VIP LIFETIME ACCESS [GRANTED]' },
-    { delay: 2450, text: '>> ACCESS PERMITTED: FOR MY FAVORITE PERSON ❤️' },
-    { delay: 2850, text: '>> UNLOCKING HAPPY ANNIVERSARY CELEBRATION...' },
+  /** A pixel heart that fills from the bottom row up while the vault opens. */
+  const HEART = [
+    '..xxx...xxx..',
+    '.xxxxx.xxxxx.',
+    'xxxxxxxxxxxxx',
+    'xxxxxxxxxxxxx',
+    'xxxxxxxxxxxxx',
+    '.xxxxxxxxxxx.',
+    '..xxxxxxxxx..',
+    '...xxxxxxx...',
+    '....xxxxx....',
+    '.....xxx.....',
+    '......x......',
   ];
+  const ROW_PATHS = HEART.map((row, y) =>
+    [...row.matchAll(/x+/g)].map((run) => `M${run.index} ${y}h${run[0].length}v1h-${run[0].length}z`).join(''),
+  );
+  const LINES = ['Waking Bumpy up…', 'Finding your letter…', 'Sealing it with a kiss…'];
+
+  let progress = $state(0);
+  let leaving = $state(false);
+  let completed = false;
+
+  const filled = $derived(Math.round((progress / 100) * HEART.length));
+  const line = $derived(LINES[Math.min(LINES.length - 1, Math.floor(progress / 34))]);
 
   function finish() {
     if (completed) return;
@@ -29,90 +40,46 @@
     onComplete();
   }
 
+  $effect(() => {
+    // A soft tick each time the status line changes.
+    if (line) playKeyPress(true);
+  });
+
   onMount(() => {
-    // Progress increment timer
-    const progressInterval = setInterval(() => {
-      progress = Math.min(100, progress + 2);
-      if (progress >= 100) {
-        clearInterval(progressInterval);
-      }
-    }, 55);
-
-    // Stream status log lines
-    const timers: ReturnType<typeof setTimeout>[] = [];
-
-    LOG_STEPS.forEach(({ delay, text }, idx) => {
-      const t = setTimeout(() => {
-        statusLines = [...statusLines, text];
-        playKeyPress(true);
-
-        if (idx === LOG_STEPS.length - 1) {
-          // Play love serenade fanfare and initiate door opening
-          playSecretUnlock(true);
-          playLoveSerenade(true);
-          doorOpening = true;
-
-          setTimeout(() => {
-            finish();
-          }, 800);
-        }
-      }, delay);
-      timers.push(t);
-    });
+    let leaveTimer: number | undefined;
+    const fill = window.setInterval(() => {
+      progress = Math.min(100, progress + 2.5);
+      if (progress < 100) return;
+      clearInterval(fill);
+      playSecretUnlock(true);
+      playLoveSerenade(true);
+      leaving = true;
+      leaveTimer = window.setTimeout(finish, 450);
+    }, 50);
 
     return () => {
-      clearInterval(progressInterval);
-      timers.forEach(clearTimeout);
+      clearInterval(fill);
+      clearTimeout(leaveTimer);
     };
   });
 </script>
 
-<div class="loader-overlay" class:opening={doorOpening} role="dialog" aria-modal="true" aria-label="Loading Bumpy's Secret Vault">
-  <!-- Vault Doors -->
-  <div class="vault-door left-door" class:slide-left={doorOpening}>
-    <div class="door-pattern"></div>
-    <div class="hazard-stripe"></div>
-  </div>
-  <div class="vault-door right-door" class:slide-right={doorOpening}>
-    <div class="door-pattern"></div>
-    <div class="hazard-stripe"></div>
-  </div>
-
-  <!-- Central Terminal Display -->
-  <div class="terminal-center px" class:fade-out={doorOpening}>
-    <div class="terminal-top">
-      <div class="top-tag">
-        <span class="blinking-dot"></span>
-        <span>CLASSIFIED // ANNIVERSARY CLEARANCE ❤️</span>
-      </div>
-      <button type="button" class="skip-btn px" onclick={finish}>
-        Skip ▶
-      </button>
-    </div>
-
-    <!-- Big Animated Frog Iris -->
-    <div class="iris-frame">
-      <div class="radar-sweep"></div>
-      <div class="frog-emblem">🐸💕</div>
-    </div>
-
-    <h2 class="loader-title">DECRYPTING ANNIVERSARY VAULT</h2>
-
-    <!-- Retro Progress Bar -->
-    <div class="progress-wrap px">
-      <div class="progress-fill px" style:width="{progress}%"></div>
-      <span class="progress-text">{progress}%</span>
-    </div>
-
-    <!-- Terminal Status Stream -->
-    <div class="console-box px">
-      {#each statusLines as line}
-        <div class="console-line">{line}</div>
+<div class="loader-overlay" class:leaving role="dialog" aria-modal="true" aria-label="Opening the vault">
+  <div class="loader">
+    <svg
+      class="heart"
+      class:full={filled === HEART.length}
+      viewBox="0 0 13 11"
+      shape-rendering="crispEdges"
+      aria-hidden="true"
+    >
+      {#each ROW_PATHS as d, y (y)}
+        <path {d} style:fill={y >= HEART.length - filled ? 'var(--love)' : 'var(--field-focus)'} />
       {/each}
-      {#if !doorOpening}
-        <div class="console-cursor">█</div>
-      {/if}
-    </div>
+    </svg>
+    <h2>Opening your vault</h2>
+    <p class="line" aria-live="polite">{line}</p>
+    <button type="button" class="skip-btn" onclick={finish}>Skip</button>
   </div>
 </div>
 
@@ -121,233 +88,75 @@
     position: fixed;
     inset: 0;
     z-index: 1000;
-    background: #060911;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
+    display: grid;
+    place-items: center;
+    background: var(--bg);
     user-select: none;
+    transition: opacity 0.45s steps(5, end);
   }
 
-  /* Giant sliding steel vault doors */
-  .vault-door {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 50.5%;
-    background: #0c121e;
-    border: 3px solid #1a2538;
-    z-index: 5;
-    transition: transform 0.75s cubic-bezier(0.77, 0, 0.175, 1);
-  }
-
-  .left-door {
-    left: 0;
-    border-right: 4px solid var(--accent);
-  }
-
-  .right-door {
-    right: 0;
-    border-left: 4px solid var(--accent);
-  }
-
-  .left-door.slide-left {
-    transform: translateX(-100%);
-  }
-
-  .right-door.slide-right {
-    transform: translateX(100%);
-  }
-
-  .door-pattern {
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(rgba(104, 113, 132, 0.15) 1px, transparent 0);
-    background-size: 16px 16px;
-  }
-
-  .hazard-stripe {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 12px;
-    background: repeating-linear-gradient(
-      -45deg,
-      #d69e2e,
-      #d69e2e 10px,
-      #111726 10px,
-      #111726 20px
-    );
-  }
-
-  /* Center Terminal HUD */
-  .terminal-center {
-    position: relative;
-    z-index: 10;
-    background: rgba(14, 20, 32, 0.94);
-    border: 2px solid var(--accent);
-    padding: 28px;
-    width: min(560px, calc(100vw - 32px));
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), 0 0 25px rgba(139, 191, 115, 0.2);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-  }
-
-  .terminal-center.fade-out {
+  .loader-overlay.leaving {
     opacity: 0;
-    transform: scale(1.04);
   }
 
-  .terminal-top {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(139, 191, 115, 0.3);
-    padding-bottom: 10px;
-    margin-bottom: 20px;
+  .loader {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 24px;
+    text-align: center;
   }
 
-  .top-tag {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    color: var(--accent);
+  .heart {
+    width: 104px;
+    height: 88px;
   }
 
-  .blinking-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 8px var(--accent);
-    animation: blink 1s infinite alternate;
+  .heart.full {
+    animation: beat 0.4s steps(2, end);
+  }
+
+  @keyframes beat {
+    50% {
+      transform: scale(1.12);
+    }
+  }
+
+  h2 {
+    margin: 22px 0 0;
+    font-size: clamp(24px, 5vw, 30px);
+    line-height: 1.2;
+  }
+
+  .line {
+    min-height: 1.45em;
+    margin: 0;
+    color: var(--muted);
   }
 
   .skip-btn {
-    background: transparent;
-    border: 1px solid var(--dim);
+    margin-top: 14px;
+    padding: 6px 0;
+    border: 0;
+    background: none;
     color: var(--muted);
-    font-size: 12px;
-    padding: 3px 8px;
+    font-size: 16px;
+    text-decoration: underline;
+    text-underline-offset: 4px;
     cursor: var(--cursor-pointer);
   }
 
   .skip-btn:hover {
     color: var(--fg);
-    border-color: var(--fg);
   }
 
-  .iris-frame {
-    position: relative;
-    width: 76px;
-    height: 76px;
-    border-radius: 50%;
-    border: 2px dashed var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 14px;
-    background: #090e18;
-    overflow: hidden;
-  }
-
-  .radar-sweep {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    border-top: 2px solid var(--accent);
-    animation: radar-spin 1.8s linear infinite;
-  }
-
-  .frog-emblem {
-    font-size: 36px;
-    line-height: 1;
-    z-index: 2;
-  }
-
-  .loader-title {
-    margin: 0 0 16px;
-    font-size: 22px;
-    color: var(--fg);
-    letter-spacing: 2px;
-  }
-
-  .progress-wrap {
-    width: 100%;
-    height: 24px;
-    background: #090d16;
-    border: 1px solid var(--dim);
-    position: relative;
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: var(--accent);
-    transition: width 0.08s linear;
-  }
-
-  .progress-text {
-    position: absolute;
-    width: 100%;
-    text-align: center;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--fg);
-    text-shadow: 1px 1px 2px #000;
-  }
-
-  .console-box {
-    width: 100%;
-    height: 110px;
-    background: #070a12;
-    border: 1px solid rgba(104, 113, 132, 0.3);
-    padding: 10px 12px;
-    overflow-y: hidden;
-    font-size: 12px;
-    line-height: 1.5;
-    color: #a8cc5c;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-  }
-
-  .console-line {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .console-cursor {
-    color: var(--accent);
-    animation: blink 0.8s infinite;
-  }
-
-  @keyframes radar-spin {
-    from {
-      transform: rotate(0deg);
+  @media (prefers-reduced-motion: reduce) {
+    .loader-overlay {
+      transition: none;
     }
-    to {
-      transform: rotate(360deg);
-    }
-  }
 
-  @keyframes blink {
-    0%, 100% {
-      opacity: 0.2;
-    }
-    50% {
-      opacity: 1;
+    .heart.full {
+      animation: none;
     }
   }
 </style>

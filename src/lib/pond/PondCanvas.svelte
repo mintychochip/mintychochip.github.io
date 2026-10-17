@@ -1,3 +1,36 @@
+<script lang="ts" module>
+  /** Art pixels are 3 CSS px, nudged so each covers a whole number of device pixels. */
+  export function pixelScale() {
+    const dpr = window.devicePixelRatio || 1;
+    return Math.max(2, Math.round(3 * dpr)) / dpr;
+  }
+
+  /**
+   * The box `el` covers on `pond`, as fractions for a scene's `clear` option, with headroom so no frog
+   * sits behind it. Undefined when either is missing or `el` sits below the pond (as titles do on phones).
+   */
+  export function clearBoxOf(el: Element | undefined, pond: Element | null | undefined) {
+    if (!el || !pond) return undefined;
+    const a = pond.getBoundingClientRect(), t = el.getBoundingClientRect();
+    if (t.top >= a.bottom - 2) return undefined;
+    const pad = 14;
+    return [
+      Math.max(0, (t.left - a.left - pad) / a.width),
+      Math.max(0, (t.top - a.top - 26) / a.height),
+      Math.min(1, (t.right - a.left + pad) / a.width),
+      Math.min(1, (t.bottom - a.top + 6) / a.height),
+    ] as const;
+  }
+
+  /** What a parent can do with a bound pond. */
+  export interface PondHandle {
+    /** The scene notices something nearby, such as its card being hovered. */
+    react(): void;
+    /** Bumpy goes to the pink frog and they share a heart; ponds without both frogs ignore it. */
+    meet(): void;
+  }
+</script>
+
 <script lang="ts">
   import { onMount } from 'svelte';
   import { Field, packPalette, quantize } from './field';
@@ -5,7 +38,7 @@
   import { BIOME_CONFIGS, BIOME_PALETTES, type BiomeName } from './biome';
   import { createBiomeScene, type BiomeOpts } from './scene';
   import { nightPond, type NightOpts, type Scene } from './night';
-  import { prefersReducedMotion, subscribe } from './ticker';
+  import { prefersReducedMotion, subscribe, type Clock } from './ticker';
 
   type SceneOpts = Omit<NightOpts, 'seed' | 'still'>;
   type BiomeSceneOpts = Omit<BiomeOpts, 'seed' | 'still'>;
@@ -31,16 +64,10 @@
   let img: ImageData | null = null;
   let px: Uint32Array | null = null;
   let W = 0, H = 0;
-  let clock: ReturnType<typeof subscribe> | null = null;
+  let clock: Clock | null = null;
   const still = prefersReducedMotion();
   const colors = $derived(packPalette(biome ? BIOME_PALETTES[biome] : PALETTES[palette]));
   const bgColor = $derived(biome ? BIOME_CONFIGS[biome].bg : PALETTES[palette][0]);
-
-  /** Art pixels are 3 CSS px, nudged so each covers a whole number of device pixels. */
-  function pixelScale() {
-    const dpr = window.devicePixelRatio || 1;
-    return Math.max(2, Math.round(3 * dpr)) / dpr;
-  }
 
   function draw(t: number) {
     if (!scene || !field || !ctx || !img || !px) return;
@@ -76,6 +103,11 @@
   /** The scene notices something nearby, such as its card being hovered. */
   export function react() {
     scene?.react();
+  }
+
+  /** Bumpy goes to the pink frog and they share a heart; ponds without both frogs ignore it. */
+  export function meet() {
+    scene?.meet?.();
   }
 
   function toArt(e: MouseEvent): [number, number] {

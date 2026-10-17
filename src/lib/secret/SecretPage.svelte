@@ -9,10 +9,13 @@
   let {
     onNavigate,
     onReveal,
+    onUnlock,
     openVault,
   }: {
     onNavigate: (tab: 'portfolio' | 'wordle') => void;
     onReveal?: (open: boolean) => void;
+    /** Whether the letter is open, so navigation can offer what comes after it. */
+    onUnlock?: (unlocked: boolean) => void;
     openVault?: () => Promise<VaultCopy>;
   } = $props();
 
@@ -21,11 +24,8 @@
   let loaderDone = false;
   let error = $state('');
   let payload = $state<VaultCopy | null>(null);
-  let Vault = $state<Component<{
-    onLogout: () => void;
-    onNavigate: (tab: 'portfolio' | 'wordle') => void;
-    copy: VaultCopy;
-  }> | null>(null);
+  let letterOpened = $state(false);
+  let Vault = $state<Component<{ onLogout: () => void; onUnlock: () => void; copy: VaultCopy }> | null>(null);
 
   async function defaultOpen(): Promise<VaultCopy> {
     const { openSealedVault } = await import('./vault-open');
@@ -37,6 +37,7 @@
     payload = null;
     Vault = null;
     loaderDone = false;
+    letterOpened = false;
     error = '';
     view = 'denied';
   }
@@ -68,6 +69,10 @@
     onReveal?.(view !== 'denied');
   });
 
+  $effect(() => {
+    onUnlock?.(view === 'vault' && letterOpened);
+  });
+
   onMount(() => {
     const hash = window.location.hash || '';
     if (hash.includes('token=')) {
@@ -82,11 +87,7 @@
   {#if view === 'loading'}
     <GrandLoader onComplete={finishLoader} />
   {:else if view === 'vault' && Vault && payload}
-    <Vault
-      copy={payload}
-      onLogout={lock}
-      {onNavigate}
-    />
+    <Vault copy={payload} onLogout={lock} onUnlock={() => (letterOpened = true)} />
   {:else}
     <SecretDenied {onNavigate} {error} />
   {/if}

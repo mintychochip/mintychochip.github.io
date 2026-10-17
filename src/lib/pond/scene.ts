@@ -10,7 +10,7 @@ export interface BiomeOpts {
   flies?: number;
   pads?: number;
   horizon?: number;
-  clear?: readonly [number, number, number, number];
+  clear?: readonly (readonly [number, number, number, number])[];
   still?: boolean;
 }
 
@@ -91,8 +91,8 @@ export function createBiomeScene(W: number, H: number, cfg: BiomeConfig, o: Biom
       })).filter((s) => s.y < far[s.x] && Math.hypot(s.x - moon.x, s.y - moon.y) > moon.R + halo * 0.6)
     : [];
 
-  const [cl, ct, cr, cb] = o.clear ?? [0, 0, 0, 0];
-  const inClear = (xa: number, ya: number, xb: number, yb: number) => xb > cl * W && xa < cr * W && yb > ct * H && ya < cb * H;
+  const inClear = (xa: number, ya: number, xb: number, yb: number) =>
+    (o.clear ?? []).some(([cl, ct, cr, cb]) => xb > cl * W && xa < cr * W && yb > ct * H && ya < cb * H);
 
   const pads: Pad[] = [];
   const want = o.pads ?? Math.max(2, Math.round(W / (22 * k)));

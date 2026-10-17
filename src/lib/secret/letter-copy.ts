@@ -2,16 +2,17 @@
  * Shape of the anniversary letter.
  *
  * The words themselves live in the sealed vault payload, not in this file.
- * The 3D card and the plain-text section both render whatever copy is passed in.
  */
 export interface AnniversaryLetterCopy {
-  /** Front cover of the card. */
-  cover: { kicker: string; title: string };
+  /** Over the pond while the letter is still sealed. */
+  title: string;
+  /** One line under the pond, naming who the letter is for. */
+  dedication: string;
   greeting: string;
   paragraphs: string[];
   signoff: string;
-  /** Rendered with a drawn heart on the card; the HTML section appends its own. */
+  /** Followed by a drawn heart. */
   signature: string;
-  /** Small line closing the inside spread, pointing at the passes below. */
+  /** Small line closing the letter, pointing at the passes below. */
   postscript: string;
 }

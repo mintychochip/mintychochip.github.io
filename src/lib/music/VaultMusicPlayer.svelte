@@ -3,6 +3,8 @@
   import { ChiptunePlayer, type PlaybackState } from '../music/chiptune';
   import { songSeconds } from '../music/song';
   import { SONGS } from '../music/songs';
+  import PixelArt from '../secret/PixelArt.svelte';
+  import { NEXT, PAUSE, PLAY, PREVIOUS, VOLUME } from '../secret/pixel-art';
 
   let player: ChiptunePlayer | null = $state(null);
   let progressEl: HTMLButtonElement | null = $state(null);
@@ -88,9 +90,12 @@
     if (instance.running) instance.play();
     else needsTap = true;
     attachGesture();
+    // The bar is fixed over the bottom of the window; the page's own end keeps clear of it.
+    document.body.classList.add('has-music-bar');
 
     return () => {
       detachGesture();
+      document.body.classList.remove('has-music-bar');
       instance.dispose();
       player = null;
     };
@@ -101,43 +106,34 @@
   });
 </script>
 
-<aside class="vault-player px" aria-label="Vault chiptune player">
+<aside class="vault-player" aria-label="Music">
   <div class="vp-eq" class:on={playback === 'playing'} aria-hidden="true">
-    {#each Array(5) as _, i}
+    {#each { length: 4 } as _, i (i)}
       <span class="vp-bar" style:--i={i}></span>
     {/each}
   </div>
 
   <div class="vp-controls">
-    <button
-      type="button"
-      class="vp-btn px"
-      onclick={() => selectTrack(trackIndex - 1)}
-      aria-label="Previous song"
-    >
-      ⏮
+    <button type="button" class="vp-btn px" onclick={() => selectTrack(trackIndex - 1)} aria-label="Previous song">
+      <PixelArt sprite={PREVIOUS} px={2} />
     </button>
     <button
       type="button"
-      class="vp-btn px vp-play"
+      class="vp-btn vp-play px"
       onclick={togglePlayback}
       aria-label={playback === 'playing' ? 'Pause music' : 'Play music'}
     >
-      {playback === 'playing' ? '⏸' : '▶'}
+      <PixelArt sprite={playback === 'playing' ? PAUSE : PLAY} px={2} />
     </button>
-    <button
-      type="button"
-      class="vp-btn px"
-      onclick={() => selectTrack(trackIndex + 1)}
-      aria-label="Next song"
-    >
-      ⏭
+    <button type="button" class="vp-btn px" onclick={() => selectTrack(trackIndex + 1)} aria-label="Next song">
+      <PixelArt sprite={NEXT} px={2} />
     </button>
   </div>
 
   <div class="vp-meta">
     <span class="vp-title">{song.title}</span>
-    <span class="vp-sub">{song.subtitle}</span>
+    <!-- Until the browser lets music start, the subtitle line asks for a tap instead of floating a hint over the page. -->
+    <span class="vp-sub" class:nudge={needsTap}>{needsTap ? 'Play our songs' : song.subtitle}</span>
   </div>
 
   <button
@@ -148,27 +144,15 @@
     aria-label="Seek within {song.title}"
   >
     <span class="vp-track-fill" style:width="{progressPercent}%"></span>
-    <span class="vp-track-head" style:left="{progressPercent}%"></span>
   </button>
 
   <span class="vp-time">{formatTime(position)} / {formatTime(duration)}</span>
 
   <label class="vp-volume">
-    <span aria-hidden="true">🔊</span>
-    <input
-      class="vp-range"
-      type="range"
-      min="0"
-      max="100"
-      step="1"
-      bind:value={volumePercent}
-      aria-label="Music volume"
-    />
+    <PixelArt sprite={VOLUME} px={2} />
+    <input class="vp-range" type="range" min="0" max="100" step="1" bind:value={volumePercent} aria-label="Music volume" />
   </label>
 
-  {#if needsTap}
-    <span class="vp-hint px">Tap ▶ for music 🎶</span>
-  {/if}
 </aside>
 
 <style>
@@ -180,42 +164,39 @@
     z-index: 120;
     display: flex;
     align-items: center;
-    gap: 12px;
-    height: var(--vp-bar-h, 76px);
+    gap: 14px;
+    height: 76px;
     padding-inline: max(12px, calc((100% - var(--width)) / 2));
-    background: rgba(9, 13, 22, 0.94);
-    border-top: 2px solid #f48cb8;
-    box-shadow: 0 -8px 26px rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(6px);
+    background: var(--bg);
+    border-top: 1px solid rgba(104, 113, 132, 0.28);
   }
 
-  /* Equalizer bars: animated only while music is playing. */
+  /* Four pixel bars that bounce in pond-clock steps while a song plays. */
   .vp-eq {
     display: flex;
     align-items: flex-end;
     gap: 3px;
-    height: 26px;
+    height: 24px;
   }
 
   .vp-bar {
-    width: 5px;
-    height: 30%;
-    background: #8bbf73;
-    animation: vp-bounce 0.55s ease-in-out infinite alternate;
-    animation-delay: calc(var(--i) * 90ms);
-    animation-play-state: paused;
+    width: 6px;
+    height: 6px;
+    background: var(--love);
   }
 
+  /* Flat while silent. */
   .vp-eq.on .vp-bar {
-    animation-play-state: running;
+    animation: vp-level 0.66s steps(4, end) infinite alternate;
+    animation-delay: calc(var(--i) * -0.25s);
   }
 
-  @keyframes vp-bounce {
+  @keyframes vp-level {
     from {
-      height: 20%;
+      height: 6px;
     }
     to {
-      height: 100%;
+      height: 24px;
     }
   }
 
@@ -226,91 +207,86 @@
   }
 
   .vp-btn {
-    width: 38px;
-    height: 38px;
     display: grid;
     place-items: center;
-    font-size: 15px;
-    line-height: 1;
-    background: #0e1320;
-    border: 1px solid var(--dim);
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 0;
+    background: var(--field);
     color: var(--fg);
     cursor: var(--cursor-pointer);
-    transition: all 0.15s ease;
+    transition: background 0.15s ease, color 0.15s ease;
   }
 
-  .vp-btn:hover {
+  .vp-btn:hover,
+  .vp-btn:focus-visible {
     background: var(--field-focus);
-    border-color: #f48cb8;
-    color: #ffe8f3;
+    color: var(--love);
   }
 
   .vp-play {
     width: 46px;
     height: 46px;
-    font-size: 18px;
-    background: #251329;
-    border-color: #d65a8f;
-    color: #ff94c2;
+    background: var(--fg);
+    color: var(--bg);
   }
 
-  .vp-play:hover {
-    background: #d65a8f;
-    color: #ffffff;
+  .vp-play:hover,
+  .vp-play:focus-visible {
+    background: var(--love);
+    color: var(--bg);
   }
 
   .vp-meta {
     display: flex;
     flex-direction: column;
+    gap: 2px;
     min-width: 0;
     max-width: 240px;
   }
 
   .vp-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: #ffd9ea;
-    white-space: nowrap;
     overflow: hidden;
+    font-family: var(--font);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
     text-overflow: ellipsis;
   }
 
   .vp-sub {
-    font-size: 11px;
+    overflow: hidden;
+    font-size: 12px;
     color: var(--muted);
     white-space: nowrap;
-    overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .vp-track {
     position: relative;
     flex: 1 1 auto;
-    height: 12px;
     min-width: 60px;
+    height: 9px;
     padding: 0;
-    background: #1b2334;
-    border: 1px solid var(--dim);
+    border: 0;
+    background: var(--field-focus);
     cursor: var(--cursor-pointer);
+  }
+
+  .vp-track:focus-visible {
+    outline-offset: 4px;
   }
 
   .vp-track-fill {
     position: absolute;
     inset: 0 auto 0 0;
-    background: linear-gradient(90deg, #8bbf73, #f48cb8);
-  }
-
-  .vp-track-head {
-    position: absolute;
-    top: -3px;
-    width: 3px;
-    height: 16px;
-    background: #ffe8f3;
-    transform: translateX(-1px);
+    background: var(--love);
   }
 
   .vp-time {
-    font-size: 12px;
+    font-size: 13px;
     color: var(--muted);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
@@ -319,67 +295,63 @@
   .vp-volume {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 13px;
+    gap: 8px;
+    color: var(--muted);
   }
 
   .vp-range {
     width: 92px;
-    accent-color: #f48cb8;
+    accent-color: var(--love);
     cursor: var(--cursor-pointer);
   }
 
-  .vp-hint {
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 5px 12px;
-    font-size: 12px;
+  .vp-sub.nudge {
+    color: var(--love);
     font-weight: 700;
-    color: #ffe8f3;
-    background: #251329;
-    border: 1px solid #d65a8f;
-    white-space: nowrap;
+  }
+
+  :global(body.has-music-bar) {
+    padding-bottom: 76px;
   }
 
   @media (max-width: 720px) {
+    :global(body.has-music-bar) {
+      padding-bottom: 62px;
+    }
+
     .vault-player {
+      height: 62px;
       flex-wrap: wrap;
       align-content: center;
-      gap: 4px 8px;
+      gap: 6px 10px;
     }
 
     .vp-eq,
-    .vp-sub,
+    .vp-sub:not(.nudge),
     .vp-volume {
       display: none;
     }
 
-    /* Two rows: transport + title + clock, then the full-width progress bar. */
-    .vp-controls {
-      order: 0;
-    }
-
+    /* Two rows: transport, title and clock, then the full-width progress bar. The title gives way first. */
     .vp-meta {
-      order: 1;
-      flex: 1 1 auto;
+      flex: 1 1 0;
       max-width: none;
     }
 
     .vp-title {
-      font-size: 13px;
+      font-size: 15px;
     }
 
     .vp-time {
       order: 2;
-      font-size: 11px;
+      font-size: 12px;
     }
 
     .vp-track {
       order: 3;
       flex: 1 0 100%;
       min-width: 0;
+      height: 6px;
     }
 
     .vp-btn {
@@ -390,6 +362,12 @@
     .vp-play {
       width: 38px;
       height: 38px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vp-eq.on .vp-bar {
+      animation: none;
     }
   }
 </style>

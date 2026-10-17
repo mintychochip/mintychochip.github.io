@@ -31,6 +31,7 @@
 
   let activeTab = $state<Tab>(getTabFromHash());
   let secretRevealed = $state(false);
+  let vaultUnlocked = $state(false);
 
   function setTab(tab: Tab) {
     activeTab = tab;
@@ -110,6 +111,7 @@
       {activeTab}
       onSecretAction={handleSecretAction}
       {secretRevealed}
+      {vaultUnlocked}
     />
 
     <div class="page-content">
@@ -162,7 +164,11 @@
       {:else if activeTab === 'secret'}
         <main class="secret-main">
           <svelte:boundary>
-            <SecretPage onNavigate={setTab} onReveal={(open) => (secretRevealed = open)} />
+            <SecretPage
+              onNavigate={setTab}
+              onReveal={(open) => (secretRevealed = open)}
+              onUnlock={(unlocked) => (vaultUnlocked = unlocked)}
+            />
             {#snippet failed()}
               <p class="broken">{SECRET_LOAD_ERROR}</p>
             {/snippet}
@@ -223,10 +229,6 @@
     width: 100%;
     max-width: none;
     align-self: stretch;
-  }
-
-  .secret-main :global(.pass-stage) {
-    margin-top: -8px;
   }
   .pair {
     display: grid;

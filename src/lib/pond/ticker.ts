@@ -47,11 +47,20 @@ if (typeof document !== 'undefined') {
   if (typeof matchMedia === 'function') matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change', kick);
 }
 
+/** One subscriber's clock on the shared ticker. */
+export interface Clock {
+  /** Seconds this subscriber has been drawn for, in whole frames. */
+  readonly time: number;
+  /** Only visible subscribers advance and draw. */
+  setVisible(visible: boolean): void;
+  stop(): void;
+}
+
 /**
  * Registers a drawing callback. Each subscriber keeps its own clock that only advances while it is
  * visible, so a scene scrolled away resumes where it left off instead of jumping ahead.
  */
-export function subscribe(draw: (t: number) => void, startFrame = 0) {
+export function subscribe(draw: (t: number) => void, startFrame = 0): Clock {
   const sub: Sub = { visible: false, frame: startFrame, draw };
   subs.add(sub);
   return {

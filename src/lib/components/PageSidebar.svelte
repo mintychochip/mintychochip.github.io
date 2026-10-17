@@ -1,134 +1,84 @@
 <script lang="ts">
   import { playKeyPress } from '../wordle/sound';
-  import { SECRET_PAGE_HEADING, secretPageItems } from '../secret/vault-chrome';
-
-  export interface SidebarItem {
-    id: string;
-    label: string;
-    icon?: string;
-    href?: string;
-    badge?: string;
-    action?: () => void;
-  }
+  import { SECRET_PAGE_TITLE, secretPageItems, type SecretNavItem } from '../secret/vault-chrome';
 
   let {
     activeTab = 'portfolio',
     onSecretAction,
     secretRevealed = false,
+    vaultUnlocked = false,
   }: {
     activeTab: 'portfolio' | 'wordle' | 'secret';
     onSecretAction?: (action: 'lock' | 'wordle' | 'portfolio') => void;
     secretRevealed?: boolean;
+    /** The letter is open, so the sections after it exist. */
+    vaultUnlocked?: boolean;
   } = $props();
 
-  let activeSectionId = $state<string>('');
+  let activeSectionId = $state('');
 
-  const secretItems = $derived(secretPageItems(() => onSecretAction?.('lock')));
+  const secretItems = $derived(secretPageItems(() => onSecretAction?.('lock'), vaultUnlocked));
 
   const pageItems = $derived(activeTab === 'secret' && secretRevealed ? secretItems : []);
 
-  const pageHeading = SECRET_PAGE_HEADING;
-
-  function scrollToSection(targetId: string, href: string) {
-    const targetEl = document.getElementById(targetId);
-    if (targetEl) {
-      targetEl.scrollIntoView({ behavior: 'smooth' });
-      activeSectionId = targetId;
-      try {
-        history.replaceState(null, '', href);
-      } catch {
-        /* ignore */
-      }
-    }
-  }
-
-  function handlePageNavClick(item: SidebarItem, e?: MouseEvent) {
+  function handlePageNavClick(item: SecretNavItem, e: MouseEvent) {
     playKeyPress(true);
-
+    e.preventDefault();
     if (item.action) {
-      e?.preventDefault();
       item.action();
       return;
     }
-
-    if (item.href?.startsWith('#')) {
-      e?.preventDefault();
-      scrollToSection(item.href.slice(1), item.href);
+    if (!item.href) return;
+    const target = document.getElementById(item.href.slice(1));
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth' });
+    activeSectionId = target.id;
+    try {
+      history.replaceState(null, '', item.href);
+    } catch {
+      /* ignore */
     }
   }
 
-  function isPageNavActive(item: SidebarItem): boolean {
-    if (!item.href) return false;
-    return activeSectionId === item.href.slice(1);
-  }
-
-  const SCROLL_SPY_SECTION_IDS = [
-    'github',
-    'usage',
-    'blog',
-    'projects',
-    'resume',
-    'contact',
-    'anniversary-letter3d',
-    'anniversary-pond',
-    'anniversary-letter',
-    'anniversary-reasons',
-    'anniversary-coupons',
-    'anniversary-wordle',
-    'anniversary-oracle',
-  ] as const;
-
+  // Highlights the last section whose top has scrolled past the upper third. Sections that appear later
+  // (everything after the letter) are picked up because each check looks them up again.
   $effect(() => {
-    const tab = activeTab;
-    if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visibleEntries = entries.filter((e) => e.isIntersecting);
-        if (visibleEntries.length > 0) {
-          visibleEntries.sort(
-            (a, b) => Math.abs(a.boundingClientRect.top) - Math.abs(b.boundingClientRect.top)
-          );
-          activeSectionId = visibleEntries[0].target.id;
-        }
-      },
-      {
-        rootMargin: '-10% 0px -60% 0px',
-        threshold: [0, 0.2, 0.5],
+    const ids = pageItems.flatMap((item) => (item.href ? [item.href.slice(1)] : []));
+    if (ids.length === 0) return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const line = window.innerHeight * 0.3;
+      let current = '';
+      for (const id of ids) {
+        const top = document.getElementById(id)?.getBoundingClientRect().top;
+        if (top !== undefined && top <= line) current = id;
       }
-    );
-
-    function registerSections() {
-      observer.disconnect();
-      const ids = tab === 'secret' ? SCROLL_SPY_SECTION_IDS.filter((id) => id.startsWith('anniversary-')) : [];
-
-      ids.forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) observer.observe(el);
-      });
-    }
-
-    registerSections();
-    const timer = window.setTimeout(registerSections, 300);
-
+      activeSectionId = current;
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    update();
     return () => {
-      window.clearTimeout(timer);
-      observer.disconnect();
+      window.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(frame);
     };
   });
 </script>
 
 {#if pageItems.length > 0}
-  <aside class="sidebar-wrapper" class:secret-mode={activeTab === 'secret'}>
-    <nav class="page-nav" aria-label="{pageHeading.title} page navigation">
-      <p class="kicker">{pageHeading.title}</p>
+  <aside class="sidebar-wrapper">
+    <nav class="page-nav" aria-label="{SECRET_PAGE_TITLE} page navigation">
+      <p class="title">{SECRET_PAGE_TITLE}</p>
       <ul class="nav-list">
         {#each pageItems as item (item.id)}
           <li>
             <a
               href={item.href ?? '#'}
               class="nav-link"
-              class:active={isPageNavActive(item)}
+              class:active={item.href !== undefined && activeSectionId === item.href.slice(1)}
               onclick={(e) => handlePageNavClick(item, e)}
             >{item.label}</a>
           </li>
@@ -150,11 +100,12 @@
     top: 16px;
   }
 
-  .kicker {
+  .title {
     margin: 0 0 8px;
-    color: var(--dim);
-    font-size: 14px;
-    letter-spacing: 0.12em;
+    font-family: var(--font);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--love);
   }
 
   .nav-list {
@@ -180,12 +131,7 @@
   }
 
   .nav-link.active {
-    color: var(--accent);
-  }
-
-  .secret-mode .nav-link.active,
-  .secret-mode .kicker {
-    color: #ff94c2;
+    color: var(--love);
   }
 
   @media (max-width: 960px) {

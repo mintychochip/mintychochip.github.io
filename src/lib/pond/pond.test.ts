@@ -301,6 +301,29 @@ describe('night pond', () => {
     }
     expect(F.v.every(Number.isFinite)).toBe(true);
   });
+
+  it('seats the two frogs side by side on her pad, face to face, when they meet', () => {
+    for (const seed of ['meet-a', 'meet-b', 'meet-c']) {
+      const W = 160, H = 70, F = new Field(W, H);
+      const scene = nightPond(W, H, { seed, k: 1.4, frogs: 2, flies: 4 });
+      let fr = 0;
+      const run = (seconds: number) => {
+        for (const end = fr + seconds * 12; fr < end; fr++) scene.render(fr / 12, F);
+      };
+      run(1);
+      scene.meet?.();
+      run(4);
+      const [a, b] = scene.frogs();
+      expect(a.state).toBe('sit');
+      expect(b.state).toBe('sit');
+      expect(a.dir).toBe(Math.sign(b.x - a.x));
+      expect(b.dir).toBe(Math.sign(a.x - b.x));
+      // One pad: the same seat height on it, and no more than a frog's width between them.
+      expect(b.y).toBe(a.y);
+      expect(Math.abs(a.x - b.x)).toBeGreaterThan(0);
+      expect(Math.abs(a.x - b.x)).toBeLessThanOrEqual(frogBox(sizeFor(Math.max(a.s, b.s))).w);
+    }
+  });
 });
 
 describe('bars', () => {

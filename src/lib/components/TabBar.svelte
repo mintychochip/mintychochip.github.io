@@ -170,7 +170,7 @@
   }
 
   .current.secret {
-    color: #ff94c2;
+    color: var(--love);
   }
 
   .wordle-slot {
