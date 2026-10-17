@@ -1,11 +1,11 @@
 <script lang="ts">
-  import PondCanvas from '../pond/PondCanvas.svelte';
-  import type { BiomeName } from '../pond/biome';
+  import PondCanvas, { type PondHandle } from '../pond/PondCanvas.svelte';
+  import type { SceneName } from '../pond/scenes';
   import { metaParts, truncateWords, type Project } from './github';
   import LanguageIcon from '../components/LanguageIcon.svelte';
 
-  let { project, biome }: { project: Project; biome: BiomeName } = $props();
-  let pond = $state<ReturnType<typeof PondCanvas>>();
+  let { project, scene }: { project: Project; scene: SceneName } = $props();
+  let pond = $state<PondHandle>();
   const meta = $derived(metaParts(project));
   const desc = $derived(truncateWords(project.description));
   const descTitle = $derived(desc !== project.description.trim() ? project.description : undefined);
@@ -13,7 +13,7 @@
 
 <a class="card" href={project.url} onpointerenter={() => pond?.react()} onfocus={() => pond?.react()}>
   <div class="art">
-    <PondCanvas bind:this={pond} seed={project.name} {biome} options={{ k: 1.5, frogs: 1, flies: 3, horizon: 0.42 }} />
+    <PondCanvas bind:this={pond} seed={project.name} {scene} options={{ k: 1.5, frogs: 1, flies: 3, horizon: 0.42 }} />
   </div>
   <h3>{project.name}</h3>
   {#if desc}

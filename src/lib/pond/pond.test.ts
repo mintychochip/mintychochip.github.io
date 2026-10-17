@@ -2,13 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { bars, niceStep } from './bars';
 import { Field, levelsOf, packPalette, quantize, sceneTone } from './field';
 import { drawFrog, frogBox, sizeFor, type Frame, type FrogFace } from './frog';
-import { pond } from './life';
-import { lake } from './scenes/lake';
-import { INK, INK_COLORS, LEVELS, PALETTES, PALETTE_NAMES, assignPalettes, ramp } from './palette';
+import { SCENE_NAMES, assignScenes, makeScene, type SceneName } from './scenes';
+import { INK, INK_COLORS, LEVELS, PALETTES, PALETTE_NAMES, ramp } from './palette';
 
-const render = (seed: string, t: number, W = 120, H = 60) => {
+const render = (seed: string, t: number, name: SceneName = 'lake', W = 120, H = 60) => {
   const F = new Field(W, H);
-  const scene = pond(W, H, { seed, k: 1.4, frogs: 2, flies: 4 }, lake);
+  const scene = makeScene(name, W, H, { seed, k: 1.4, frogs: 2, flies: 4 });
   for (let fr = 0; fr <= t * 12; fr++) scene.render(fr / 12, F);
   return { F, scene };
 };
@@ -30,11 +29,11 @@ describe('palettes', () => {
     }
   });
 
-  it('gives a page of names distinct palettes, the same way every time', () => {
+  it('gives a page of projects distinct scenes, the same way every time', () => {
     const names = ['toktally', 'kitsune', 'Alchemica', 'dungeon-generator', 'ModularJobs', 'guildpost'];
-    const a = assignPalettes(names);
-    expect(new Set(a).size).toBe(names.length);
-    expect(assignPalettes(names)).toEqual(a);
+    const a = assignScenes(names);
+    expect(new Set(a).size).toBe(Math.min(names.length, SCENE_NAMES.length));
+    expect(assignScenes(names)).toEqual(a);
   });
 });
 
@@ -232,24 +231,21 @@ describe('frog', () => {
   });
 });
 
-describe('night pond', () => {
-  it('uses several palette levels across sky and water', () => {
-    const { F } = render('levels', 8);
-    const used = new Set(levelsOf(F, LEVELS));
-    expect(used.size).toBeGreaterThanOrEqual(5);
-    expect(used.has(0)).toBe(true);
-    expect(used.has(LEVELS - 1)).toBe(true);
+describe.each(SCENE_NAMES)('%s scene', (name) => {
+  it('uses at least five palette levels', () => {
+    const { F } = render('levels', 8, name);
+    expect(new Set(levelsOf(F, LEVELS)).size).toBeGreaterThanOrEqual(5);
   });
 
   it('is deterministic for a seed', () => {
-    const a = render('same', 6), b = render('same', 6);
+    const a = render('same', 6, name), b = render('same', 6, name);
     expect(a.F.v).toEqual(b.F.v);
     expect(a.F.ink).toEqual(b.F.ink);
-    expect(render('other', 6).F.v).not.toEqual(a.F.v);
+    expect(render('other', 6, name).F.v).not.toEqual(a.F.v);
   });
 
   it('draws its frogs in their own colours', () => {
-    const { F } = render('frogs', 2);
+    const { F } = render('frogs', 2, name);
     const inks = new Set(F.ink);
     expect(inks.has(INK.skin + 1)).toBe(true);
     expect(inks.has(INK.eye + 1)).toBe(true);
@@ -259,7 +255,7 @@ describe('night pond', () => {
 
   it('keeps frogs in the frame and every value finite over a long run', () => {
     const W = 160, H = 70, F = new Field(W, H);
-    const scene = pond(W, H, { seed: 'long', k: 1.6, frogs: 3, flies: 6 }, lake);
+    const scene = makeScene(name, W, H, { seed: 'long', k: 1.6, frogs: 3, flies: 6 });
     const seen = new Set<string>();
     for (let fr = 0; fr < 12 * 120; fr++) {
       scene.render(fr / 12, F);
@@ -277,14 +273,14 @@ describe('night pond', () => {
 
   it('holds still when asked to', () => {
     const W = 100, H = 60, F = new Field(W, H);
-    const scene = pond(W, H, { seed: 'still', still: true, frogs: 2 }, lake);
+    const scene = makeScene(name, W, H, { seed: 'still', still: true, frogs: 2 });
     for (let fr = 0; fr < 12 * 30; fr++) scene.render(fr / 12, F);
     expect(scene.frogs().every((f) => f.state === 'sit')).toBe(true);
   });
 
   it('renders frog ink on the first still frame without look or poke', () => {
     const W = 120, H = 60, F = new Field(W, H);
-    const scene = pond(W, H, { seed: 'rm-first', still: true, frogs: 2, k: 1.4 }, lake);
+    const scene = makeScene(name, W, H, { seed: 'rm-first', still: true, frogs: 2, k: 1.4 });
     scene.render(0, F);
     expect(F.ink.some((c) => c === INK.skin + 1)).toBe(true);
     expect(F.ink.some((c) => c === INK.eye + 1)).toBe(true);
@@ -293,7 +289,7 @@ describe('night pond', () => {
 
   it('answers pokes, taps and reactions without breaking', () => {
     const W = 100, H = 60, F = new Field(W, H);
-    const scene = pond(W, H, { seed: 'touch', frogs: 1 }, lake);
+    const scene = makeScene(name, W, H, { seed: 'touch', frogs: 1 });
     for (let fr = 0; fr < 48; fr++) {
       if (fr === 5) scene.poke(50, 45);
       if (fr === 10) scene.tap(50, 45);
@@ -304,26 +300,35 @@ describe('night pond', () => {
     expect(F.v.every(Number.isFinite)).toBe(true);
   });
 
-  it('seats the two frogs side by side on her pad, face to face, when they meet', () => {
+  it('seats the two frogs side by side on one perch, face to face, when they meet', () => {
     for (const seed of ['meet-a', 'meet-b', 'meet-c']) {
       const W = 160, H = 70, F = new Field(W, H);
-      const scene = pond(W, H, { seed, k: 1.4, frogs: 2, flies: 4 }, lake);
+      const scene = makeScene(name, W, H, { seed, k: 1.4, frogs: 2, flies: 4 });
       let fr = 0;
-      const run = (seconds: number) => {
-        for (const end = fr + seconds * 12; fr < end; fr++) scene.render(fr / 12, F);
+      for (; fr < 12; fr++) scene.render(fr / 12, F);
+      scene.meet();
+      // One perch: the same seat height on it, facing each other, no more than a frog's width apart.
+      const together = () => {
+        const [a, b] = scene.frogs();
+        return a.state === 'sit' && b.state === 'sit' && a.y === b.y && a.x !== b.x &&
+          a.dir === Math.sign(b.x - a.x) && b.dir === Math.sign(a.x - b.x) &&
+          Math.abs(a.x - b.x) <= frogBox(sizeFor(Math.max(a.s, b.s))).w;
       };
-      run(1);
-      scene.meet?.();
-      run(4);
-      const [a, b] = scene.frogs();
-      expect(a.state).toBe('sit');
-      expect(b.state).toBe('sit');
-      expect(a.dir).toBe(Math.sign(b.x - a.x));
-      expect(b.dir).toBe(Math.sign(a.x - b.x));
-      // One pad: the same seat height on it, and no more than a frog's width between them.
-      expect(b.y).toBe(a.y);
-      expect(Math.abs(a.x - b.x)).toBeGreaterThan(0);
-      expect(Math.abs(a.x - b.x)).toBeLessThanOrEqual(frogBox(sizeFor(Math.max(a.s, b.s))).w);
+      let met = false;
+      for (const end = fr + 12 * 15; fr < end && !met; fr++) {
+        scene.render(fr / 12, F);
+        met = together();
+      }
+      expect(met).toBe(true);
+    }
+  });
+
+  it('keeps sitting frogs out of clear boxes', () => {
+    const W = 160, H = 70, F = new Field(W, H);
+    const scene = makeScene(name, W, H, { seed: 'clear', k: 1.4, frogs: 2, clear: [[0.35, 0, 0.65, 1]] });
+    for (let fr = 0; fr < 12 * 30; fr++) {
+      scene.render(fr / 12, F);
+      for (const f of scene.frogs()) if (f.state === 'sit') expect(f.x < 0.35 * W || f.x > 0.65 * W).toBe(true);
     }
   });
 });

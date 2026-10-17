@@ -31,7 +31,7 @@ export interface Scene {
    * The green frog goes to the pink one: she shuffles to one side of her perch, he hops onto the other side, they
    * turn to face each other, and both croak under a heart. Scenes without both frogs do nothing.
    */
-  meet?(): void;
+  meet(): void;
   /** Where each frog is and what it is doing, for tests and tools. */
   frogs(): { state: string; x: number; y: number; s: number; dir: number }[];
 }

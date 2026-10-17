@@ -1,5 +1,3 @@
-import { hash } from './field';
-
 /** Shades per palette. Scenes and charts address colours by level, 0 (darkest) to LEVELS - 1. */
 export const LEVELS = 8;
 
@@ -91,22 +89,3 @@ export const INK_COLORS = [
   '#0b1409', '#2b8a37', '#45c148', '#7be07e', '#b8f3a9', '#dff6c4', '#ffffff', '#ff9fb4', '#ef7a93',
   '#2a0f1a', '#9e3d6b', '#d65a8f', '#f48cb8', '#ffc4da', '#ffe8f3', '#ff4d94', '#ffc0dc', '#8f1248', '#d42a72',
 ];
-
-/**
- * Gives each name its own palette, stable per name where possible: a name keeps its hashed
- * palette unless an earlier name in the list already took it.
- */
-export function assignPalettes(names: readonly string[], pool: readonly PaletteName[] = PALETTE_NAMES): PaletteName[] {
-  const used = new Set<PaletteName>();
-  return names.map((name) => {
-    const start = hash(name) % pool.length;
-    for (let j = 0; j < pool.length; j++) {
-      const p = pool[(start + j) % pool.length];
-      if (!used.has(p) || used.size >= pool.length) {
-        used.add(p);
-        return p;
-      }
-    }
-    return pool[start];
-  });
-}

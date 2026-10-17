@@ -34,32 +34,31 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { Field, packPalette, quantize } from './field';
+  import type { Scene, SceneOpts } from './life';
   import { INK_COLORS, PALETTES, type PaletteName } from './palette';
-  import { BIOME_CONFIGS, BIOME_PALETTES, type BiomeName } from './biome';
-  import { createBiomeScene, type BiomeOpts } from './scene';
-  import { pond, type Scene, type SceneOpts as PondOpts } from './life';
-  import { lake } from './scenes/lake';
+  import { SCENES, makeScene, type SceneName } from './scenes';
   import { prefersReducedMotion, subscribe, type Clock } from './ticker';
 
-  type SceneOpts = Omit<PondOpts, 'seed' | 'still'>;
-  type BiomeSceneOpts = Omit<BiomeOpts, 'seed' | 'still'>;
+  type Options = Omit<SceneOpts, 'seed' | 'still'>;
   const inks = packPalette(INK_COLORS);
 
   interface Props {
     seed: string;
+    /** The world the frogs live in. */
+    scene?: SceneName;
+    /** Paints the scene in another palette; otherwise it has its own. */
     palette?: PaletteName;
-    biome?: BiomeName;
     /** Scene options, or a function of the art size in pixels. */
-    options?: SceneOpts | BiomeSceneOpts | ((W: number, H: number) => SceneOpts | BiomeSceneOpts);
+    options?: Options | ((W: number, H: number) => Options);
     /** Pointer movement and clicks reach the scene. */
     interactive?: boolean;
   }
 
-  let { seed, palette = 'night', biome, options = {}, interactive = false }: Props = $props();
+  let { seed, scene = 'lake', palette, options = {}, interactive = false }: Props = $props();
 
   let wrap: HTMLDivElement;
   let canvas: HTMLCanvasElement;
-  let scene: Scene | null = null;
+  let world: Scene | null = null;
   let field: Field | null = null;
   let ctx: CanvasRenderingContext2D | null = null;
   let img: ImageData | null = null;
@@ -67,12 +66,13 @@
   let W = 0, H = 0;
   let clock: Clock | null = null;
   const still = prefersReducedMotion();
-  const colors = $derived(packPalette(biome ? BIOME_PALETTES[biome] : PALETTES[palette]));
-  const bgColor = $derived(biome ? BIOME_CONFIGS[biome].bg : PALETTES[palette][0]);
+  const shades = $derived(PALETTES[palette ?? SCENES[scene].palette]);
+  const colors = $derived(packPalette(shades));
+  const bgColor = $derived(shades[0]);
 
   function draw(t: number) {
-    if (!scene || !field || !ctx || !img || !px) return;
-    scene.render(t, field);
+    if (!world || !field || !ctx || !img || !px) return;
+    world.render(t, field);
     quantize(field, colors, px, inks);
     ctx.putImageData(img, 0, 0);
   }
@@ -80,7 +80,7 @@
   function build(cssW: number, cssH: number) {
     const S = pixelScale();
     const w = Math.max(8, Math.ceil(cssW / S)), h = Math.max(8, Math.ceil(cssH / S));
-    if (w === W && h === H && scene) return;
+    if (w === W && h === H && world) return;
     W = w;
     H = h;
     canvas.width = W;
@@ -93,22 +93,18 @@
     px = new Uint32Array(img.data.buffer);
     field = new Field(W, H);
     const opts = typeof options === 'function' ? options(W, H) : options;
-    if (biome) {
-      scene = createBiomeScene(W, H, BIOME_CONFIGS[biome], { ...opts, seed, still });
-    } else {
-      scene = pond(W, H, { ...opts, seed, still }, lake);
-    }
+    world = makeScene(scene, W, H, { ...opts, seed, still });
     draw(clock?.time ?? 0);
   }
 
   /** The scene notices something nearby, such as its card being hovered. */
   export function react() {
-    scene?.react();
+    world?.react();
   }
 
   /** Bumpy goes to the pink frog and they share a heart; ponds without both frogs ignore it. */
   export function meet() {
-    scene?.meet?.();
+    world?.meet();
   }
 
   function toArt(e: MouseEvent): [number, number] {
@@ -118,17 +114,17 @@
 
   let lastPoke = 0;
   function onMove(e: PointerEvent) {
-    if (!scene) return;
+    if (!world) return;
     const [x, y] = toArt(e);
-    scene.look(x, y);
+    world.look(x, y);
     if (e.timeStamp - lastPoke > 160) {
       lastPoke = e.timeStamp;
-      scene.poke(x, y);
+      world.poke(x, y);
     }
   }
 
   function onClick(e: MouseEvent) {
-    scene?.tap(...toArt(e));
+    world?.tap(...toArt(e));
   }
 
   onMount(() => {
