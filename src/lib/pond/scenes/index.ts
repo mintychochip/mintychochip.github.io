@@ -41,13 +41,10 @@ export function assignScenes(names: readonly string[]): SceneName[] {
   const used = new Set<SceneName>();
   return names.map((name) => {
     const start = hash(name) % SCENE_NAMES.length;
-    for (let j = 0; j < SCENE_NAMES.length; j++) {
-      const s = SCENE_NAMES[(start + j) % SCENE_NAMES.length];
-      if (!used.has(s) || used.size >= SCENE_NAMES.length) {
-        used.add(s);
-        return s;
-      }
-    }
-    return SCENE_NAMES[start];
+    // The first scene not yet taken, walking on from the hashed one; once every scene is taken, the hashed one again.
+    const free = SCENE_NAMES.map((_, j) => SCENE_NAMES[(start + j) % SCENE_NAMES.length]).find((s) => !used.has(s));
+    const s = free ?? SCENE_NAMES[start];
+    used.add(s);
+    return s;
   });
 }

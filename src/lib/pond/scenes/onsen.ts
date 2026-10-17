@@ -168,7 +168,8 @@ export function onsen(c: SceneContext): Setting<Rock> {
       }
     },
     fly(F, x, y) {
-      F.dot(x, y, 0.95);
+      // A pale speck against the dark sky, a dark one against the snow.
+      F.dot(x, y, F.get(x, y) > 0.55 ? 0.1 : 0.95);
     },
   };
 }

@@ -33,7 +33,7 @@
   const TIE = 28;
   /** The ribbon's pinks, one art pixel each, matching the bow's knot. */
   const ribbon = `linear-gradient(90deg, ${RIBBON_INK.map((ink, i) => `${ink} ${i * 20}% ${(i + 1) * 20}%`).join(', ')})`;
-  /** The pond keeps its pads, and so its frogs, out from under the ribbon. */
+  /** The pond keeps its perches, and so its frogs, out from under the ribbon. */
   const pondOptions = (W: number) => ({
     k: 1.5,
     frogs: 2,

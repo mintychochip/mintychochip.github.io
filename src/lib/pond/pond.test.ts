@@ -31,7 +31,9 @@ describe('palettes', () => {
       expect(lum[LEVELS - 1]).toBeGreaterThan(lum[0]);
     }
   });
+});
 
+describe('assignScenes', () => {
   it('gives a page of projects distinct scenes, the same way every time', () => {
     const names = ['toktally', 'kitsune', 'Alchemica', 'dungeon-generator', 'ModularJobs', 'guildpost'];
     const a = assignScenes(names);
@@ -306,6 +308,8 @@ describe.each(SCENE_NAMES)('%s scene', (name) => {
     scene.render(0, F);
     expect(F.ink.some((c) => c === INK.skin + 1)).toBe(true);
     expect(F.ink.some((c) => c === INK.eye + 1)).toBe(true);
+    expect(F.ink.some((c) => c === INK.pinkSkin + 1)).toBe(true);
+    expect(F.ink.some((c) => c === INK.bowKnot + 1)).toBe(true);
     expect(F.v.every(Number.isFinite)).toBe(true);
   });
 
@@ -414,6 +418,18 @@ describe('onsen', () => {
       towel = scene.frogs().some((f) => f.state === 'soak') && F.ink.some((c) => c === INK.towel + 1);
     }
     expect(towel).toBe(true);
+  });
+
+  it('draws its flies where a frog can see them, over the snow and over the sky', () => {
+    const W = 160, H = 70;
+    const got: { setting?: Setting } = {};
+    pond(W, H, { seed: 'fly', k: 1.4, frogs: 2 }, (c) => (got.setting = onsen(c)));
+    for (const ground of [0.9, 0.15]) {
+      const F = new Field(W, H);
+      F.fill(ground);
+      got.setting?.fly(F, 40, 30, 1);
+      expect(Math.abs(F.get(40, 30) - ground)).toBeGreaterThan(0.3);
+    }
   });
 });
 

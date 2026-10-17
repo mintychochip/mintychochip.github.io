@@ -288,7 +288,11 @@ export function pond<P extends Perch>(W: number, H: number, o: SceneOpts, make: 
       .filter(({ P, i, d }) => i !== f.perch && !holder[i] && fitsFrog(P) && d < maxD && d > P.rx * 0.5);
   }
 
-  /** The free perch a frog in the water at (x, y) swims to: the nearest it can climb onto from the water. */
+  /**
+   * The free perch a frog in the water at (x, y) swims to: the nearest it can climb onto from the water. A perch whose
+   * climbing-out point is dry wins only when no other is free, so a setting with water has to keep a perch per frog that
+   * can be climbed onto from the water (the onsen, waterfall and cave do), or the swim crosses dry ground.
+   */
   function landing(x: number, y: number) {
     let best = -1, bd = Infinity;
     perches.forEach((P, i) => {
