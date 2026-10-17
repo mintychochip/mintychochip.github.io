@@ -32,7 +32,7 @@
 </script>
 
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { Field, packPalette, quantize } from './field';
   import type { Scene, SceneOpts } from './life';
   import { INK_COLORS, PALETTES, type PaletteName } from './palette';
@@ -64,6 +64,10 @@
   let img: ImageData | null = null;
   let px: Uint32Array | null = null;
   let W = 0, H = 0;
+  /** The scene and seed the current world was made for. */
+  let built = '';
+  /** The CSS size the pond was last given. */
+  let box = { w: 0, h: 0 };
   let clock: Clock | null = null;
   const still = prefersReducedMotion();
   const shades = $derived(PALETTES[palette ?? SCENES[scene].palette]);
@@ -78,9 +82,12 @@
   }
 
   function build(cssW: number, cssH: number) {
+    box = { w: cssW, h: cssH };
     const S = pixelScale();
     const w = Math.max(8, Math.ceil(cssW / S)), h = Math.max(8, Math.ceil(cssH / S));
-    if (w === W && h === H && world) return;
+    const key = `${scene}\n${seed}`;
+    if (w === W && h === H && world && key === built) return;
+    built = key;
     W = w;
     H = h;
     canvas.width = W;
@@ -138,6 +145,15 @@
       io.disconnect();
       clock?.stop();
     };
+  });
+
+  // A pond can be handed another scene or seed after it mounts, as a keyed list does when its data swaps: its palette
+  // follows the scene at once, so its world has to as well.
+  $effect(() => {
+    const key = `${scene}\n${seed}`;
+    untrack(() => {
+      if (world && key !== built) build(box.w, box.h);
+    });
   });
 </script>
 
