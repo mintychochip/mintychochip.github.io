@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fly } from 'svelte/transition';
   import PondCanvas, { pixelScale, type PondHandle } from '../pond/PondCanvas.svelte';
-  import type { PaletteName } from '../pond/palette';
+  import type { SceneName } from '../pond/scenes';
   import { prefersReducedMotion } from '../pond/ticker';
   import PixelArt from './PixelArt.svelte';
   import { GIFT_BOW, HEART, PASS_ICONS, RIBBON_INK } from './pixel-art';
@@ -12,7 +12,7 @@
     icon,
     desc,
     redeemed,
-    palette,
+    scene,
     highlight = false,
     onRedeem,
   }: {
@@ -21,7 +21,7 @@
     icon: string;
     desc: string;
     redeemed: boolean;
-    palette: PaletteName;
+    scene: SceneName;
     /** Just arrived from the letter's attachments: the pass flashes and its frogs look up. */
     highlight?: boolean;
     onRedeem: () => void;
@@ -54,7 +54,7 @@
 <div class="gift" style:--art="{pixelScale()}px" style:--tie={TIE}>
   <article id="pass-{id}" class="pass px" class:redeemed class:highlight onpointerenter={() => pond?.react()}>
     <div class="art">
-      <PondCanvas bind:this={pond} seed={title} {palette} options={pondOptions} />
+      <PondCanvas bind:this={pond} seed={title} {scene} options={pondOptions} />
       {#if redeemed}
         <p class="stamp px">Redeemed</p>
       {:else}

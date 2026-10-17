@@ -1,13 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import ActivityHeatmap from './ActivityHeatmap.svelte';
-  import PondCanvas from '../pond/PondCanvas.svelte';
+  import PondCanvas, { type PondHandle } from '../pond/PondCanvas.svelte';
   import { fetchContributions, formatShortDate, FALLBACK_ACTIVITY, type ActivitySummary } from './activity';
   import { site } from '../site';
 
   let summary = $state<ActivitySummary>(FALLBACK_ACTIVITY);
   let error = $state<string | null>(null);
-  let pond = $state<ReturnType<typeof PondCanvas>>();
+  let pond = $state<PondHandle>();
 
   const prose = $derived.by(() => {
     const { totalLastYear, currentStreak, longestStreak, best } = summary;
@@ -52,7 +52,7 @@
       <PondCanvas
         bind:this={pond}
         seed="github-activity-pond"
-        palette="night"
+        scene="waterfall"
         interactive
         options={{ k: 1.25, frogs: 2, flies: 5, horizon: 0.4 }}
       />

@@ -193,7 +193,7 @@
 <section id="anniversary-letter" class="letter-stage" aria-labelledby="letter-title">
   <div class="art">
     <div class="scene" bind:this={scene}>
-      <PondCanvas seed="anniversary-dusk" palette="dusk" options={pondOptions} interactive />
+      <PondCanvas seed="anniversary-dusk" scene="lake" palette="dusk" options={pondOptions} interactive />
       <!-- The button under the pond is the accessible control; this is the same action for a pointer. -->
       <button
         type="button"

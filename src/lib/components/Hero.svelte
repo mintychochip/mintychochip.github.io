@@ -18,7 +18,7 @@
 <header class="hero">
   <div class="art">
     <div class="scene">
-      <PondCanvas seed="mintychochip-dusk" palette="night" options={pond} interactive />
+      <PondCanvas seed="mintychochip-dusk" scene="lake" options={pond} interactive />
     </div>
     <h1 bind:this={title}>
       <span class="who">{site.givenName}</span>

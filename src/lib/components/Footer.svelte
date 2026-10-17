@@ -10,7 +10,7 @@
   <div class="art">
     <PondCanvas
       seed="footer"
-      palette="night"
+      scene="beach"
       options={{ k: 1.1, frogs: 2, flies: 4, horizon: 0.3 }}
     />
   </div>

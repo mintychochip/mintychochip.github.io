@@ -44,7 +44,7 @@
       <PondCanvas
         bind:this={pond}
         seed="anniversary-goodnight"
-        palette="night"
+        scene="lake"
         options={pondOptions}
         interactive
       />

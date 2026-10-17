@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { PaletteName } from '../pond/palette';
   import LovePass from './LovePass.svelte';
+  import { passScenes } from './pass-scenes';
   import type { VaultCoupon } from './vault-types';
 
   let {
@@ -14,8 +14,8 @@
     onRedeem: (id: number) => void;
   } = $props();
 
-  /** Each pass gets its own pond, in the order the old pond switcher offered them. */
-  const PASS_PALETTES: PaletteName[] = ['dusk', 'potion', 'ember', 'night', 'moss', 'mist'];
+  /** Each pass gets a pond that suits its gift. */
+  const scenes = $derived(passScenes(passes.map((p) => p.icon)));
 
   const redeemed = $derived(passes.filter((p) => p.redeemed).length);
 </script>
@@ -33,7 +33,7 @@
         icon={pass.icon}
         desc={pass.desc}
         redeemed={pass.redeemed}
-        palette={PASS_PALETTES[i % PASS_PALETTES.length]}
+        scene={scenes[i]}
         highlight={highlighted === pass.id}
         onRedeem={() => onRedeem(pass.id)}
       />
