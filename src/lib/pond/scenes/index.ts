@@ -2,6 +2,7 @@ import { hash } from '../field';
 import { pond, type Scene, type SceneOpts, type SettingMaker } from '../life';
 import type { PaletteName } from '../palette';
 import { lake } from './lake';
+import { beach } from './beach';
 
 interface SceneEntry {
   make: SettingMaker;
@@ -12,6 +13,7 @@ interface SceneEntry {
 /** Every scene a pond can show, in the order scenes are handed out. */
 export const SCENES = {
   lake: { make: lake, palette: 'night' },
+  beach: { make: beach, palette: 'dusk' },
 } satisfies Record<string, SceneEntry>;
 
 export type SceneName = keyof typeof SCENES;
