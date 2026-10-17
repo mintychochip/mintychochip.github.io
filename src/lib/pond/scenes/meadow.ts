@@ -1,4 +1,4 @@
-import { Field, TAU, clamp, hash, mul } from '../field';
+import { Field, TAU, clamp, hash, mul, set } from '../field';
 import { scatter, type Perch, type SceneContext, type Setting } from '../life';
 import { INK } from '../palette';
 import { halo } from '../sky';
@@ -24,7 +24,7 @@ export function meadow(c: SceneContext): Setting<Seat> {
   const hills = [
     { base: 6.5, amp: 2.2, f: 0.035, tone: 0.72 },
     { base: 4, amp: 1.8, f: 0.05, tone: 0.58 },
-    { base: 1.5, amp: 1.4, f: 0.07, tone: 0.45 },
+    { base: 1.5, amp: 1.4, f: 0.07, tone: 0.38 },
   ].map(({ base, amp, f, tone }) => {
     const ph = r() * TAU;
     const top = Float32Array.from({ length: W }, (_, x) => y0 - (base + amp * (Math.sin((x * f) / k + ph) + 0.5 * Math.sin((x * f * 2.3) / k + ph * 1.7))) * k);
@@ -107,7 +107,8 @@ export function meadow(c: SceneContext): Setting<Seat> {
         F.ell(P.x, top + P.h * 0.55, Math.max(1, P.rx * 0.26), P.h * 0.55, 0, (_o, _q, u) => 0.82 + 0.1 * u * light);
         cap(F, P, top);
       } else {
-        F.ell(P.x, top + P.h * 0.5, P.rx * 1.02, P.h * 0.6 + P.ry * 0.9, 0, (_o, _q, u, w) => 0.3 + 0.18 * (0.5 + 0.5 * u * light) - 0.06 * w);
+        F.ell(P.x, top + P.h * 0.5, P.rx * 1.02, P.h * 0.6 + P.ry * 0.9, 0, (_o, _q, u, w) => 0.16 + 0.08 * (0.5 + 0.5 * u * light) - 0.04 * w);
+        F.ell(P.x, top + 1, P.rx * 1.05, P.ry * 1.15, 0, set(0.1));
         F.ell(P.x, top, P.rx, P.ry, 0, (_o, q, u) => 0.44 + 0.2 * (0.5 + 0.5 * u * light) - 0.08 * q);
       }
     },
@@ -119,12 +120,11 @@ export function meadow(c: SceneContext): Setting<Seat> {
           F.dot(b.x + sway * rel * rel, H - 1 - j, rel > 0.7 ? 0.3 : 0.14);
         }
       }
-      const wing = k >= 2 ? 2 : 1;
       for (const b of flutter) {
         const x = Math.round(b.cx + b.ax * Math.sin(t * b.fx + b.ph)), y = Math.round(b.cy + b.ay * Math.sin(t * b.fy + b.ph * 2));
         const up = Math.sin(t * 9 + b.ph) > 0 ? 1 : 0;
         F.paint(x, y, INK.line);
-        for (let i = 1; i <= wing; i++) {
+        for (let i = 1; i <= 2; i++) {
           F.paint(x - i, y - up, b.ink);
           F.paint(x + i, y - up, b.ink);
         }
