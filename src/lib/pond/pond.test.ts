@@ -267,7 +267,8 @@ describe('night pond', () => {
         seen.add(f.state);
         expect(f.x).toBeGreaterThan(-4);
         expect(f.x).toBeLessThan(W + 4);
-        expect(f.y).toBeLessThan(H + 4);
+        // Some of the frog shows: a frog climbing out of deep water has its feet below the frame for a frame.
+        expect(f.y - frogBox(sizeFor(f.s)).h).toBeLessThan(H);
       }
     }
     expect(F.v.every(Number.isFinite)).toBe(true);
