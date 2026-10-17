@@ -367,6 +367,20 @@ describe.each(SCENE_NAMES)('%s scene', (name) => {
     }
     expect(outside).toBe(0);
   });
+
+  it('keeps every seated frog fully in a short strip, as on a phone footer', () => {
+    // The sprite's top row is its rounded feet row less its height.
+    let cut = 0;
+    for (const seed of ['strip-a', 'strip-b']) {
+      const W = 122, H = 22, F = new Field(W, H);
+      const scene = makeScene(name, W, H, { seed, k: 1.1, frogs: 2, flies: 4, horizon: 0.3 });
+      for (let fr = 0; fr < 12 * 40; fr++) {
+        scene.render(fr / 12, F);
+        for (const f of scene.frogs()) if (f.state !== 'air' && f.state !== 'swim' && f.state !== 'soak' && Math.round(f.y) - frogBox(sizeFor(f.s)).h < 0) cut++;
+      }
+    }
+    expect(cut).toBe(0);
+  });
 });
 
 describe('tied perches', () => {

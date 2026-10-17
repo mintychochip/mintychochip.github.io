@@ -167,7 +167,9 @@ const MEET_HEART_T = 2.4;
 export function pond<P extends Perch>(W: number, H: number, o: SceneOpts, make: SettingMaker<P>): Scene {
   const k = o.k ?? 1;
   const r = rng(hash(String(o.seed ?? 'pond')));
-  const y0 = Math.round(H * (o.horizon ?? 0.5));
+  // The horizon sits at least a seated frog's height down the frame, and no lower than three quarters of it: a frog on
+  // a perch just under the horizon keeps its head in the picture, so a short strip gets a lower horizon than asked for.
+  const y0 = Math.min(Math.max(Math.round(H * (o.horizon ?? 0.5)), frogBox(sizeFor(k * 0.45 * SIZE)).h), Math.round(H * 0.75));
   const depthAt = (y: number) => 0.45 + (0.75 * (y - y0)) / Math.max(1, H - y0);
   const inClear = (xa: number, ya: number, xb: number, yb: number) =>
     (o.clear ?? []).some(([cl, ct, cr, cb]) => xb > cl * W && xa < cr * W && yb > ct * H && ya < cb * H);
