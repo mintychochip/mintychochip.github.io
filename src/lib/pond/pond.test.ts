@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { bars, niceStep } from './bars';
 import { Field, levelsOf, packPalette, quantize, sceneTone } from './field';
-import { drawFrog, frogBox, sizeFor, type Frame, type FrogFace } from './frog';
-import { pond, type Perch } from './life';
+import { drawFrog, drawTowel, frogBox, sizeFor, type Frame, type FrogFace } from './frog';
+import { pond, type Perch, type Setting } from './life';
 import { SCENE_NAMES, assignScenes, makeScene, type SceneName } from './scenes';
+import { onsen } from './scenes/onsen';
 import { INK, INK_COLORS, LEVELS, PALETTES, PALETTE_NAMES, ramp } from './palette';
 
 const render = (seed: string, t: number, name: SceneName = 'lake', W = 120, H = 60) => {
@@ -230,6 +231,25 @@ describe('frog', () => {
       expect(nMirrored).toBe(nNormal);
     }
   });
+
+  it('puts the towel on top of its head without covering the bow or the face, whichever way it faces', () => {
+    const bow = new Set<number>([INK.bow, INK.bowLight, INK.bowKnot, INK.bowFold]);
+    for (const size of SIZES) for (const mirror of [false, true]) {
+      const bare = new Field(48, 48), wrapped = new Field(48, 48);
+      drawFrog(bare, size, 'sit', { eyes: 'happy' }, 24, 40, { kind: 'pink', mirror });
+      drawFrog(wrapped, size, 'sit', { eyes: 'happy' }, 24, 40, { kind: 'pink', mirror });
+      drawTowel(wrapped, size, 24, 40, mirror);
+      let towel = 0;
+      for (let i = 0; i < wrapped.ink.length; i++) {
+        if (wrapped.ink[i] === INK.towel + 1 || wrapped.ink[i] === INK.towelStripe + 1) {
+          towel++;
+          expect(bare.ink[i]).toBe(0);
+        }
+        if (bare.ink[i] && bow.has(bare.ink[i] - 1)) expect(wrapped.ink[i]).toBe(bare.ink[i]);
+      }
+      expect(towel).toBeGreaterThan(0);
+    }
+  });
 });
 
 describe.each(SCENE_NAMES)('%s scene', (name) => {
@@ -376,6 +396,60 @@ describe('onsen', () => {
       towel = scene.frogs().some((f) => f.state === 'soak') && F.ink.some((c) => c === INK.towel + 1);
     }
     expect(towel).toBe(true);
+  });
+});
+
+describe('onsen with boxes to keep clear', () => {
+  interface Case {
+    name: string;
+    W: number;
+    H: number;
+    frogs: number;
+    clear: readonly (readonly [number, number, number, number])[];
+  }
+  // A love pass's ribbon, which shares its card with the onsen, and harsher boxes: a column down the middle and a title
+  // over the sky.
+  const ribbon: Case = { name: 'a ribbon', W: 120, H: 70, frogs: 2, clear: [[(120 - 36) / 120, 0, (120 - 25) / 120, 1]] };
+  const cases: Case[] = [
+    ribbon,
+    { name: 'a column down the middle', W: 120, H: 70, frogs: 2, clear: [[0.35, 0, 0.65, 1]] },
+    { name: 'a column down a card', W: 128, H: 86, frogs: 2, clear: [[0.35, 0, 0.65, 1]] },
+    { name: 'a title over the sky', W: 120, H: 70, frogs: 2, clear: [[0.1, 0.05, 0.9, 0.55]] },
+  ];
+  const build = (c: Case, seed: string) => {
+    const got: { setting?: Setting } = {};
+    const scene = pond(c.W, c.H, { seed, k: 1.5, frogs: c.frogs, horizon: 0.42, clear: c.clear }, (ctx) => (got.setting = onsen(ctx)));
+    return { scene, setting: got.setting! };
+  };
+
+  it.each(cases)('keeps frogs + 2 rocks to sit on with $name', (c) => {
+    for (let i = 0; i < 40; i++) expect(build(c, `rocks-${i}`).setting.perches.length).toBeGreaterThanOrEqual(c.frogs + 2);
+  });
+
+  it.each(cases)('never lets a frog swim or soak outside the spring with $name', (c) => {
+    let dry = 0;
+    for (let i = 0; i < 6; i++) {
+      const { scene, setting } = build(c, `swim-${i}`);
+      const F = new Field(c.W, c.H);
+      for (let fr = 0; fr < 12 * 60; fr++) {
+        scene.render(fr / 12, F);
+        for (const f of scene.frogs()) if ((f.state === 'swim' || f.state === 'soak') && !setting.water?.(f.x, f.y)) dry++;
+      }
+    }
+    expect(dry).toBe(0);
+  });
+
+  it('still has its frogs soaking beside a ribbon', () => {
+    let soaking = 0;
+    for (let i = 0; i < 6; i++) {
+      const { scene } = build(ribbon, `ribbon-${i}`);
+      const F = new Field(ribbon.W, ribbon.H);
+      for (let fr = 0; fr < 12 * 60; fr++) {
+        scene.render(fr / 12, F);
+        soaking += scene.frogs().filter((f) => f.state === 'soak').length;
+      }
+    }
+    expect(soaking).toBeGreaterThan(0);
   });
 });
 

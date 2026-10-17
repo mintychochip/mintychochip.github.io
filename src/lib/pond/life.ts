@@ -100,14 +100,23 @@ export interface Setting<P extends Perch = Perch> {
 export type SettingMaker<P extends Perch = Perch> = (c: SceneContext) => Setting<P>;
 
 /**
- * Up to `want` perches from `next` (a new random one per call), apart from each other and, with a frog sitting on
- * them, out of the clear boxes. Sorted far to near.
+ * Where a frog swimming from column `fromX` climbs onto perch `P`: its edge on that side, a little below the middle.
+ * A setting with water checks this point to know a swim to the perch stays in the water.
  */
-export function scatter<P extends Perch>(c: SceneContext, want: number, next: () => P): P[] {
-  const out: P[] = [];
+export function approach(P: Perch, fromX: number): [number, number] {
+  return [P.x - Math.sign(P.x - fromX || 1) * P.rx * 0.9, P.y + P.ry * 0.6];
+}
+
+/**
+ * Perches from `next` (a new random one per call, or nothing to pass on that try) until there are `want`, apart from
+ * each other and, with a frog sitting on them, out of the clear boxes. `kept` are perches placed earlier: the new
+ * ones keep clear of them, they count towards `want` and they come back in the result. Sorted far to near.
+ */
+export function scatter<P extends Perch>(c: SceneContext, want: number, next: () => P | undefined, kept: readonly P[] = []): P[] {
+  const out = [...kept];
   for (let tries = 0; tries < 400 && out.length < want; tries++) {
     const P = next();
-    if (c.inClear(P.x - P.rx, P.y - P.ry - c.frogAt(P.p).h, P.x + P.rx, P.y + P.ry)) continue;
+    if (!P || c.inClear(P.x - P.rx, P.y - P.ry - c.frogAt(P.p).h, P.x + P.rx, P.y + P.ry)) continue;
     if (out.every((q) => Math.abs(q.x - P.x) > q.rx + P.rx + c.k || Math.abs(q.y - P.y) > (q.ry + P.ry) * 1.6)) out.push(P);
   }
   return out.sort((a, b) => a.y - b.y);
@@ -249,8 +258,6 @@ export function pond<P extends Perch>(W: number, H: number, o: SceneOpts, make: 
   const scale = (f: Frog, P: Perch) => k * P.p * SIZE * f.sz;
   const seat = (i: number, t: number): [number, number] => [perches[i].x, surface(i, t) - perches[i].ry * 0.15];
   const mouthAt = (x: number, y: number, s: number, dir: number) => frogMouth(sizeFor(s), 'sit', x, y, dir < 0);
-  /** Where a frog swimming from column `fromX` climbs onto perch `P`: its edge on that side. */
-  const approach = (P: Perch, fromX: number): [number, number] => [P.x - Math.sign(P.x - fromX || 1) * P.rx * 0.9, P.y + P.ry * 0.6];
 
   function frogXY(f: Frog, t: number): { x: number; y: number; s: number; ground: number } {
     if (f.swim) {
@@ -628,7 +635,7 @@ export function pond<P extends Perch>(W: number, H: number, o: SceneOpts, make: 
       const half = Math.max(2, Math.round(box.w * 0.35)), wy = Math.round(y);
       for (let j = -half; j <= half; j++) F.dot(x + j, wy, F.get(x + j, wy) > 0.3 ? 0.62 : 0.4);
     }
-    if (f.state === 'soak') drawTowel(F, size, x, dy);
+    if (f.state === 'soak') drawTowel(F, size, x, dy, mirror);
 
     if (f.state === 'snap' && f.tongue) {
       const tg = f.tongue;

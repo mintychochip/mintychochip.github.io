@@ -387,13 +387,20 @@ export function drawFrog(F: Field, size: number, frame: Frame, face: FrogFace, x
   }
 }
 
-/** A folded towel on the head of a frog drawn with its feet at (x, y), for a soak in a hot spring. */
-export function drawTowel(F: Field, size: number, x: number, y: number) {
+/**
+ * A folded towel on the head of a frog drawn with its feet at (x, y), for a soak in a hot spring. It sits towards the
+ * side away from the pink frog's bow, which perches by one eye. The blue stripe leads and a dark frame, seated on the
+ * head, keeps the cream from vanishing against snow.
+ */
+export function drawTowel(F: Field, size: number, x: number, y: number, mirror = false) {
   const S = SIZES[size].frames.sit;
   const [left, top] = place(S, x, y);
   const w = [4, 6, 8][size], h = size === 0 ? 1 : 2;
-  const x0 = left + Math.floor((S.w - w) / 2);
+  const x0 = left + Math.floor((S.w - w) / 2) + (mirror ? -1 : 1) * [3, 5, 7][size];
   for (let j = 0; j < h; j++) {
-    for (let i = 0; i < w; i++) F.paint(x0 + i, top - h + j, j === h - 1 && h > 1 ? INK.towelStripe : INK.towel);
+    for (let i = 0; i < w; i++) F.paint(x0 + i, top - h + j, j === 0 ? INK.towelStripe : INK.towel);
+    F.paint(x0 - 1, top - h + j, INK.line);
+    F.paint(x0 + w, top - h + j, INK.line);
   }
+  for (let i = -1; i <= w; i++) F.paint(x0 + i, top, INK.line);
 }
