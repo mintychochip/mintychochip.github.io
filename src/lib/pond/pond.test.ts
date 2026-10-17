@@ -3,7 +3,7 @@ import { bars, niceStep } from './bars';
 import { Field, levelsOf, packPalette, quantize, sceneTone } from './field';
 import { drawFrog, drawTowel, frogBox, sizeFor, type Frame, type FrogFace } from './frog';
 import { pond, type Perch, type Setting } from './life';
-import { SCENE_NAMES, assignScenes, makeScene, type SceneName } from './scenes';
+import { SCENES, SCENE_NAMES, assignScenes, makeScene, type SceneName } from './scenes';
 import { onsen } from './scenes/onsen';
 import { INK, INK_COLORS, LEVELS, PALETTES, PALETTE_NAMES, ramp } from './palette';
 
@@ -352,16 +352,19 @@ describe.each(SCENE_NAMES)('%s scene', (name) => {
       for (const f of scene.frogs()) if (f.state === 'sit') expect(f.x < 0.35 * W || f.x > 0.65 * W).toBe(true);
     }
   });
-});
 
-describe('meadow', () => {
-  it('keeps its frogs out of the water: there is none', () => {
-    const W = 160, H = 70, F = new Field(W, H);
-    const scene = makeScene('meadow', W, H, { seed: 'dry', k: 1.4, frogs: 2 });
-    for (let fr = 0; fr < 12 * 120; fr++) {
-      scene.render(fr / 12, F);
-      for (const f of scene.frogs()) expect(f.state).not.toBe('swim');
+  it('keeps every swim and soak in the water, and has none where there is none', () => {
+    let outside = 0;
+    for (const seed of ['wet-a', 'wet-b']) {
+      const W = 160, H = 70, F = new Field(W, H);
+      const got: { setting?: Setting } = {};
+      const scene = pond(W, H, { seed, k: 1.4, frogs: 2 }, (c): Setting => (got.setting = SCENES[name].make(c)));
+      for (let fr = 0; fr < 12 * 60; fr++) {
+        scene.render(fr / 12, F);
+        for (const f of scene.frogs()) if ((f.state === 'swim' || f.state === 'soak') && !got.setting?.water?.(f.x, f.y)) outside++;
+      }
     }
+    expect(outside).toBe(0);
   });
 });
 

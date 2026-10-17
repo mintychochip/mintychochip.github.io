@@ -5,6 +5,7 @@ import { lake } from './lake';
 import { beach } from './beach';
 import { meadow } from './meadow';
 import { onsen } from './onsen';
+import { waterfall } from './waterfall';
 
 interface SceneEntry {
   make: SettingMaker;
@@ -18,6 +19,7 @@ export const SCENES = {
   beach: { make: beach, palette: 'dusk' },
   meadow: { make: meadow, palette: 'day' },
   onsen: { make: onsen, palette: 'snow' },
+  waterfall: { make: waterfall, palette: 'moss' },
 } satisfies Record<string, SceneEntry>;
 
 export type SceneName = keyof typeof SCENES;
