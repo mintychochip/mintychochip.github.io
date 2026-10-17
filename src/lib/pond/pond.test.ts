@@ -4,6 +4,7 @@ import { Field, levelsOf, packPalette, quantize, sceneTone } from './field';
 import { drawFrog, drawTowel, frogBox, sizeFor, type Frame, type FrogFace } from './frog';
 import { pond, type Perch, type Setting } from './life';
 import { SCENES, SCENE_NAMES, assignScenes, makeScene, type SceneName } from './scenes';
+import { cave } from './scenes/cave';
 import { onsen } from './scenes/onsen';
 import { INK, INK_COLORS, LEVELS, PALETTES, PALETTE_NAMES, ramp } from './palette';
 
@@ -453,6 +454,17 @@ describe('onsen with boxes to keep clear', () => {
       }
     }
     expect(soaking).toBeGreaterThan(0);
+  });
+});
+
+describe('cave', () => {
+  it('lets its drips fall right across the cave, not just at one end', () => {
+    const W = 400, H = 110, F = new Field(W, H);
+    const rippleAt: number[] = [];
+    const scene = pond(W, H, { seed: 'drips', k: 2.6, frogs: 2 }, (c) => cave({ ...c, ripple: (x) => rippleAt.push(x) }));
+    for (let fr = 0; fr < 12 * 40; fr++) scene.render(fr / 12, F);
+    expect(rippleAt.length).toBeGreaterThan(4);
+    expect(Math.max(...rippleAt) - Math.min(...rippleAt)).toBeGreaterThan(W / 3);
   });
 });
 

@@ -20,7 +20,7 @@ export function cave(c: SceneContext): Setting<Shelf> {
   const ceil = Float32Array.from({ length: W }, (_, x) => (1.5 + Math.sin((x * 0.08) / k + ph) + 0.5 * Math.sin((x * 0.21) / k + ph * 2)) * k);
   const tips: { x: number; y: number }[] = [];
   for (let tx = r() * 3 * k; tx < W; tx += (3 + 4 * r()) * k) {
-    const len = Math.min(y0 * 0.55, (2 + ((y0 * 0.45) / k) * r() * r()) * k), hw = 0.6 + len * 0.15;
+    const len = Math.min(y0 * 0.55, (2 + ((y0 * 0.45) / k) * r() ** 1.4) * k), hw = 0.6 + len * 0.15;
     for (let x = Math.max(0, Math.floor(tx - hw)); x <= Math.min(W - 1, Math.ceil(tx + hw)); x++) {
       const dx = Math.abs(x + 0.5 - tx) / hw;
       if (dx <= 1) ceil[x] = Math.max(ceil[x], 1.5 * k + len * (1 - dx));
@@ -43,7 +43,7 @@ export function cave(c: SceneContext): Setting<Shelf> {
       if (y < ceil[x]) val = 0.03;
       else if (y < y0) {
         const grain = Math.sin((x * 0.21) / k + Math.sin((y * 0.17) / k) * 2) * Math.sin((y * 0.31) / k + x * 0.05);
-        val = y - ceil[x] < 0.8 ? 0.16 : 0.08 + 0.05 * grain + 0.06 * (y / y0);
+        val = y - ceil[x] < 0.8 ? 0.2 : 0.11 + 0.05 * grain + 0.07 * (y / y0);
       } else val = 0.05;
       for (const cr of crystals) val += 0.2 * Math.max(0, 1 - Math.hypot(x - cr.x, y - cr.y) / (cr.R * 3)) ** 2;
       B.v[y * W + x] = val;
@@ -64,9 +64,12 @@ export function cave(c: SceneContext): Setting<Shelf> {
     }
   }
 
-  /** Drops fall from the longest stalactites, gravity in art pixels a second squared. */
+  /** Drops fall from the longest stalactites, no two within a sixth of the width, gravity in art pixels a second squared. */
   const G = 60 * k;
-  const drips = tips.slice(0, 4).map((tp) => ({ ...tp, land: y0 + (1 + 4 * r()) * k, period: 2.5 + 2.5 * r(), off: r() * 5, last: 0 }));
+  const dripping = [...tips]
+    .sort((a, b) => b.y - a.y)
+    .reduce<typeof tips>((out, tp) => (out.length < 4 && out.every((o) => Math.abs(o.x - tp.x) > W / 6) ? [...out, tp] : out), []);
+  const drips = dripping.map((tp) => ({ ...tp, land: y0 + (1 + 4 * r()) * k, period: 2.5 + 2.5 * r(), off: r() * 5, last: 0 }));
   // Seats stand in the water below the horizon, so the spot a frog swimming up climbs onto (a little below a seat's middle)
   // is in the water too. Mushroom stalks and rock bodies reach down from a seat's top, and the tallest still ends 2 units
   // above the bottom of the frame.
@@ -76,11 +79,12 @@ export function cave(c: SceneContext): Setting<Shelf> {
     const mushroom = r() < 0.45;
     // Wide enough for a frog to sit on: the core seats a frog only where twice the half-width covers most of the frog.
     const rx = Math.max((4 + 3 * r()) * k * p, 0.45 * frogAt(p).w + 0.5 * k);
-    const h = (mushroom ? 3.5 + 2 * r() : 1 + r()) * k * p;
+    const h = (mushroom ? 3.5 + 2 * r() : 1.6 + 1.2 * r()) * k * p;
     const x = rx + r() * Math.max(1, W - 2 * rx);
     return { x, y, rx, ry: rx * (mushroom ? 0.3 : 0.4), p, floats: false, ph: r() * TAU, mushroom, h };
   });
   const rows = new Float32Array(H);
+  const wobble = new Float32Array(W);
 
   return {
     perches: shelves,
@@ -90,12 +94,15 @@ export function cave(c: SceneContext): Setting<Shelf> {
     back(F, t) {
       glitterRows(rows, y0, t);
       const { v } = F;
+      // The water's slow wobble is the same down a column; a crystal's reflection reaches about two radii either side.
+      for (let x = 0; x < W; x++) wobble[x] = Math.sin((x * 0.07) / k + t * 0.3) * 2;
       for (let y = y0; y < H; y++) {
         const depth = (y - y0) / Math.max(1, H - y0);
-        for (let x = 0; x < W; x++) {
-          let val = 0.04 + 0.04 * (1 - depth) + 0.02 * Math.sin((y * 1.1) / k + t * 1.2 + Math.sin((x * 0.07) / k + t * 0.3) * 2);
-          for (const cr of crystals) val += 0.8 * glitter(x, y, t, depth, cr.x, cr.R, rows[y]);
-          v[y * W + x] = val;
+        for (let x = 0; x < W; x++) v[y * W + x] = 0.04 + 0.04 * (1 - depth) + 0.02 * Math.sin((y * 1.1) / k + t * 1.2 + wobble[x]);
+        for (const cr of crystals) {
+          for (let x = Math.max(0, Math.floor(cr.x - 2.2 * cr.R)); x <= Math.min(W - 1, Math.ceil(cr.x + 2.2 * cr.R)); x++) {
+            v[y * W + x] += 0.8 * glitter(x, y, t, depth, cr.x, cr.R, rows[y]);
+          }
         }
       }
       // Crystals pulse; now and then one catches a spark.
@@ -114,16 +121,23 @@ export function cave(c: SceneContext): Setting<Shelf> {
       }
     },
     drawPerch(F, P, top, t) {
+      // A ring of ripples where the seat meets the water says it stands there.
+      F.ell(P.x, top + P.h, P.rx * 1.25, P.ry * 1.2, 0, (old, q) => (q > 0.55 ? old + 0.14 : old), true);
       if (P.mushroom) {
-        // A pale stalk down into the water, a glowing cap with a darker underside, and a few bright spots.
-        F.ell(P.x, top + P.h * 0.55, Math.max(1.2, P.rx * 0.2), P.h * 0.55, 0, (_o, _q, u) => 0.5 + 0.12 * u * light);
+        // A pale stalk standing in the water, flaring at its foot, under a glowing cap with a darker underside and bright spots.
+        const stalk = Math.max(1.5, P.rx * 0.28);
+        for (let y = Math.round(top + P.ry); y < top + P.h; y++) {
+          for (let x = Math.round(P.x - stalk); x <= Math.round(P.x + stalk); x++) F.dot(x, y, (x - P.x) * light > 0 ? 0.62 : 0.4);
+        }
+        F.ell(P.x, top + P.h, stalk * 2, P.ry * 0.7, 0, (_o, q) => 0.5 - 0.2 * q);
         const glow = 0.86 + 0.08 * Math.sin(t * 1.7 + P.ph);
         F.ell(P.x, top + P.ry * 0.3, P.rx * 1.9, P.ry * 2.6, 0, (old, q) => old + 0.14 * (1 - q), true);
         F.ell(P.x, top + P.ry * 0.3, P.rx * 1.05, P.ry * 1.5, 0, (_o, q, _u, w) => (w > 0.4 ? 0.55 : glow - 0.1 * q));
         for (let i = 0; i < 3; i++) F.dot(P.x + P.rx * 0.6 * Math.sin(P.ph * 3 + i * 2.1), top - P.ry * 0.1 + P.ry * 0.5 * Math.cos(P.ph + i * 1.7), 1);
       } else {
-        F.ell(P.x, top + P.h * 0.5, P.rx * 1.04, P.h * 0.6 + P.ry, 0, (_o, _q, u, w) => 0.12 + 0.1 * (0.5 + 0.5 * u * light) - 0.04 * w);
-        F.ell(P.x, top, P.rx, P.ry, 0, (_o, q, u) => 0.26 + 0.22 * (0.5 + 0.5 * u * light) - 0.12 * q);
+        // A chunky dark rock, flat on top, lit along the edge that faces the crystals.
+        F.ell(P.x, top + P.h * 0.5, P.rx * 1.04, P.h * 0.6 + P.ry, 0, (_o, _q, u, w) => 0.1 + 0.1 * (0.5 + 0.5 * u * light) - 0.04 * w);
+        F.ell(P.x, top, P.rx, P.ry, 0, (_o, q, u) => 0.2 + 0.06 * (1 - q) + 0.3 * Math.max(0, u * light) * q);
       }
     },
     front() {},
