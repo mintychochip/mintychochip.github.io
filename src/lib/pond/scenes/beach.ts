@@ -1,12 +1,10 @@
-import { Field, TAU, hash, mul } from '../field';
+import { Field, TAU, hash } from '../field';
 import { scatter, type Perch, type SceneContext, type Setting } from '../life';
 import { glitter, glitterRows, halo } from '../sky';
 
 interface Rock extends Perch {
   /** How far the rock reaches down below its top. */
   h: number;
-  /** Stands in the surf, ringed with foam. */
-  wet: boolean;
 }
 
 /**
@@ -14,7 +12,7 @@ interface Rock extends Perch {
  * washing up wet sand, rocks along the shore and gulls overhead.
  */
 export function beach(c: SceneContext): Setting<Rock> {
-  const { W, H, k, r, y0, depthAt } = c;
+  const { W, H, k, r, y0, depthAt, frogAt } = c;
   const sun = { x: W * (0.25 + 0.5 * r()), R: Math.max(3.5, Math.min(W, H) * 0.13) };
   const sunY = y0 - sun.R * 0.35;
   const light: 1 | -1 = sun.x >= W / 2 ? 1 : -1;
@@ -54,15 +52,30 @@ export function beach(c: SceneContext): Setting<Rock> {
     }
   }
 
+  // The swimmable sea stays below the lowest the visible waterline (swell plus wash) ever reaches, so it is a
+  // straight band: a frog swimming in a straight line from one wet point to another never crosses sand.
+  const swimTop = shore - 3.4 * k;
+  const water = (_x: number, y: number) => y > y0 + 1 && y < swimTop;
+
+  // Every perch stands in the surf with its climbing approach in the water, so a swimming frog never leaves the sea
+  // to reach one.
   const rocks = scatter(c, Math.max(c.frogs + 2, Math.round(W / (24 * k))), (): Rock => {
-    const wet = r() < 0.55;
     const x = 6 * k + r() * Math.max(1, W - 12 * k);
-    const y = wet ? shore + swell(x) - (2.5 + 2.5 * r()) * k : shore + 2 * k + r() * Math.max(1, H - shore - 4 * k);
-    const p = depthAt(y);
-    // Wide enough for a frog to sit on: the core seats a frog only where twice the half-width covers most of
-    // the frog, and narrower boulders left every seed tried with no fitting perch.
-    const rx = (6 + 4 * r()) * k * p;
-    return { x, y, rx, ry: rx * 0.36, p, floats: false, ph: r() * TAU, h: (1.6 + 1.4 * r()) * k * p, wet };
+    // Crowd toward the shore side of the swimmable band, each rock at its own depth, so the core never hands both
+    // frogs the same perch on a tied seat height.
+    const span = Math.max(0.5, swimTop - y0 - 1);
+    const u = r();
+    let y = swimTop - 0.5 - u * u * span;
+    let p = depthAt(y);
+    // Wide enough for a frog to sit on: the core seats a frog only where twice the half-width covers most of the
+    // frog, and the surf rocks run small where the water is shallow. The extra roll keeps every width — and so
+    // every seat height — distinct.
+    const rx = Math.max((6 + 4 * r()) * k * p, 0.45 * frogAt(p).w + (0.5 + 0.5 * r()) * k);
+    const ry = rx * 0.36;
+    // Sink until a frog swimming up climbs onto wet rock.
+    y = Math.min(y, swimTop - 0.3 - ry * 0.6);
+    p = depthAt(y);
+    return { x, y, rx, ry, p, floats: false, ph: r() * TAU, h: (1.6 + 1.4 * r()) * k * p };
   });
 
   const gulls = Array.from({ length: W > 90 ? 2 : 1 }, () => ({
@@ -74,7 +87,7 @@ export function beach(c: SceneContext): Setting<Rock> {
     perches: rocks,
     light,
     backdrop: B.v,
-    water: (x, y) => y > y0 + 1 && y < shore + swell(x) - 0.5 * k,
+    water,
     back(F, t) {
       glitterRows(rows, y0, t);
       const { v } = F;
@@ -99,12 +112,8 @@ export function beach(c: SceneContext): Setting<Rock> {
       }
     },
     drawPerch(F, P, top, t) {
-      if (P.wet) {
-        const f = 0.5 + 0.5 * Math.sin(t * 1.7 + P.ph);
-        F.ell(P.x, top + P.h, P.rx * (1.2 + 0.15 * f), P.ry * 1.1, 0, (old, q) => (q > 0.5 ? 0.9 : old), true);
-      } else {
-        F.ell(P.x - light * P.rx * 0.3, top + P.h + 0.3 * k, P.rx * 1.1, P.ry * 0.8, 0, mul(0.6));
-      }
+      const f = 0.5 + 0.5 * Math.sin(t * 1.7 + P.ph);
+      F.ell(P.x, top + P.h, P.rx * (1.2 + 0.15 * f), P.ry * 1.1, 0, (old, q) => (q > 0.5 ? 0.9 : old), true);
       F.ell(P.x, top + P.h * 0.5, P.rx * 1.04, P.h * 0.6 + P.ry, 0, (_o, _q, u, w) => 0.1 + 0.16 * (0.5 + 0.5 * u * light) - 0.04 * w);
       F.ell(P.x, top, P.rx, P.ry, 0, (_o, q, u) => 0.24 + 0.32 * (0.5 + 0.5 * u * light) * (1 - 0.4 * q));
     },
