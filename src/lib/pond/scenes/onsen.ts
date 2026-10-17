@@ -120,7 +120,9 @@ export function onsen(c: SceneContext): Setting<Rock> {
     B.dot(x, lamp.y - 7.2 * k, 0.92);
   }
   const pane = { x0: Math.round(lamp.x - 0.6 * k), x1: Math.round(lamp.x + 0.6 * k), y0: Math.round(lamp.y - 5.8 * k), y1: Math.round(lamp.y - 4.4 * k) };
-  const stars = scatterStars(c, y0, (x, y) => y < far[x] - 1 && r() < 0.05);
+  // Every twentieth candidate star that no peak hides: a few at any size, never none.
+  let seen = 0;
+  const stars = scatterStars(c, y0, (x, y) => y < far[x] - 1 && seen++ % 20 === 0);
   const wisps = Array.from({ length: clamp(Math.round(pool.rx / (3 * k)), 4, 12) }, () => ({
     x: pool.x + (r() * 2 - 1) * pool.rx * 0.7, ph: r(), drift: (r() * 2 - 1) * 3 * k,
   }));

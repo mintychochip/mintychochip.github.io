@@ -232,7 +232,7 @@ describe('frog', () => {
     }
   });
 
-  it('puts the towel on top of its head without covering the bow or the face, whichever way it faces', () => {
+  it('rests the towel above its head without covering the bow, whichever way it faces', () => {
     const bow = new Set<number>([INK.bow, INK.bowLight, INK.bowKnot, INK.bowFold]);
     for (const size of SIZES) for (const mirror of [false, true]) {
       const bare = new Field(48, 48), wrapped = new Field(48, 48);
