@@ -53,7 +53,7 @@ export function waterfall(c: SceneContext): Setting<Stone> {
   // The river is the band of water between its banks. Stones stand at least 3.5 units inside it, which keeps the spot
   // a frog swimming up climbs onto (a little below a stone's middle) in the water for the biggest stone, and none stands
   // in the fall's pool.
-  const top = y0 + 0.5 * k, bottom = riverEnd - 0.5 * k;
+  const waterTop = y0 + 0.5 * k, waterBottom = riverEnd - 0.5 * k;
   const stones = scatter(c, Math.max(c.frogs + 2, Math.round(W / (18 * k))), (): Stone | undefined => {
     const y = y0 + 3.5 * k + r() * Math.max(1, riverEnd - y0 - 7 * k);
     const p = depthAt(y);
@@ -61,15 +61,17 @@ export function waterfall(c: SceneContext): Setting<Stone> {
     const rx = Math.max((3.5 + 1.8 * r()) * k * p, 0.45 * frogAt(p).w + 0.5 * k);
     const x = rx + r() * Math.max(1, W - 2 * rx);
     if (Math.abs(x - fx) < fw * 1.8 + rx) return undefined;
-    return { x, y, rx, ry: rx * 0.42, p, floats: false, ph: r() * TAU, h: (1 + r()) * k * p };
+    return { x, y, rx, ry: rx * 0.42, p, floats: false, ph: r() * TAU, h: (2 + 1.4 * r()) * k * p };
   });
   const tufts = Array.from({ length: Math.ceil(W / (4 * k)) }, () => ({ x: r() * W, h: (1.2 + 2 * r()) * k, ph: r() * TAU }));
+  /** The river's slow sideways wander, the same every frame. */
+  const swirl = Float32Array.from({ length: W }, (_, x) => Math.sin(x * 0.05) * 2);
 
   return {
     perches: stones,
     light,
     backdrop: B.v,
-    water: (_x, y) => y > top && y < bottom,
+    water: (_x, y) => y > waterTop && y < waterBottom,
     back(F, t) {
       const { v } = F;
       // The fall: bright streaks pouring down between dark wet rock, brightest at the lip.
@@ -85,9 +87,11 @@ export function waterfall(c: SceneContext): Setting<Stone> {
       for (let y = y0; y < riverEnd; y++) {
         const depth = (y - y0) / Math.max(1, riverEnd - y0);
         for (let x = 0; x < W; x++) {
-          let val = 0.46 + 0.12 * depth + 0.1 * Math.sin((x * 0.25 * flow) / k - t * 3 + y * 1.7 + Math.sin(x * 0.05) * 2);
-          const d = Math.hypot((x + 0.5 - fx) / (fw * 1.8), (y - y0) / (2.5 * k));
-          if (d < 1) val += 0.4 * (1 - d) * (0.8 + 0.2 * Math.sin(t * 7 + x));
+          let val = 0.46 + 0.12 * depth + 0.1 * Math.sin((x * 0.25 * flow) / k - t * 3 + y * 1.7 + swirl[x]);
+          if (Math.abs(x + 0.5 - fx) < fw * 1.8) {
+            const d = Math.hypot((x + 0.5 - fx) / (fw * 1.8), (y - y0) / (2.5 * k));
+            if (d < 1) val += 0.4 * (1 - d) * (0.8 + 0.2 * Math.sin(t * 7 + x));
+          }
           v[y * W + x] = val;
         }
       }
@@ -97,7 +101,7 @@ export function waterfall(c: SceneContext): Setting<Stone> {
       // Foam piling up on the side the water comes from.
       F.ell(P.x - flow * P.rx * 0.5, top + P.h + 0.3 * k, P.rx * (0.9 + 0.2 * f), P.ry * 0.8, 0, (old, q) => (q > 0.45 ? 0.9 : old), true);
       F.ell(P.x, top + P.h * 0.5, P.rx * 1.04, P.h * 0.6 + P.ry, 0, (_o, _q, u, w) => 0.14 + 0.14 * (0.5 + 0.5 * u * light) - 0.04 * w);
-      F.ell(P.x, top, P.rx, P.ry, 0, (_o, q, u) => 0.34 + 0.2 * (0.5 + 0.5 * u * light) - 0.08 * q);
+      F.ell(P.x, top, P.rx, P.ry, 0, (_o, q, u) => 0.52 + 0.2 * (0.5 + 0.5 * u * light) - 0.1 * q);
     },
     front(F, t) {
       // Mist puffing up from the foot of the fall.
