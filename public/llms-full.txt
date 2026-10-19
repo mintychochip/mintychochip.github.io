@@ -61,6 +61,20 @@ Images on the post:
 
 ---
 
+# Bytemill (interactive article)
+
+https://mintychochip.dev/bytemill
+
+An interactive article about Bytemill, a schema language (BML) and compiler for binary wire formats that Protobuf cannot describe: variable-length integers, bit-packed fields, tagged unions, conditional layouts, and stateful packet routing.
+
+The page runs the real Bytemill Rust compiler in WebAssembly. It can check self-contained BML schemas, list packets and route tables, decode packet payloads and whole frames, and encode JSON values. The bridge is built from the bytemill repository and uses the same parser, analyzer, and interpreter as the bml command-line tool. No schema is uploaded and no server is involved.
+
+The article opens with a Three.js bitfield visual of four sample frames; drag to rotate, click a byte to pin it, step to another packet, or rescan. It covers the three schema layers (encoding, packet, protocol), VarInt encoding, a live schema editor, frame routing, an interactive compiler-stage inspector for the syntax, semantic, lowered IR, and typed IR phases, and a compatibility matrix of every typed printer with the standards it accepts.
+
+The playground accepts self-contained schemas only; file imports and code emission are CLI features. Source: https://github.com/mintychochip/bytemill
+
+---
+
 # Projects
 
 https://mintychochip.dev/#projects

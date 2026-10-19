@@ -30,6 +30,19 @@ describe('BlogSection component', () => {
     expect(extLink?.getAttribute('href')).toContain('blog.umans.ai');
   });
 
+  it('links to the interactive bytemill article', () => {
+    mount(BlogSection, {
+      target: document.body,
+    });
+
+    const card = document.querySelector('.bytemill-card');
+    expect(card).not.toBeNull();
+    expect(card?.querySelector('.title-link')?.textContent).toContain('Bytemill');
+
+    const open = card?.querySelector('a.bytemill-btn') as HTMLAnchorElement | null;
+    expect(open?.getAttribute('href')).toBe('/bytemill');
+  });
+
   it('opens and closes the modal when clicking read my side', async () => {
     mount(BlogSection, {
       target: document.body,

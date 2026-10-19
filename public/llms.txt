@@ -10,6 +10,7 @@ The canonical site is https://mintychochip.dev. It is a client-rendered single p
 - [GitHub activity](https://mintychochip.dev/#github): Contribution heatmap for github.com/mintychochip.
 - [Token usage](https://mintychochip.dev/#usage): Chart of coding-agent token use.
 - [Blog](https://mintychochip.dev/#blog): First-person cross-reference to Umans AI’s “The Token Gap”.
+- [Bytemill article](https://mintychochip.dev/bytemill): Interactive article on Bytemill, a schema language and compiler for binary wire formats, with the Rust compiler running in WebAssembly.
 - [Projects](https://mintychochip.dev/#projects): Public repositories loaded from GitHub.
 - [Resume and stack](https://mintychochip.dev/#resume): Languages and a PDF resume.
 - [Contact](https://mintychochip.dev/#contact): Email justincarllo@gmail.com and a note form that opens a mail draft.

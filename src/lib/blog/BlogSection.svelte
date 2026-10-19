@@ -74,6 +74,49 @@
         </div>
       </article>
     {/each}
+
+    <article class="featured-card px bytemill-card">
+      <div class="card-content">
+        <div class="card-text">
+          <p class="card-meta">
+            <span>Interactive article</span>
+            <span class="meta-sep">·</span>
+            <span>October 2026</span>
+            <span class="meta-sep">·</span>
+            <span>4 min read</span>
+          </p>
+          <h3>
+            <a class="title-link" href="/bytemill">
+              Bytemill: a schema language for the bytes Protobuf can’t say
+            </a>
+          </h3>
+          <p class="card-excerpt">
+            Edit BML schemas, decode packets, and encode VarInts with the real Rust compiler
+            running in WebAssembly — no server, no upload.
+          </p>
+          <div class="actions">
+            <a class="btn px bytemill-btn" href="/bytemill">Open the article</a>
+            <a
+              href="https://github.com/mintychochip/bytemill"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="external-link"
+            >
+              Compiler source ↗
+            </a>
+          </div>
+        </div>
+
+        <a class="card-visual bytemill-visual px" href="/bytemill" aria-label="Open the interactive Bytemill article">
+          <div class="wire-art" aria-hidden="true">
+            <span class="wire-line dim">packet player_chat</span>
+            <span class="wire-line">0f 68 65 6c 6c 6f 2c 20 62 79 74 65 6d 69 6c 6c</span>
+            <span class="wire-line dim">00 00 00 00 00 00 00 01</span>
+            <span class="wire-line accent">→ message, timestamp, sender</span>
+          </div>
+        </a>
+      </div>
+    </article>
   </div>
 </section>
 
@@ -227,6 +270,65 @@
   }
 
   .external-link:hover {
+    color: var(--accent);
+  }
+
+  .bytemill-card {
+    border-color: rgba(139, 191, 115, 0.35);
+  }
+
+  .title-link {
+    color: var(--fg);
+    text-decoration: none;
+    text-decoration-color: transparent;
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
+  }
+
+  .title-link:hover {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+  }
+
+  .bytemill-btn {
+    background: var(--accent);
+    color: #080c18;
+    font-size: 15px;
+    padding: 7px 14px;
+  }
+
+  .bytemill-btn:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+
+  .bytemill-visual {
+    display: flex;
+    align-items: center;
+    min-height: 168px;
+    padding: 16px 18px;
+    background: #080c18;
+    text-decoration: none;
+  }
+
+  .wire-art {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+    color: var(--fg);
+    font: 13px/1.4 var(--font-body);
+  }
+
+  .wire-line {
+    overflow-wrap: anywhere;
+  }
+
+  .wire-line.dim {
+    color: var(--dim);
+  }
+
+  .wire-line.accent {
     color: var(--accent);
   }
 

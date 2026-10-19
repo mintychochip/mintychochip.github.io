@@ -57,6 +57,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     rollupOptions: {
+      input: {
+        main: 'index.html',
+        bytemill: 'bytemill/index.html',
+      },
       output: {
         manualChunks(id) {
           return vaultChunk(id.replaceAll('\\', '/'));
