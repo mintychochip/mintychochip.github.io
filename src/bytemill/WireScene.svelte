@@ -33,6 +33,7 @@
   let pointer = { x: 0, y: 0 };
 
   let currentBytes: number[] = [];
+  let baseScale = 1;
   let active = 0;
   let waveCenter = 0;
   let scanProgress = 0;
@@ -91,30 +92,22 @@
   }
 
   interface Layout {
-    rows: number;
     perRow: number;
     spacing: number;
-    rowGap: number;
   }
 
   function layoutFor(count: number): Layout {
-    const rows = count > 17 ? 2 : 1;
-    const perRow = Math.ceil(Math.max(count, 1) / rows);
+    const perRow = Math.max(count, 1);
     return {
-      rows,
       perRow,
       spacing: Math.min(0.55, 10.4 / perRow),
-      rowGap: rows === 2 ? 1.85 : 0,
     };
   }
 
   function positionFor(index: number, layout: Layout): { x: number; y: number } {
-    const row = Math.min(layout.rows - 1, Math.max(0, Math.floor(index / layout.perRow)));
-    const slot = index % layout.perRow;
-    const displaySlot = row === 1 ? layout.perRow - 1 - slot : slot;
     return {
-      x: (displaySlot - (layout.perRow - 1) / 2) * layout.spacing,
-      y: layout.rows === 1 ? 0 : row === 0 ? layout.rowGap / 2 : -layout.rowGap / 2,
+      x: (index - (layout.perRow - 1) / 2) * layout.spacing,
+      y: 0,
     };
   }
 
@@ -191,9 +184,7 @@
     const layout = layoutFor(count);
     const cube = 0.15;
 
-    group.scale.setScalar(
-      layout.rows === 1 ? Math.min(1.55, Math.max(1, 17 / Math.max(count, 1))) : 1,
-    );
+    baseScale = Math.min(1.55, Math.max(1, 17 / Math.max(count, 1)));
     frameGroup = new T.Group();
     group.add(frameGroup);
 
@@ -211,10 +202,7 @@
     frameGroup.add(highlight);
 
     hitPlane = new T.Mesh(
-      new T.PlaneGeometry(
-        layout.spacing * layout.perRow + 1.2,
-        layout.rows === 2 ? layout.rowGap + 2.2 : 2.2,
-      ),
+      new T.PlaneGeometry(layout.spacing * layout.perRow + 1.2, 2.2),
       new T.MeshBasicMaterial({
         transparent: true,
         opacity: 0,
@@ -239,24 +227,12 @@
     paint();
     layoutBits(performance.now());
 
-    for (let row = 0; row < layout.rows; row += 1) {
-      const rail = new T.Mesh(
-        new T.BoxGeometry(layout.spacing * layout.perRow + 0.36, 0.012, 0.012),
-        new T.MeshBasicMaterial({ color: 0x2a3448 }),
-      );
-      rail.position.y =
-        (layout.rows === 1 ? 0 : row === 0 ? layout.rowGap / 2 : -layout.rowGap / 2) -
-        0.98;
-      frameGroup.add(rail);
-    }
-    if (layout.rows === 2) {
-      const connector = new T.Mesh(
-        new T.BoxGeometry(0.012, layout.rowGap, 0.012),
-        new T.MeshBasicMaterial({ color: 0x34445c }),
-      );
-      connector.position.set(((layout.perRow - 1) / 2) * layout.spacing, 0, -0.08);
-      frameGroup.add(connector);
-    }
+    const rail = new T.Mesh(
+      new T.BoxGeometry(layout.spacing * layout.perRow + 0.36, 0.012, 0.012),
+      new T.MeshBasicMaterial({ color: 0x2a3448 }),
+    );
+    rail.position.y = -0.98;
+    frameGroup.add(rail);
 
     beam = new T.Mesh(
       new T.BoxGeometry(0.02, 1.9, 0.02),
@@ -269,6 +245,7 @@
     beamLight.position.set(0, 0, 0.55);
     frameGroup.add(beamLight);
 
+    applyScale();
     refreshActive();
   }
 
@@ -318,6 +295,15 @@
     raf = 0;
   }
 
+  function applyScale() {
+    if (!T || !camera || !group || currentBytes.length === 0) return;
+    const layout = layoutFor(currentBytes.length);
+    const rowWidth = layout.spacing * currentBytes.length + 0.4;
+    const viewWidth =
+      2 * camera.position.z * Math.tan((camera.fov * Math.PI) / 360) * camera.aspect;
+    group.scale.setScalar(Math.min(baseScale, (viewWidth * 0.9) / rowWidth));
+  }
+
   function resize() {
     if (!renderer || !camera || !host) return;
     const width = host.clientWidth;
@@ -326,6 +312,7 @@
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
+    applyScale();
   }
 
   function pick(event: PointerEvent): number {
@@ -355,7 +342,7 @@
         best = index;
       }
     }
-    return Math.sqrt(bestDistance) <= (layout.rows === 2 ? 1.05 : 0.85) ? best : -1;
+    return Math.sqrt(bestDistance) <= 0.85 ? best : -1;
   }
 
   function onPointerDown(event: PointerEvent) {
@@ -421,6 +408,28 @@
     if (renderer) renderer.domElement.style.cursor = 'grab';
   }
 
+  function pinByte(index: number) {
+    active = index;
+    activeIndex = index;
+    pinnedIndex = index;
+    pinned = true;
+    scanProgress = index / Math.max(bytes.length, 1);
+    if (bits) refreshActive();
+    else waveCenter = index;
+  }
+
+  function hoverByte(index: number) {
+    if (!bits) return;
+    hoverIndex = index;
+    refreshActive();
+  }
+
+  function leaveByte() {
+    if (!bits) return;
+    hoverIndex = -1;
+    refreshActive();
+  }
+
   function nextSample() {
     sampleIndex = (sampleIndex + 1) % WIRE_SAMPLES.length;
     if (ready) buildFrame(sampleIndex);
@@ -464,7 +473,7 @@
 
         scene = new T.Scene();
         camera = new T.PerspectiveCamera(38, 1, 0.1, 100);
-        camera.position.set(0, 2.9, 6.2);
+        camera.position.set(0, 2.7, 5.8);
         camera.lookAt(0, 0, 0);
 
         scene.add(new T.AmbientLight(0xffffff, 0.65));
@@ -553,14 +562,43 @@
       sample frame · {bytes.length} bytes · play.clientbound · 0x{sample.id.toString(16).padStart(2, '0')} → {sample.packet}
     </span>
     <span class="readout" aria-label="Selected byte">
+      <span class="word">byte</span>
       <span class="offset">0x{activeIndex.toString(16).padStart(2, '0')}</span>
       <span class="hex">0x{activeByte.toString(16).padStart(2, '0')}</span>
+      <span class="word">bits</span>
       <span class="bits">{binary(activeByte)}</span>
       <span class="segment">{activeLabel}</span>
     </span>
   </div>
 
+  <div class="bytes">
+    <p class="explain">
+      <strong>One frame, byte by byte.</strong> The strip is the actual wire frame. Below, each column
+      is one byte and each cube is one bit; colors mark length, id, and payload.
+    </p>
+    <div class="byte-strip" role="group" aria-label="Frame bytes">
+      {#each bytes as byte, index}
+        <button
+          type="button"
+          class:length={index === 0}
+          class:id={index === 1}
+          class:payload={index > 1}
+          class:active={index === activeIndex}
+          aria-pressed={pinned && index === activeIndex}
+          aria-label={`Byte ${index}: 0x${byte.toString(16).padStart(2, '0')}, ${index === 0 ? 'length' : index === 1 ? 'id' : 'payload'}`}
+          title={`byte 0x${index.toString(16).padStart(2, '0')} = 0x${byte.toString(16).padStart(2, '0')}`}
+          onclick={() => pinByte(index)}
+          onmouseenter={() => hoverByte(index)}
+          onmouseleave={leaveByte}
+          onfocus={() => hoverByte(index)}
+          onblur={leaveByte}
+        >{byte.toString(16).padStart(2, '0')}</button>
+      {/each}
+    </div>
+  </div>
+
   <div class="stage">
+    <span class="view-label">bit view</span>
     <div class="glow" aria-hidden="true"></div>
     <div class="canvas" bind:this={host} role="img" aria-label="A three-dimensional bitfield of a sample packet frame. Drag to rotate; click a byte to inspect it.">
       {#if failed}
@@ -584,7 +622,7 @@
     </div>
   </div>
   <p class="hint">
-    drag to rotate · click a byte to pin it ·
+    drag to rotate · click a byte above or below to pin it ·
     <a href="https://threejs.org/" target="_blank" rel="noopener noreferrer">three.js</a>
   </p>
 </div>
@@ -622,6 +660,13 @@
     color: var(--fg);
   }
 
+  .word {
+    color: var(--dim);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
   .offset {
     color: var(--dim);
   }
@@ -639,8 +684,86 @@
     color: var(--love);
   }
 
+  .bytes {
+    padding: 10px 12px 9px;
+    border-bottom: 1px solid rgba(104, 113, 132, 0.25);
+    background: #080c18;
+  }
+
+  .explain {
+    margin: 0 0 8px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .explain strong {
+    color: var(--fg);
+    font-weight: 700;
+  }
+
+  .byte-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+
+  .byte-strip button {
+    padding: 2px 3px;
+    border: 1px solid transparent;
+    background: #151c2b;
+    color: var(--muted);
+    font: 10px var(--font-body);
+    line-height: 1.2;
+  }
+
+  @media (max-width: 640px) {
+    .byte-strip button {
+      padding: 4px 5px;
+      font-size: 11px;
+    }
+  }
+
+  .byte-strip button.length {
+    color: var(--accent);
+    border-color: rgba(139, 191, 115, 0.3);
+  }
+
+  .byte-strip button.id {
+    color: var(--love);
+    border-color: rgba(244, 140, 184, 0.3);
+  }
+
+  .byte-strip button.payload {
+    color: #ded9c2;
+  }
+
+  .byte-strip button:hover,
+  .byte-strip button:focus-visible {
+    border-color: var(--accent);
+    color: var(--fg);
+  }
+
+  .byte-strip button.active {
+    border-color: var(--fg);
+    background: var(--fg);
+    color: var(--bg);
+  }
+
   .stage {
     position: relative;
+  }
+
+  .view-label {
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    z-index: 2;
+    color: var(--dim);
+    font: 10px var(--font);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    pointer-events: none;
   }
 
   .glow {
@@ -654,7 +777,7 @@
 
   .canvas {
     position: relative;
-    height: 320px;
+    height: 280px;
     width: 100%;
   }
 
