@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Rebuild the bytemill WebAssembly bridge used by /bytemill.
+# Rebuild the bytemill WebAssembly bridge used by /blog/bytemill.
 #
-# The site deploys the committed artifact in public/bytemill/bytemill.wasm.
+# The site deploys the committed artifact in public/blog/bytemill/bytemill.wasm.
 # Run this after changing crates/bytemill-wasm (or any interpreter code it
 # reaches), then commit the updated binary.
 set -euo pipefail
@@ -24,6 +24,6 @@ cargo build \
   --target "$TARGET" \
   --locked
 
-install -d "$ROOT/public/bytemill"
-cp "$BYTEMILL_DIR/target/$TARGET/$PROFILE/bytemill_wasm.wasm" "$ROOT/public/bytemill/bytemill.wasm"
-echo "wrote public/bytemill/bytemill.wasm"
+install -d "$ROOT/public/blog/bytemill"
+cp "$BYTEMILL_DIR/target/$TARGET/$PROFILE/bytemill_wasm.wasm" "$ROOT/public/blog/bytemill/bytemill.wasm"
+echo "wrote public/blog/bytemill/bytemill.wasm"

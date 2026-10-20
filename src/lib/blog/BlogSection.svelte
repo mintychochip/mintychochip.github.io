@@ -86,7 +86,7 @@
             <span>4 min read</span>
           </p>
           <h3>
-            <a class="title-link" href="/bytemill">
+            <a class="title-link" href="/blog/bytemill">
               Bytemill: a schema language for the bytes Protobuf can’t say
             </a>
           </h3>
@@ -95,7 +95,7 @@
             running in WebAssembly — no server, no upload.
           </p>
           <div class="actions">
-            <a class="btn px bytemill-btn" href="/bytemill">Open the article</a>
+            <a class="btn px bytemill-btn" href="/blog/bytemill">Open the article</a>
             <a
               href="https://github.com/mintychochip/bytemill"
               target="_blank"
@@ -107,7 +107,7 @@
           </div>
         </div>
 
-        <a class="card-visual bytemill-visual px" href="/bytemill" aria-label="Open the interactive Bytemill article">
+        <a class="card-visual bytemill-visual px" href="/blog/bytemill" aria-label="Open the interactive Bytemill article">
           <div class="wire-art" aria-hidden="true">
             <span class="wire-line dim">packet player_chat</span>
             <span class="wire-line">0f 68 65 6c 6c 6f 2c 20 62 79 74 65 6d 69 6c 6c</span>

@@ -63,7 +63,7 @@ Images on the post:
 
 # Bytemill (interactive article)
 
-https://mintychochip.dev/bytemill
+https://mintychochip.dev/blog/bytemill/
 
 An interactive article about Bytemill, a schema language (BML) and compiler for binary wire formats that Protobuf cannot describe: variable-length integers, bit-packed fields, tagged unions, conditional layouts, and stateful packet routing.
 

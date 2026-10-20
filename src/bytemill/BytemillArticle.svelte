@@ -66,14 +66,14 @@ protocol demo @ v1 {
     name="description"
     content="Interactive article: Bytemill, a schema language and compiler for binary wire formats. Edit BML schemas, decode packets, and encode VarInts with the real Rust compiler in WebAssembly."
   />
-  <link rel="canonical" href="https://mintychochip.dev/bytemill" />
+  <link rel="canonical" href="https://mintychochip.dev/blog/bytemill/" />
   <meta property="og:title" content="Bytemill — a schema language for binary wire formats" />
   <meta
     property="og:description"
     content="Interactive article: BML schemas, packet decoding, and code generation, with the real Bytemill Rust compiler running in this tab."
   />
   <meta property="og:type" content="article" />
-  <meta property="og:url" content="https://mintychochip.dev/bytemill" />
+  <meta property="og:url" content="https://mintychochip.dev/blog/bytemill/" />
 </svelte:head>
 
 <div class="page">

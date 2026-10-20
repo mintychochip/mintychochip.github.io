@@ -274,7 +274,7 @@ let pending: Promise<Bytemill> | undefined;
 /** Load the bridge once per page and share it across every widget. */
 export function getBytemill(): Promise<Bytemill> {
   pending ??= (async () => {
-    const response = await fetch('/bytemill/bytemill.wasm');
+    const response = await fetch('/blog/bytemill/bytemill.wasm');
     if (!response.ok) {
       throw new Error(`could not load the bytemill WebAssembly build (${response.status})`);
     }

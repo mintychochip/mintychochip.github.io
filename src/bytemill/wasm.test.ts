@@ -13,7 +13,7 @@ const FRAME =
 let engine: Bytemill;
 
 beforeAll(async () => {
-  const wasm = readFileSync(join(process.cwd(), 'public/bytemill/bytemill.wasm'));
+  const wasm = readFileSync(join(process.cwd(), 'public/blog/bytemill/bytemill.wasm'));
   engine = await instantiateBytemill(wasm);
 });
 

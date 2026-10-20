@@ -40,7 +40,7 @@ describe('BlogSection component', () => {
     expect(card?.querySelector('.title-link')?.textContent).toContain('Bytemill');
 
     const open = card?.querySelector('a.bytemill-btn') as HTMLAnchorElement | null;
-    expect(open?.getAttribute('href')).toBe('/bytemill');
+    expect(open?.getAttribute('href')).toBe('/blog/bytemill');
   });
 
   it('opens and closes the modal when clicking read my side', async () => {

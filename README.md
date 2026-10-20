@@ -2,7 +2,7 @@
 
 My site is [mintychochip.dev](https://mintychochip.dev). I publish as [mintychochip](https://github.com/mintychochip).
 
-It's a Svelte 5 page. I have a night pond, my GitHub activity, token usage, a blog post, projects, my resume, contact, and a Wordle. There is also an interactive article at [mintychochip.dev/bytemill](https://mintychochip.dev/bytemill): it runs the real Bytemill Rust compiler in WebAssembly so you can check schemas and decode/encode packets in the page.
+It's a Svelte 5 page. I have a night pond, my GitHub activity, token usage, a blog post, projects, my resume, contact, and a Wordle. There is also an interactive article at [mintychochip.dev/blog/bytemill](https://mintychochip.dev/blog/bytemill/): it runs the real Bytemill Rust compiler in WebAssembly so you can check schemas and decode/encode packets in the page.
 
 ## Deploy
 
@@ -10,8 +10,8 @@ When I push to `master`, [the Pages workflow](.github/workflows/deploy.yml) inst
 
 ## Bytemill article
 
-`/bytemill` is a second Vite entry (`bytemill/index.html`). Its engine is the
-committed `public/bytemill/bytemill.wasm` built from `crates/bytemill-wasm` in
+`/blog/bytemill` is a second Vite entry (`blog/bytemill/index.html`). Its engine is the
+committed `public/blog/bytemill/bytemill.wasm` built from `crates/bytemill-wasm` in
 [bytemill](https://github.com/mintychochip/bytemill). Three.js is loaded
 dynamically for the sample-frame bitfield, so the main site bundle does not
 carry it. To rebuild it after a

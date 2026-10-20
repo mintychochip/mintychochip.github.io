@@ -59,7 +59,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: 'index.html',
-        bytemill: 'bytemill/index.html',
+        bytemill: 'blog/bytemill/index.html',
       },
       output: {
         manualChunks(id) {
