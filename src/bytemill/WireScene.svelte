@@ -39,12 +39,6 @@
   let scanProgress = 0;
   let pinnedIndex = -1;
   let hoverIndex = -1;
-  let targetYaw = 0;
-  let targetPitch = 0;
-  let dragging = false;
-  let moved = 0;
-  let pointerStart = { x: 0, y: 0 };
-  let pointerLast = { x: 0, y: 0 };
   let raf = 0;
   let lastTime = 0;
   let visible = true;
@@ -271,8 +265,6 @@
       refreshActive();
     }
 
-    group.rotation.y += (targetYaw - group.rotation.y) * 0.055;
-    group.rotation.x += (targetPitch - group.rotation.x) * 0.055;
     if (!reduceMotion) waveCenter += (active - waveCenter) * 0.09;
     layoutBits(now);
     const layout = layoutFor(currentBytes.length);
@@ -345,54 +337,18 @@
     return Math.sqrt(bestDistance) <= 0.85 ? best : -1;
   }
 
-  function onPointerDown(event: PointerEvent) {
-    dragging = true;
-    moved = 0;
-    pointerStart = { x: event.clientX, y: event.clientY };
-    pointerLast = { x: event.clientX, y: event.clientY };
-    renderer?.domElement.setPointerCapture(event.pointerId);
-    if (renderer) renderer.domElement.style.cursor = 'grabbing';
-  }
-
   function onPointerMove(event: PointerEvent) {
-    if (dragging) {
-      const dx = event.clientX - pointerLast.x;
-      const dy = event.clientY - pointerLast.y;
-      moved += Math.abs(dx) + Math.abs(dy);
-      pointerLast = { x: event.clientX, y: event.clientY };
-      targetYaw = Math.max(-0.62, Math.min(0.62, targetYaw + dx * 0.005));
-      targetPitch = Math.max(-0.28, Math.min(0.28, targetPitch + dy * 0.0035));
-      return;
-    }
     const next = pick(event);
     if (next !== hoverIndex) {
       hoverIndex = next;
       refreshActive();
     }
     if (renderer) {
-      renderer.domElement.style.cursor = next >= 0 ? 'pointer' : 'grab';
+      renderer.domElement.style.cursor = next >= 0 ? 'pointer' : 'default';
     }
-  }
-
-  function onPointerUp(event: PointerEvent) {
-    if (renderer?.domElement.hasPointerCapture(event.pointerId)) {
-      renderer.domElement.releasePointerCapture(event.pointerId);
-    }
-    const distance = Math.abs(event.clientX - pointerStart.x) + Math.abs(event.clientY - pointerStart.y);
-    if (distance < 6) {
-      const next = hoverIndex >= 0 ? hoverIndex : pick(event);
-      if (next >= 0) {
-        pinnedIndex = next;
-        pinned = true;
-        refreshActive();
-      }
-    }
-    dragging = false;
-    if (renderer) renderer.domElement.style.cursor = hoverIndex >= 0 ? 'pointer' : 'grab';
   }
 
   function onClick(event: MouseEvent) {
-    if (moved >= 6) return;
     const next = hoverIndex >= 0 ? hoverIndex : pick(event as unknown as PointerEvent);
     if (next >= 0) {
       pinnedIndex = next;
@@ -402,10 +358,9 @@
   }
 
   function onPointerLeave() {
-    if (dragging) return;
     hoverIndex = -1;
     refreshActive();
-    if (renderer) renderer.domElement.style.cursor = 'grab';
+    if (renderer) renderer.domElement.style.cursor = 'default';
   }
 
   function pinByte(index: number) {
@@ -441,14 +396,6 @@
     hoverIndex = -1;
     scanProgress = 0;
     refreshActive();
-  }
-
-  function resetView() {
-    targetYaw = 0;
-    targetPitch = 0;
-    if (group) {
-      group.rotation.set(0, 0, 0);
-    }
   }
 
   function onVisibility() {
@@ -515,11 +462,8 @@
 
         canvasEl = renderer.domElement;
         canvasEl.style.touchAction = 'pan-y';
-        canvasEl.style.cursor = 'grab';
-        canvasEl.addEventListener('pointerdown', onPointerDown);
+        canvasEl.style.cursor = 'default';
         canvasEl.addEventListener('pointermove', onPointerMove);
-        canvasEl.addEventListener('pointerup', onPointerUp);
-        canvasEl.addEventListener('pointercancel', onPointerUp);
         canvasEl.addEventListener('pointerleave', onPointerLeave);
         canvasEl.addEventListener('click', onClick);
       } catch {
@@ -534,10 +478,7 @@
       intersectionObserver?.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
       if (canvasEl) {
-        canvasEl.removeEventListener('pointerdown', onPointerDown);
         canvasEl.removeEventListener('pointermove', onPointerMove);
-        canvasEl.removeEventListener('pointerup', onPointerUp);
-        canvasEl.removeEventListener('pointercancel', onPointerUp);
         canvasEl.removeEventListener('pointerleave', onPointerLeave);
         canvasEl.removeEventListener('click', onClick);
         canvasEl.remove();
@@ -618,11 +559,10 @@
     <div class="controls">
       <button type="button" class="px" onclick={nextSample}>next packet</button>
       <button type="button" class="px" onclick={scan}>scan</button>
-      <button type="button" class="px" onclick={resetView}>reset view</button>
     </div>
   </div>
   <p class="hint">
-    drag to rotate · click a byte above or below to pin it ·
+    click a byte above or below to pin it ·
     <a href="https://threejs.org/" target="_blank" rel="noopener noreferrer">three.js</a>
   </p>
 </div>
