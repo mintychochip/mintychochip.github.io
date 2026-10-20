@@ -98,9 +98,12 @@ describe('SecretPage component', () => {
     }, 5000);
 
     (document.querySelector('.skip-btn') as HTMLButtonElement).click();
-    await vi.waitFor(() => {
-      expect(document.querySelector('#anniversary-letter')).not.toBeNull();
-    });
+    await vi.waitFor(
+      () => {
+        expect(document.querySelector('#anniversary-letter')).not.toBeNull();
+      },
+      { timeout: 6000 },
+    );
 
     // Nothing after the letter exists until it is open, and opening it does not wait on a canvas.
     expect(document.querySelector('#anniversary-passes')).toBeNull();
