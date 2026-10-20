@@ -221,13 +221,6 @@
     paint();
     layoutBits(performance.now());
 
-    const rail = new T.Mesh(
-      new T.BoxGeometry(layout.spacing * layout.perRow + 0.36, 0.012, 0.012),
-      new T.MeshBasicMaterial({ color: 0x2a3448 }),
-    );
-    rail.position.y = -0.98;
-    frameGroup.add(rail);
-
     beam = new T.Mesh(
       new T.BoxGeometry(0.02, 1.9, 0.02),
       new T.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.86 }),
@@ -435,13 +428,6 @@
         group.position.y = -0.15;
         scene.add(group);
 
-        const grid = new T.GridHelper(14, 28, 0x2a3448, 0x151c2b);
-        grid.position.y = -1.2;
-        const gridMaterial = grid.material as Three.Material;
-        gridMaterial.transparent = true;
-        gridMaterial.opacity = 0.4;
-        scene.add(grid);
-
         buildFrame(sampleIndex);
         ready = true;
         resize();
@@ -570,21 +556,17 @@
 <style>
   .wire {
     position: relative;
-    margin: 6px 0 28px;
-    background: #080c18;
-    border: 1px solid rgba(104, 113, 132, 0.35);
-    overflow: hidden;
+    margin: 16px 0 30px;
+    padding: 0 3px;
+    background: transparent;
   }
 
   .bar {
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 4px 14px;
-    padding: 8px 12px;
-    border-bottom: 1px solid rgba(104, 113, 132, 0.25);
-    background: #0d1320;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 0 0 7px;
     color: var(--muted);
     font: 12px var(--font-body);
   }
@@ -596,7 +578,7 @@
   .readout {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 7px;
     color: var(--fg);
   }
 
@@ -625,9 +607,8 @@
   }
 
   .bytes {
-    padding: 10px 12px 9px;
-    border-bottom: 1px solid rgba(104, 113, 132, 0.25);
-    background: #080c18;
+    padding: 7px 0 0;
+    background: transparent;
   }
 
   .explain {
@@ -651,7 +632,7 @@
   .byte-strip button {
     padding: 2px 3px;
     border: 1px solid transparent;
-    background: #151c2b;
+    background: rgba(21, 28, 43, 0.72);
     color: var(--muted);
     font: 10px var(--font-body);
     line-height: 1.2;
@@ -692,12 +673,13 @@
 
   .stage {
     position: relative;
+    margin-top: 4px;
   }
 
   .view-label {
     position: absolute;
     top: 8px;
-    left: 12px;
+    left: 0;
     z-index: 2;
     color: var(--dim);
     font: 10px var(--font);
@@ -711,14 +693,15 @@
     inset: 0;
     pointer-events: none;
     background:
-      radial-gradient(ellipse at 38% 56%, rgba(139, 191, 115, 0.13), transparent 46%),
-      radial-gradient(ellipse at 68% 48%, rgba(244, 140, 184, 0.09), transparent 44%);
+      radial-gradient(ellipse at 45% 60%, rgba(139, 191, 115, 0.1), transparent 55%),
+      radial-gradient(ellipse at 62% 52%, rgba(244, 140, 184, 0.07), transparent 48%);
   }
 
   .canvas {
     position: relative;
-    height: 280px;
+    height: 250px;
     width: 100%;
+    filter: drop-shadow(0 22px 26px rgba(0, 0, 0, 0.45));
   }
 
   .canvas :global(canvas) {
@@ -753,8 +736,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px 14px;
-    padding: 8px 12px;
-    border-top: 1px solid rgba(104, 113, 132, 0.25);
+    padding: 4px 2px 4px 0;
   }
 
   .legend {
@@ -810,7 +792,7 @@
 
   .hint {
     margin: 0;
-    padding: 0 12px 8px;
+    padding: 0;
     color: var(--dim);
     font-size: 11px;
   }
@@ -826,7 +808,7 @@
 
   @media (max-width: 640px) {
     .canvas {
-      height: 240px;
+      height: 210px;
     }
 
     .foot {
