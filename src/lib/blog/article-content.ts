@@ -1,11 +1,12 @@
-/** Draft cross-reference article — edit copy here; modal renders from this file. */
+/** Cross-reference article copy; /blog/the-token-gap/ renders from this file. */
 
 export type ArticleBlock =
   | { type: 'p'; html: string }
   | { type: 'h2'; text: string }
   | { type: 'quote'; text: string }
   | { type: 'ul'; items: { lead: string; rest: string }[] }
-  | { type: 'figure'; which: 'discord' | 'telemetry' | 'devday' };
+  | { type: 'figure'; which: 'discord' | 'telemetry' | 'devday' }
+  | { type: 'usage' };
 
 export const TOKEN_GAP_ARTICLE: ArticleBlock[] = [
   {
@@ -17,7 +18,7 @@ export const TOKEN_GAP_ARTICLE: ArticleBlock[] = [
   {
     type: 'p',
     html:
-      'A friend sent me the Umans article. I skimmed the DevDay wall bit, nodded, kept scrolling — then hit the line about <em>one user</em> and nearly eleven billion tokens in twenty-four hours.',
+      'A friend sent me the Umans article. I skimmed the DevDay wall bit, nodded, kept scrolling, then hit the line about <em>one user</em> and nearly eleven billion tokens in twenty-four hours.',
   },
   {
     type: 'p',
@@ -27,7 +28,7 @@ export const TOKEN_GAP_ARTICLE: ArticleBlock[] = [
   {
     type: 'p',
     html:
-      'So yeah: if you read that essay and wondered who burns that much in a day — <strong>hi. It was me.</strong>',
+      'So yeah: if you read that essay and wondered who burns that much in a day: <strong>hi. It was me.</strong>',
   },
   {
     type: 'quote',
@@ -50,13 +51,13 @@ export const TOKEN_GAP_ARTICLE: ArticleBlock[] = [
   {
     type: 'p',
     html:
-      'Sunday kept going. Pipelines didn’t wind down — refactors, tests, more agent loops. By the time the day rolled over I was at <strong>10,950.8M input tokens</strong> and <strong>53,248</strong> API calls. I typed “BUST” because what else do you type.',
+      'Sunday kept going. Pipelines didn’t wind down: refactors, tests, more agent loops. By the time the day rolled over I was at <strong>10,950.8M input tokens</strong> and <strong>53,248</strong> API calls. I typed “BUST” because what else do you type.',
   },
   { type: 'h2', text: 'What Umans published' },
   {
     type: 'p',
     html:
-      'Weeks later their team published <em>The Token Gap</em> — demand growing faster than compute can follow — and used my curve as the “this is real usage now” example:',
+      'Weeks later their team published <em>The Token Gap</em>, on demand growing faster than compute can follow, and used my curve as the “this is real usage now” example:',
   },
   { type: 'figure', which: 'telemetry' },
   {
@@ -68,7 +69,7 @@ export const TOKEN_GAP_ARTICLE: ArticleBlock[] = [
   {
     type: 'p',
     html:
-      'Nobody hand-types eleven billion tokens. This wasn’t a chat thread. It was <strong>closed-loop agentic coding</strong> — tools, terminals, tests, repeat.',
+      'Nobody hand-types eleven billion tokens. This wasn’t a chat thread. It was <strong>closed-loop agentic coding</strong>: tools, terminals, tests, repeat.',
   },
   {
     type: 'ul',
@@ -76,12 +77,12 @@ export const TOKEN_GAP_ARTICLE: ArticleBlock[] = [
       {
         lead: 'Huge static context every turn.',
         rest:
-          'Whole-repo context, diagnostics, search hits — hundreds of thousands of tokens per step to change a handful of lines.',
+          'Whole-repo context, diagnostics, search hits: hundreds of thousands of tokens per step to change a handful of lines.',
       },
       {
         lead: 'Agents that keep going.',
         rest:
-          'Run tests, read failures, patch, run again — dozens of iterations per task without me approving each step.',
+          'Run tests, read failures, patch, run again: dozens of iterations per task without me approving each step.',
       },
       {
         lead: 'Parallelism.',
@@ -92,8 +93,9 @@ export const TOKEN_GAP_ARTICLE: ArticleBlock[] = [
   {
     type: 'p',
     html:
-      'I track this kind of usage in my own tooling (see <a href="#projects">projects</a> on this site). The Umans chart is the vendor view; my <a href="#usage">token usage section</a> is the ongoing live version.',
+      'I track this kind of usage in my own tooling (see <a href="/#projects">projects</a> on this site). The Umans chart is the vendor view; my <a href="/#usage">token usage section</a> is the ongoing live version, embedded here:',
   },
+  { type: 'usage' },
   { type: 'h2', text: 'Why the 99% cache line matters' },
   {
     type: 'p',
@@ -103,7 +105,7 @@ export const TOKEN_GAP_ARTICLE: ArticleBlock[] = [
   {
     type: 'p',
     html:
-      'Agent loops re-send almost the same prefix every turn — system prompt, tools, repo snapshot — with tiny diffs. Without prefix / KV caching, the same day is either unaffordable or physically impossible on shared inference.',
+      'Agent loops re-send almost the same prefix every turn (system prompt, tools, repo snapshot) with tiny diffs. Without prefix / KV caching, the same day is either unaffordable or physically impossible on shared inference.',
   },
   {
     type: 'p',
@@ -114,7 +116,7 @@ export const TOKEN_GAP_ARTICLE: ArticleBlock[] = [
   {
     type: 'p',
     html:
-      'Their thesis: token appetite is outrunning how fast we can add compute. My weekend was a datapoint, not a flex — one engineer compressing a “lifetime on the DevDay wall” milestone into a single day changes how you think about capacity planning.',
+      'Their thesis: token appetite is outrunning how fast we can add compute. My weekend was a datapoint, not a flex. One engineer compressing a “lifetime on the DevDay wall” milestone into a single day changes how you think about capacity planning.',
   },
   {
     type: 'p',
@@ -123,6 +125,11 @@ export const TOKEN_GAP_ARTICLE: ArticleBlock[] = [
   },
   {
     type: 'p',
-    html: 'Questions or “how did you actually wire the agents?” — <a href="#contact">contact</a> works.',
+    html: 'Questions or “how did you actually wire the agents?” <a href="/#contact">contact</a> works.',
   },
 ];
+
+/** The article blocks for a post slug; empty when the post has no local copy. */
+export function articleBlocks(slug: string): ArticleBlock[] {
+  return slug === 'the-token-gap-10b-day' ? TOKEN_GAP_ARTICLE : [];
+}

@@ -23,6 +23,7 @@ describe('Blog Posts & Features', () => {
     expect(post?.externalUrl).toBe('https://blog.umans.ai/blog/the-token-gap/');
     expect(post?.externalSource).toBe('Umans AI Blog');
     expect(post?.author).toBe('mintychochip');
+    expect(post?.pageUrl).toBe('/blog/the-token-gap/');
   });
 
   it('includes key metrics about the 10B milestone and 99% cache rate', () => {

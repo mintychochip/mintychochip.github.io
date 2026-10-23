@@ -1,39 +1,21 @@
 <script lang="ts">
   import type { BlogPost } from './posts';
-  import { TOKEN_GAP_ARTICLE, type ArticleBlock } from './article-content';
+  import { articleBlocks } from './article-content';
+  import { articleHeadings } from './sections';
+  import UsagePanel from '../usage/UsagePanel.svelte';
 
-  let {
-    post,
-    onNavigate,
-  }: {
-    post: BlogPost;
-    onNavigate?: () => void;
-  } = $props();
+  let { post }: { post: BlogPost } = $props();
 
-  const blocks = $derived(
-    post.slug === 'the-token-gap-10b-day' ? TOKEN_GAP_ARTICLE : [],
+  const blocks = $derived(articleBlocks(post.slug));
+  const headingIds = $derived(
+    new Map(articleHeadings(blocks).map((heading) => [heading.index, heading.id])),
   );
-
-  function handleAnchorClick(e: MouseEvent) {
-    const target = e.target as HTMLElement | null;
-    const anchor = target?.closest('a');
-    if (!anchor) return;
-    const href = anchor.getAttribute('href');
-    if (href?.startsWith('#')) {
-      e.preventDefault();
-      onNavigate?.();
-      window.location.hash = href.slice(1);
-      document.getElementById(href.slice(1))?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<div class="prose" onclick={handleAnchorClick}>
+<div class="prose">
   {#each blocks as block, i (i)}
     {#if block.type === 'h2'}
-      <h2>{block.text}</h2>
+      <h2 id={headingIds.get(i)}>{block.text}</h2>
     {:else if block.type === 'p'}
       <p>{@html block.html}</p>
     {:else if block.type === 'quote'}
@@ -46,6 +28,10 @@
           <li><strong>{item.lead}</strong> {item.rest}</li>
         {/each}
       </ul>
+    {:else if block.type === 'usage'}
+      <div class="usage-embed">
+        <UsagePanel />
+      </div>
     {:else if block.type === 'figure'}
       {#if block.which === 'discord'}
         <figure class="media-figure px">
@@ -68,7 +54,7 @@
             loading="lazy"
           />
           <figcaption>
-            OpenAI DevDay — ten billion lifetime tokens earned a spot on the wall; eight months later one
+            OpenAI DevDay: ten billion lifetime tokens earned a spot on the wall; eight months later one
             Umans AI user crossed ~11B in a single day.
           </figcaption>
         </figure>
@@ -81,7 +67,7 @@
             loading="lazy"
           />
           <figcaption>
-            Umans AI production telemetry — 10,950.8M input tokens in 24h, 99% KV cache.
+            Umans AI production telemetry: 10,950.8M input tokens in 24h, 99% KV cache.
           </figcaption>
         </figure>
       {/if}
@@ -97,6 +83,8 @@
   }
 
   .prose h2 {
+    /* Clear the viewport top when the sidebar links jump here. */
+    scroll-margin-top: 16px;
     font-size: 22px;
     margin: 28px 0 12px;
     color: var(--fg);
@@ -141,6 +129,13 @@
     background: #080c18;
     border: 1px solid rgba(104, 113, 132, 0.3);
     overflow: hidden;
+  }
+
+  .usage-embed {
+    margin: 20px 0 24px;
+    border: 1px solid rgba(104, 113, 132, 0.3);
+    background: var(--bg);
+    padding: 16px 18px 8px;
   }
 
   .media-img {

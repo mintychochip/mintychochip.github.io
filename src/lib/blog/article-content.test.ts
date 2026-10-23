@@ -22,4 +22,12 @@ describe('TOKEN_GAP_ARTICLE draft', () => {
       'telemetry',
     ]);
   });
+
+  it('embeds the live usage panel after the tooling paragraph', () => {
+    const i = TOKEN_GAP_ARTICLE.findIndex(
+      (b) => b.type === 'p' && b.html.includes('ongoing live version'),
+    );
+    expect(i).toBeGreaterThan(0);
+    expect(TOKEN_GAP_ARTICLE[i + 1]).toEqual({ type: 'usage' });
+  });
 });

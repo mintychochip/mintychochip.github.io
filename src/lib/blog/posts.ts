@@ -1,13 +1,22 @@
 export interface BlogPost {
   id: string;
   slug: string;
+  /** Canonical page for the post. */
+  pageUrl: string;
   title: string;
   subtitle: string;
+  /** Human date shown in bylines. */
   date: string;
+  /** Machine date for <time datetime>. */
+  dateIso: string;
   readTime: string;
+  /** Shown next to the date when the piece is not a plain dated post. */
+  kindLabel?: string;
   tags: string[];
   externalUrl: string;
   externalSource: string;
+  /** Call to action for the source article, e.g. "Read Umans AI’s article ↗". */
+  externalCta: string;
   excerpt: string;
   summary: string;
   featuredQuote: {
@@ -37,15 +46,19 @@ export const POSTS: BlogPost[] = [
   {
     id: 'the-token-gap-10b-day',
     slug: 'the-token-gap-10b-day',
+    pageUrl: '/blog/the-token-gap/',
     title: 'Yes, That Was Me: Inside Umans AI’s "The Token Gap"',
     subtitle:
       'When Umans AI wrote about a single developer running 11 billion tokens in 24 hours, they were looking at my telemetry. Here’s the story from my side of the terminal.',
     date: 'August 2026',
+    dateIso: '2026-08-25',
     readTime: '5 min read',
-    author: 'mintychochip',
+    kindLabel: 'Cross-Reference',
     tags: ['tokenomics', 'agentic-ai', 'umans-ai', 'cross-reference'],
+    author: 'mintychochip',
     externalUrl: 'https://blog.umans.ai/blog/the-token-gap/',
     externalSource: 'Umans AI Blog',
+    externalCta: 'Read Umans AI’s article ↗',
     excerpt:
       'When Umans AI published "The Token Gap", they cited a developer running 10.95B tokens in 24 hours. That developer is me. Here is the first-person perspective behind that record run.',
     summary:

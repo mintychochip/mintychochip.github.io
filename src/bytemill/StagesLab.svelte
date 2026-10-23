@@ -106,7 +106,7 @@
           <section>
             <h4>imports</h4>
             {#if data.syntax.imports.length === 0}
-              <p class="none">none — a self-contained file</p>
+              <p class="none">none: a self-contained file</p>
             {:else}
               <ul class="chips">
                 {#each data.syntax.imports as item}<li>{item}</li>{/each}

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from 'vitest';
-import { mount, tick } from 'svelte';
+import { mount } from 'svelte';
 import BlogSection from './BlogSection.svelte';
 
 describe('BlogSection component', () => {
@@ -8,58 +8,35 @@ describe('BlogSection component', () => {
     document.body.innerHTML = '';
   });
 
-  it('renders section with DevDay preview and Umans head link', () => {
-    mount(BlogSection, {
-      target: document.body,
-    });
+  it('links cards to their own pages instead of opening a modal', () => {
+    mount(BlogSection, { target: document.body });
 
-    const header = document.querySelector('#blog-title');
-    expect(header).not.toBeNull();
-    expect(header?.textContent).toContain('Blog');
-
-    const headLink = document.querySelector('.external-head-link');
-    expect(headLink).not.toBeNull();
-    const headLogo = headLink?.querySelector('img.head-umans-logo') as HTMLImageElement;
-    expect(headLogo?.getAttribute('src')).toBe('/images/umans-logo.svg');
-
-    const devdayThumb = document.querySelector('.card-visual img.thumb-img') as HTMLImageElement;
-    expect(devdayThumb).not.toBeNull();
-    expect(devdayThumb.getAttribute('src')).toBe('/images/openai-devday-tokens.webp');
-
-    const extLink = document.querySelector('.external-link') as HTMLAnchorElement;
-    expect(extLink?.getAttribute('href')).toContain('blog.umans.ai');
-  });
-
-  it('links to the interactive bytemill article', () => {
-    mount(BlogSection, {
-      target: document.body,
-    });
-
-    const card = document.querySelector('.bytemill-card');
-    expect(card).not.toBeNull();
-    expect(card?.querySelector('.title-link')?.textContent).toContain('Bytemill');
-
-    const open = card?.querySelector('a.bytemill-btn') as HTMLAnchorElement | null;
-    expect(open?.getAttribute('href')).toBe('/blog/bytemill');
-  });
-
-  it('opens and closes the modal when clicking read my side', async () => {
-    mount(BlogSection, {
-      target: document.body,
-    });
-    await tick();
-
-    const readBtn = document.querySelector('.read-btn') as HTMLButtonElement;
-    expect(readBtn).not.toBeNull();
-    readBtn.click();
-    await tick();
-
-    expect(document.querySelector('.modal-card')).not.toBeNull();
-
-    const closeBtn = document.querySelector('.close-btn') as HTMLButtonElement;
-    closeBtn.click();
-    await tick();
-
+    const headings = [...document.querySelectorAll('.featured-card .title-link')].map((a) =>
+      a.getAttribute('href'),
+    );
+    expect(headings).toEqual(['/blog/the-token-gap/', '/blog/bytemill/']);
     expect(document.querySelector('.modal-card')).toBeNull();
+  });
+
+  it('shows the Umans post with its preview image and external link', () => {
+    mount(BlogSection, { target: document.body });
+
+    const card = document.querySelector('.featured-card');
+    expect(card?.querySelector('.card-meta')?.textContent).toContain('August 2026');
+
+    const thumb = card?.querySelector('img.thumb-img') as HTMLImageElement | null;
+    expect(thumb?.getAttribute('src')).toBe('/images/openai-devday-tokens.webp');
+
+    const external = [...(card?.querySelectorAll('.external-link') ?? [])].map((a) =>
+      a.getAttribute('href'),
+    );
+    expect(external).toContain('https://blog.umans.ai/blog/the-token-gap/');
+  });
+
+  it('offers a link to the full blog index', () => {
+    mount(BlogSection, { target: document.body });
+
+    const all = document.querySelector('.all-link') as HTMLAnchorElement | null;
+    expect(all?.getAttribute('href')).toBe('/blog/');
   });
 });
