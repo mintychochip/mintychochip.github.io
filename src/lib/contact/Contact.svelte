@@ -1,7 +1,8 @@
 <script lang="ts">
   import { site } from '../site';
   import SocialIcon from '../components/SocialIcon.svelte';
-  import { mailto, validate, type Draft, type DraftErrors } from './mail';
+  import { validate, type Draft, type DraftErrors } from './mail';
+  import { sendContact } from './api';
 
   let draft = $state<Draft>({ name: '', email: '', message: '' });
   let copied = $state(false);
@@ -15,25 +16,32 @@
   }
 
   let errors = $state<DraftErrors>({});
-  let sent = $state(false);
+  let status = $state<'idle' | 'sending' | 'sent' | 'failed'>('idle');
+  let trap = $state('');
   let form: HTMLFormElement;
 
-  function submit(e: SubmitEvent) {
+  async function submit(e: SubmitEvent) {
     e.preventDefault();
+    if (status === 'sending') return;
     errors = validate(draft);
     const first = (['name', 'email', 'message'] as const).find((k) => errors[k]);
     if (first) {
       form.querySelector<HTMLElement>(`[name="${first}"]`)?.focus();
-      sent = false;
+      status = 'idle';
       return;
     }
-    window.location.href = mailto(site.email, draft);
-    sent = true;
+    status = 'sending';
+    try {
+      await sendContact(draft, trap);
+      status = 'sent';
+    } catch {
+      status = 'failed';
+    }
   }
 
   function edit(key: keyof Draft) {
     if (errors[key]) errors = { ...errors, [key]: undefined };
-    sent = false;
+    if (status !== 'sending') status = 'idle';
   }
 </script>
 
@@ -48,9 +56,15 @@
       <SocialIcon name="linkedin" size={18} />
       LinkedIn
     </a>,
-    or write here and your mail app opens with it filled in.
+    or send a message directly from here.
   </p>
   <form bind:this={form} novalidate onsubmit={submit}>
+    <div class="hp" aria-hidden="true">
+      <label>
+        <span>Website</span>
+        <input name="website" tabindex="-1" autocomplete="off" bind:value={trap} />
+      </label>
+    </div>
     <label>
       <span>Name</span>
       <input
@@ -92,13 +106,17 @@
       {#if errors.message}<em id="err-message">{errors.message}</em>{/if}
     </label>
     <div class="wide actions">
-      <button class="btn px" type="submit">Send</button>
+      <button class="btn px" type="submit" disabled={status === 'sending'}>
+        {status === 'sending' ? 'Sending…' : 'Send'}
+      </button>
       <button class="btn px" type="button" onclick={copyMessage}>
         {copied ? 'Copied!' : 'Copy message'}
       </button>
       <p class="note" role="status">
-        {#if sent}Your email app should open with the message drafted — review and send it there.{/if}
-        {#if !sent}Your mail app opens with the message drafted. No mail app? Copy it and email me at <a href="mailto:{site.email}">{site.email}</a>.{/if}
+        {#if status === 'sending'}Sending…{/if}
+        {#if status === 'sent'}Message sent, thanks. I’ll reply to the email you gave.{/if}
+        {#if status === 'failed'}Couldn’t send just now. Copy the message and email me at <a href="mailto:{site.email}">{site.email}</a>.{/if}
+        {#if status === 'idle'}This sends directly to me. You can also copy the message and email me at <a href="mailto:{site.email}">{site.email}</a>.{/if}
       </p>
     </div>
   </form>
@@ -184,6 +202,17 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 10px 18px;
+  }
+  .hp {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  button:disabled {
+    opacity: 0.6;
+    cursor: default;
   }
   .note {
     margin: 0;
