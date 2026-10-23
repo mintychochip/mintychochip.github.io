@@ -5,5 +5,10 @@ dist/
 scratch_*
 private/
 
+# Agent scratch and host notes. AGENTS.md documents the odin config path and the
+# shared-www-data exposure; it must not be published to this public repo.
+.impeccable/
+AGENTS.md
+
 
 [You have received this identical output 3 times. Re-reading '/home/jlo/dev/mintychochip.github.io/.gitignore:raw' will not change it — use a narrower selector (path:A-B), or proceed with the edit.]
