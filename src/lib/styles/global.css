@@ -6,6 +6,30 @@
   font-display: swap;
 }
 
+/* Space Mono used to come from fonts.googleapis.com, which cost a render-blocking
+   third-party round trip on every page. These are the latin subsets of the same
+   Google Fonts release, served from our own origin. */
+@font-face {
+  font-family: 'Space Mono';
+  src: url('/fonts/SpaceMono-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF,
+    U+FFFD;
+}
+@font-face {
+  font-family: 'Space Mono';
+  src: url('/fonts/SpaceMono-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF,
+    U+FFFD;
+}
+
 :root {
   --bg: #0b0f19;
   --fg: #ece6cc;
@@ -32,7 +56,10 @@
 html {
   background: var(--bg);
   scroll-behavior: smooth;
+  /* `hidden` would make the root a scroll container, which breaks position: sticky
+     descendants (the sidebars). `clip` trims the overflow without doing that. */
   overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
 }
 
@@ -48,6 +75,7 @@ body {
   color: var(--fg);
   font: 400 20px/1.45 var(--font-body);
   overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
 }
 

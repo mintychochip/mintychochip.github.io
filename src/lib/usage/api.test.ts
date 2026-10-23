@@ -38,7 +38,7 @@ describe('usage api', () => {
     await fetchModels('2026-08-20', '2026-08-26');
     expect(fetchMock).toHaveBeenCalledOnce();
     const [url] = fetchMock.mock.calls[0];
-    expect(url).toBe('http://localhost/v1/usage/models?from=2026-08-20&to=2026-08-26');
+    expect(url).toBe('http://localhost/v1/usage/models.json?from=2026-08-20&to=2026-08-26');
   });
 
   it('parses and returns a valid models response', async () => {

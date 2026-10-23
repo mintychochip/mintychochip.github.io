@@ -143,7 +143,7 @@ async function inFlightFetch(url: string, cacheMode: RequestCache, signal?: Abor
 }
 
 function buildURL(kind: 'models' | 'series', from: string, to: string, metrics?: readonly Metric[]): URL {
-  const url = new URL(`v1/usage/${kind}`, `${location.origin}/`);
+  const url = new URL(`v1/usage/${kind}.json`, `${location.origin}/`);
   url.searchParams.set('from', from);
   url.searchParams.set('to', to);
   if (metrics) url.searchParams.set('metrics', metrics.join(','));

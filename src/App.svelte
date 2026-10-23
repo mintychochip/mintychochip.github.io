@@ -14,6 +14,7 @@
   import SecretPage from './lib/secret/SecretPage.svelte';
   import { SECRET_LOAD_ERROR } from './lib/secret/vault-chrome';
   import { clearVaultGrant } from './lib/secret/vault-gate';
+  import { PORTFOLIO_TITLE } from './lib/seo';
 
   type Tab = 'portfolio' | 'wordle' | 'secret';
 
@@ -39,17 +40,17 @@
     if (typeof window !== 'undefined') {
       if (tab === 'secret') {
         window.location.hash = '#secret';
-        document.title = 'mintychochip';
+        document.title = PORTFOLIO_TITLE;
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (tab === 'wordle') {
         window.location.hash = '#wordle';
-        document.title = 'mintychochip — wordle';
+        document.title = 'mintychochip · wordle';
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         if (window.location.hash.startsWith('#wordle') || window.location.hash.startsWith('#secret')) {
           window.location.hash = '#portfolio';
         }
-        document.title = 'mintychochip';
+        document.title = PORTFOLIO_TITLE;
       }
     }
   }
@@ -79,17 +80,17 @@
       const hash = window.location.hash.toLowerCase();
       if (hash === '#secret' || hash.startsWith('#secret')) {
         activeTab = 'secret';
-        document.title = 'mintychochip';
+        document.title = PORTFOLIO_TITLE;
       } else if (hash === '#wordle' || hash.startsWith('#wordle')) {
         activeTab = 'wordle';
-        document.title = 'mintychochip — wordle';
+        document.title = 'mintychochip · wordle';
       } else if (activeTab !== 'portfolio' && document.getElementById(hash.slice(1))) {
         // In-page anchors inside the secret/wordle tabs (e.g. "Continue to your
         // passes") must not bounce the visitor back to the portfolio.
         scrollToAnchor(hash);
       } else {
         activeTab = 'portfolio';
-        document.title = 'mintychochip';
+        document.title = PORTFOLIO_TITLE;
         scrollToAnchor(hash);
       }
     }

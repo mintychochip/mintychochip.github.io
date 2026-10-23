@@ -2,6 +2,9 @@
 User-agent: *
 Allow: /
 
+# Every HTML entry is client-rendered, so link unfurlers and most LLM fetchers
+# will only see the static head. It is injected at build time from src/lib/seo.ts.
 # Plain-text maps for language models
 # https://mintychochip.dev/llms.txt
 # https://mintychochip.dev/llms-full.txt
+Sitemap: https://mintychochip.dev/sitemap.xml
