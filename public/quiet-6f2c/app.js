@@ -266,6 +266,12 @@ function luminance(hex) {
   return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
 }
 
+function contrastRatio(a, b) {
+  const la = luminance(a);
+  const lb = luminance(b);
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+
 function paletteColours(palette) {
   const dark = luminance(palette.paper) < 0.35;
   const panel = palette.panel ?? mixHex(palette.paper, dark ? "#ffffff" : palette.accent, dark ? 0.08 : 0.1);
@@ -450,7 +456,11 @@ function applyPreview() {
   preview.style.setProperty("--accent", palette.accent);
   preview.style.setProperty("--ink", palette.ink);
   preview.style.setProperty("--muted", palette.muted);
-  preview.style.setProperty("--on-accent", luminance(palette.accent) > 0.5 ? "#2f2a26" : "#fbf6e9");
+  preview.style.setProperty(
+    "--on-accent",
+    contrastRatio("#fbf6e9", palette.accent) >= contrastRatio("#2f2a26", palette.accent) ? "#fbf6e9" : "#2f2a26",
+  );
+  preview.style.setProperty("--accent-rule", mixHex(palette.accent, palette.ink, 0.45));
 
   preview.style.setProperty("--display", type.display);
   preview.style.setProperty("--body", type.body);
@@ -553,7 +563,7 @@ async function copyLink(button) {
   try {
     await navigator.clipboard.writeText(location.href);
     const old = button.innerHTML;
-    button.textContent = "Link copied";
+    button.textContent = button === dockCopy ? "Copied" : "Link copied";
     window.setTimeout(() => {
       button.innerHTML = old;
     }, 2200);

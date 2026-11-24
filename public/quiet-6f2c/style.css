@@ -746,7 +746,7 @@ a {
   padding: 4px 0;
   border-radius: 0;
   background: transparent;
-  color: var(--accent);
+  color: var(--accent-rule, var(--accent));
   border-bottom: 1px solid currentColor;
 }
 
@@ -1072,6 +1072,14 @@ a {
     font-size: 1.5rem;
   }
 
+  .type-card__top {
+    padding-right: 0;
+  }
+
+  .type-card__check {
+    display: none;
+  }
+
   .type-card__name {
     font-size: 0.88rem;
   }
@@ -1293,6 +1301,7 @@ a {
     font-size: 0.62rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
+    white-space: nowrap;
     cursor: pointer;
   }
 
