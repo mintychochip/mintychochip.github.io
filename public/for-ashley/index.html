@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>A few choices — Justin &amp; Ashley</title>
+    <meta name="description" content="A quiet little menu of type and details for the wedding site." />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Great+Vibes&family=Italianno&family=Jost:wght@300;400;500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Manrope:wght@300;400&family=Marcellus&family=Monsieur+La+Doulaise&family=Parisienne&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Tangerine:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="topbar__mark" href="https://mintychochip.dev/">J &amp; A</a>
+      <span class="topbar__title">A few choices</span>
+      <a class="topbar__back" href="https://mintychochip.dev/">Back to the site <span aria-hidden="true">→</span></a>
+    </header>
+
+    <main class="page">
+      <div class="intro">
+        <p class="eyebrow">A quiet little menu</p>
+        <h1>Pick what you love.</h1>
+        <p>
+          Twelve type pairings, then the small things around them — a monogram, a button, the shape of the
+          photo. The preview changes as you go. When it feels right, copy the link at the end and send it to me.
+        </p>
+      </div>
+
+      <div class="layout">
+        <div class="controls">
+          <section aria-labelledby="type-heading">
+            <div class="section-head">
+              <h2 id="type-heading"><span>01</span> Type</h2>
+              <em>12 pairings</em>
+            </div>
+            <div class="types" id="typeGrid" role="radiogroup" aria-labelledby="type-heading"></div>
+          </section>
+
+          <section aria-labelledby="monogram-heading">
+            <div class="section-head">
+              <h2 id="monogram-heading"><span>02</span> Monogram</h2>
+              <em>4 options</em>
+            </div>
+            <div class="options options--4" id="monogramGrid" role="radiogroup" aria-labelledby="monogram-heading"></div>
+          </section>
+
+          <section aria-labelledby="button-heading">
+            <div class="section-head">
+              <h2 id="button-heading"><span>03</span> Button</h2>
+              <em>3 options</em>
+            </div>
+            <div class="options options--3" id="buttonGrid" role="radiogroup" aria-labelledby="button-heading"></div>
+          </section>
+
+          <section aria-labelledby="frame-heading">
+            <div class="section-head">
+              <h2 id="frame-heading"><span>04</span> Frame</h2>
+              <em>3 options</em>
+            </div>
+            <div class="options options--3" id="frameGrid" role="radiogroup" aria-labelledby="frame-heading"></div>
+          </section>
+        </div>
+
+        <aside class="sidebar">
+          <div class="preview-head">
+            <span>Live preview</span>
+            <span id="pickLabel">Classic · Serif · Pill · Scallop</span>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="pill" id="copyBtn">Copy this link <span aria-hidden="true">→</span></button>
+            <button type="button" class="text-link" id="resetBtn">Start over</button>
+          </div>
+
+          <div class="preview" id="preview">
+            <div class="preview__media frame-scallop" id="previewMedia">
+              <img src="hero.jpg" alt="A couple in a rowboat on a still mountain lake at golden hour" />
+              <svg class="preview__wave" viewBox="0 0 1200 90" preserveAspectRatio="none" aria-hidden="true">
+                <path
+                  d="M0,90 L0,46 C70,46 70,16 140,16 C210,16 210,46 280,46 C350,46 350,16 420,16 C490,16 490,46 560,46 C630,46 630,16 700,16 C770,16 770,46 840,46 C910,46 910,16 980,16 C1050,16 1050,46 1120,46 C1160,46 1180,40 1200,34 L1200,90 Z"
+                  fill="var(--paper)"
+                />
+              </svg>
+            </div>
+
+            <div class="preview__invite">
+              <div class="preview__monogram mono-serif" id="previewMonogram">J &amp; A</div>
+              <p class="preview__eyebrow">Together with great joy</p>
+              <p class="preview__names" id="previewNames">Justin<span class="preview__amp"> &amp; </span>Ashley</p>
+              <p class="preview__date">June 20, 2026</p>
+              <span class="preview__rule" aria-hidden="true"></span>
+              <p class="preview__place">Brooklyn, New York</p>
+              <span class="preview__pill btn-pill" id="previewButton">You’re invited <span aria-hidden="true">→</span></span>
+            </div>
+
+            <div class="preview__specimen">
+              <div class="preview__specimen-row">
+                <div>
+                  <p class="preview__label">The Date</p>
+                  <p class="preview__value">June 20</p>
+                </div>
+                <div>
+                  <p class="preview__label">The Venue</p>
+                  <p class="preview__value">The Wythe</p>
+                </div>
+                <div>
+                  <p class="preview__label">Dress</p>
+                  <p class="preview__value">Garden</p>
+                </div>
+              </div>
+              <p class="preview__script">The Journey</p>
+              <p class="preview__copy">A quiet lake, a long table, and everyone we love in one room.</p>
+            </div>
+          </div>
+
+          <p class="preview-note">This page is just for choosing — the site stays as it is until we decide together.</p>
+        </aside>
+      </div>
+    </main>
+
+    <footer class="foot">
+      <span>Justin &amp; Ashley</span>
+      <span>June 20, 2026</span>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
