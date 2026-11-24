@@ -226,12 +226,71 @@ const frames = [
 
 const wave = `<svg class="frame-sample__wave" viewBox="0 0 1200 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0,90 L0,46 C70,46 70,16 140,16 C210,16 210,46 280,46 C350,46 350,16 420,16 C490,16 490,46 560,46 C630,46 630,16 700,16 C770,16 770,46 840,46 C910,46 910,16 980,16 C1050,16 1050,46 1120,46 C1160,46 1180,40 1200,34 L1200,90 Z" fill="var(--paper)"/></svg>`;
 
-const defaultState = { type: "classic", monogram: "serif", button: "pill", frame: "scallop" };
+const palettes = [
+  { id: "olive", name: "Olive & Cream", paper: "#f7f3e9", accent: "#5f6847", ink: "#343a30" },
+  { id: "sage", name: "Sage", paper: "#eef2e6", accent: "#7d8f63", ink: "#2f362b" },
+  { id: "eucalyptus", name: "Eucalyptus", paper: "#eaf1ed", accent: "#5f8877", ink: "#293632" },
+  { id: "seafoam", name: "Seafoam", paper: "#e9f2f1", accent: "#6aa39e", ink: "#293635" },
+  { id: "blush", name: "Blush", paper: "#fbecec", accent: "#cf7c86", ink: "#402e31" },
+  { id: "rose", name: "Rose", paper: "#f9e9ec", accent: "#b8576a", ink: "#3d2a2f" },
+  { id: "terracotta", name: "Terracotta", paper: "#f9e8dd", accent: "#b85c3f", ink: "#3f2c26" },
+  { id: "saffron", name: "Saffron", paper: "#f8efcf", accent: "#c9972c", ink: "#3b3324" },
+  { id: "lilac", name: "Lilac", paper: "#f1ecf7", accent: "#8b6bb5", ink: "#332d3c" },
+  { id: "navy", name: "Navy", paper: "#e9ecf0", accent: "#2f4058", ink: "#212a35" },
+  { id: "forest", name: "Forest", paper: "#e8ece5", accent: "#2f4a37", ink: "#202a23" },
+  { id: "midnight", name: "Midnight", paper: "#20262f", accent: "#c9b07a", ink: "#f2efe8" },
+];
+
+function hexToRgb(hex) {
+  const value = hex.replace("#", "");
+  const full = value.length === 3 ? value.split("").map((c) => c + c).join("") : value;
+  const parsed = Number.parseInt(full, 16);
+  return { r: (parsed >> 16) & 255, g: (parsed >> 8) & 255, b: parsed & 255 };
+}
+
+function mixHex(base, tint, amount) {
+  const a = hexToRgb(base);
+  const b = hexToRgb(tint);
+  const channel = (x, y) => Math.round(x + (y - x) * amount);
+  return `#${[channel(a.r, b.r), channel(a.g, b.g), channel(a.b, b.b)]
+    .map((value) => value.toString(16).padStart(2, "0"))
+    .join("")}`;
+}
+
+function luminance(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  const channel = (value) => {
+    const s = value / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+}
+
+function paletteColours(palette) {
+  const dark = luminance(palette.paper) < 0.35;
+  const panel = palette.panel ?? mixHex(palette.paper, dark ? "#ffffff" : palette.accent, dark ? 0.08 : 0.1);
+  const muted = palette.muted ?? mixHex(palette.ink, palette.paper, 0.35);
+  return { ...palette, panel, muted };
+}
+
+const isHex = (value) => /^#[0-9a-f]{6}$/i.test(value ?? "");
+
+const defaultState = { type: "classic", color: "olive", monogram: "serif", button: "pill", frame: "scallop" };
 const state = { ...defaultState };
 
 const params = new URLSearchParams(location.search);
 for (const key of Object.keys(defaultState)) {
   const value = params.get(key);
+  if (key === "color") {
+    if (value === "custom" && isHex(params.get("paper")) && isHex(params.get("accent"))) {
+      state.color = "custom";
+      state.paper = params.get("paper");
+      state.accent = params.get("accent");
+    } else if (palettes.some((item) => item.id === value)) {
+      state.color = value;
+    }
+    continue;
+  }
   const exists =
     key === "type"
       ? types.some((item) => item.id === value)
@@ -244,6 +303,7 @@ for (const key of Object.keys(defaultState)) {
 }
 
 const typeGrid = document.getElementById("typeGrid");
+const colorGrid = document.getElementById("colorGrid");
 const monogramGrid = document.getElementById("monogramGrid");
 const buttonGrid = document.getElementById("buttonGrid");
 const frameGrid = document.getElementById("frameGrid");
@@ -254,6 +314,17 @@ const previewButton = document.getElementById("previewButton");
 const pickLabel = document.getElementById("pickLabel");
 const copyBtn = document.getElementById("copyBtn");
 const resetBtn = document.getElementById("resetBtn");
+const paperInput = document.getElementById("paperInput");
+const accentInput = document.getElementById("accentInput");
+const customColor = document.getElementById("customColor");
+const customHint = document.getElementById("customHint");
+const dockLabel = document.getElementById("dockLabel");
+const dockSwatches = document.getElementById("dockSwatches");
+const dockCopy = document.getElementById("dockCopy");
+const dockOpen = document.getElementById("dockOpen");
+const sidebar = document.getElementById("sidebar");
+const sheetClose = document.getElementById("sheetClose");
+const sheetBackdrop = document.getElementById("sheetBackdrop");
 
 function renderTypes() {
   typeGrid.innerHTML = types
@@ -275,6 +346,25 @@ function renderTypes() {
         <span class="type-card__body" style="font-family:${type.body}">A quiet lake, a long table, everyone we love.</span>
       </label>`,
     )
+    .join("");
+}
+
+function renderColors() {
+  colorGrid.innerHTML = palettes
+    .map((palette) => {
+      const colours = paletteColours(palette);
+      const selected = state.color === palette.id;
+      const swatches = ["paper", "panel", "accent", "ink"]
+        .map((key) => `<span style="background:${colours[key]}"></span>`)
+        .join("");
+      return `
+      <label class="color-card${selected ? " is-selected" : ""}">
+        <input class="sr-only" type="radio" name="color" value="${palette.id}" ${selected ? "checked" : ""} />
+        <span class="color-card__check" aria-hidden="true"></span>
+        <span class="color-card__swatches" aria-hidden="true">${swatches}</span>
+        <span class="color-card__name">${palette.name}</span>
+      </label>`;
+    })
     .join("");
 }
 
@@ -335,11 +425,32 @@ function markSelected(grid, name, value) {
   }
 }
 
+function activePalette() {
+  if (state.color === "custom") {
+    return paletteColours({
+      id: "custom",
+      name: "Custom",
+      paper: state.paper,
+      accent: state.accent,
+      ink: luminance(state.paper) < 0.35 ? "#f2efe8" : "#343a30",
+    });
+  }
+  return paletteColours(palettes.find((item) => item.id === state.color) ?? palettes[0]);
+}
+
 function applyPreview() {
   const type = types.find((item) => item.id === state.type) ?? types[0];
   const monogram = monograms.find((item) => item.id === state.monogram) ?? monograms[0];
   const button = buttons.find((item) => item.id === state.button) ?? buttons[0];
   const frame = frames.find((item) => item.id === state.frame) ?? frames[0];
+  const palette = activePalette();
+
+  preview.style.setProperty("--paper", palette.paper);
+  preview.style.setProperty("--panel", palette.panel);
+  preview.style.setProperty("--accent", palette.accent);
+  preview.style.setProperty("--ink", palette.ink);
+  preview.style.setProperty("--muted", palette.muted);
+  preview.style.setProperty("--on-accent", luminance(palette.accent) > 0.5 ? "#2f2a26" : "#fbf6e9");
 
   preview.style.setProperty("--display", type.display);
   preview.style.setProperty("--body", type.body);
@@ -358,12 +469,26 @@ function applyPreview() {
   previewButton.className = `preview__pill ${button.className}`;
   previewMedia.className = `preview__media ${frame.className}`;
 
-  pickLabel.textContent = `${type.name} · ${monogram.name} · ${button.name} · ${frame.name}`;
+  paperInput.value = palette.paper;
+  accentInput.value = palette.accent;
+  customColor.classList.toggle("is-active", state.color === "custom");
+  customHint.textContent = state.color === "custom" ? "Custom colour" : "or mix your own";
+
+  dockSwatches.innerHTML = ["paper", "panel", "accent", "ink"]
+    .map((key) => `<span style="background:${palette[key]}"></span>`)
+    .join("");
+  dockLabel.textContent = `${type.name} · ${palette.name}`;
+
+  pickLabel.textContent = `${type.name} · ${palette.name} · ${monogram.name} · ${button.name} · ${frame.name}`;
 }
 
 function syncUrl() {
   const next = new URLSearchParams();
   for (const key of Object.keys(defaultState)) next.set(key, state[key]);
+  if (state.color === "custom") {
+    next.set("paper", state.paper);
+    next.set("accent", state.accent);
+  }
   history.replaceState(null, "", `${location.pathname}?${next.toString()}`);
 }
 
@@ -373,6 +498,7 @@ function update() {
 }
 
 renderTypes();
+renderColors();
 renderMonograms();
 renderButtons();
 renderFrames();
@@ -384,6 +510,23 @@ typeGrid.addEventListener("change", (event) => {
   markSelected(typeGrid, "type", state.type);
   update();
 });
+
+colorGrid.addEventListener("change", (event) => {
+  if (!(event.target instanceof HTMLInputElement)) return;
+  state.color = event.target.value;
+  markSelected(colorGrid, "color", state.color);
+  update();
+});
+
+for (const input of [paperInput, accentInput]) {
+  input.addEventListener("input", () => {
+    state.color = "custom";
+    state.paper = paperInput.value;
+    state.accent = accentInput.value;
+    markSelected(colorGrid, "color", state.color);
+    update();
+  });
+}
 
 monogramGrid.addEventListener("change", (event) => {
   if (!(event.target instanceof HTMLInputElement)) return;
@@ -406,22 +549,41 @@ frameGrid.addEventListener("change", (event) => {
   update();
 });
 
-copyBtn.addEventListener("click", async () => {
+async function copyLink(button) {
   try {
     await navigator.clipboard.writeText(location.href);
-    const old = copyBtn.innerHTML;
-    copyBtn.textContent = "Link copied";
+    const old = button.innerHTML;
+    button.textContent = "Link copied";
     window.setTimeout(() => {
-      copyBtn.innerHTML = old;
+      button.innerHTML = old;
     }, 2200);
   } catch {
     window.prompt("Copy this link", location.href);
   }
+}
+
+copyBtn.addEventListener("click", () => copyLink(copyBtn));
+dockCopy.addEventListener("click", () => copyLink(dockCopy));
+
+function setSheet(open) {
+  sidebar.classList.toggle("is-open", open);
+  sheetBackdrop.classList.toggle("is-open", open);
+  document.body.classList.toggle("sheet-open", open);
+  dockOpen.setAttribute("aria-expanded", String(open));
+  dockOpen.textContent = open ? "Close" : "Preview";
+}
+
+dockOpen.addEventListener("click", () => setSheet(!sidebar.classList.contains("is-open")));
+sheetClose.addEventListener("click", () => setSheet(false));
+sheetBackdrop.addEventListener("click", () => setSheet(false));
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") setSheet(false);
 });
 
 resetBtn.addEventListener("click", () => {
   Object.assign(state, defaultState);
   markSelected(typeGrid, "type", state.type);
+  markSelected(colorGrid, "color", state.color);
   markSelected(monogramGrid, "monogram", state.monogram);
   markSelected(buttonGrid, "button", state.button);
   markSelected(frameGrid, "frame", state.frame);

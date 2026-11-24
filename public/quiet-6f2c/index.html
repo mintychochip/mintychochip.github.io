@@ -27,8 +27,8 @@
         <p class="eyebrow">A quiet little menu</p>
         <h1>Pick what you love.</h1>
         <p>
-          Twelve type pairings, then the small things around them — a monogram, a button, the shape of the
-          photo. The preview changes as you go. When it feels right, copy the link at the end and send it to me.
+          Twelve type pairings, twelve palettes, then the small things around them — a monogram, a button, the
+          shape of the photo. The preview changes as you go. When it feels right, copy the link and send it to me.
         </p>
       </div>
 
@@ -42,9 +42,28 @@
             <div class="types" id="typeGrid" role="radiogroup" aria-labelledby="type-heading"></div>
           </section>
 
+          <section aria-labelledby="color-heading">
+            <div class="section-head">
+              <h2 id="color-heading"><span>02</span> Colour</h2>
+              <em>12 palettes</em>
+            </div>
+            <div class="colors" id="colorGrid" role="radiogroup" aria-labelledby="color-heading"></div>
+            <div class="custom-color" id="customColor">
+              <label class="custom-color__field">
+                <span>Paper</span>
+                <input type="color" id="paperInput" name="paper" value="#f7f3e9" />
+              </label>
+              <label class="custom-color__field">
+                <span>Accent</span>
+                <input type="color" id="accentInput" name="accent" value="#5f6847" />
+              </label>
+              <span class="custom-color__hint" id="customHint">or mix your own</span>
+            </div>
+          </section>
+
           <section aria-labelledby="monogram-heading">
             <div class="section-head">
-              <h2 id="monogram-heading"><span>02</span> Monogram</h2>
+              <h2 id="monogram-heading"><span>03</span> Monogram</h2>
               <em>4 options</em>
             </div>
             <div class="options options--4" id="monogramGrid" role="radiogroup" aria-labelledby="monogram-heading"></div>
@@ -52,7 +71,7 @@
 
           <section aria-labelledby="button-heading">
             <div class="section-head">
-              <h2 id="button-heading"><span>03</span> Button</h2>
+              <h2 id="button-heading"><span>04</span> Button</h2>
               <em>3 options</em>
             </div>
             <div class="options options--3" id="buttonGrid" role="radiogroup" aria-labelledby="button-heading"></div>
@@ -60,14 +79,18 @@
 
           <section aria-labelledby="frame-heading">
             <div class="section-head">
-              <h2 id="frame-heading"><span>04</span> Frame</h2>
+              <h2 id="frame-heading"><span>05</span> Frame</h2>
               <em>3 options</em>
             </div>
             <div class="options options--3" id="frameGrid" role="radiogroup" aria-labelledby="frame-heading"></div>
           </section>
         </div>
 
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
+          <div class="sheet-head">
+            <span>Your preview</span>
+            <button type="button" class="sheet-close" id="sheetClose" aria-label="Close preview">Close ✕</button>
+          </div>
           <div class="preview-head">
             <span>Live preview</span>
             <span id="pickLabel">Classic · Serif · Pill · Scallop</span>
@@ -128,6 +151,15 @@
       <span>Justin &amp; Ashley</span>
       <span>June 20, 2026</span>
     </footer>
+
+    <div class="sheet-backdrop" id="sheetBackdrop"></div>
+
+    <div class="dock" id="dock">
+      <span class="dock__swatches" id="dockSwatches" aria-hidden="true"></span>
+      <span class="dock__label" id="dockLabel">Classic · Olive &amp; Cream</span>
+      <button type="button" class="dock__btn" id="dockCopy">Copy</button>
+      <button type="button" class="dock__btn dock__btn--solid" id="dockOpen" aria-expanded="false" aria-controls="sidebar">Preview</button>
+    </div>
 
     <script src="app.js"></script>
   </body>
