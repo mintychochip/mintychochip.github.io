@@ -2,9 +2,6 @@
 User-agent: *
 Allow: /
 
-# Private design picker — unlisted, never crawled
-Disallow: /for-ashley/
-
 # Every HTML entry is client-rendered, so link unfurlers and most LLM fetchers
 # will only see the static head. It is injected at build time from src/lib/seo.ts.
 # Plain-text maps for language models
